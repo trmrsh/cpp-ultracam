@@ -1,0 +1,1027 @@
+Making all in src
+make[1]: Entering directory `/home/phsaap/code/C++/ultracam/src'
+g++ -DPACKAGE_NAME=\"\" -DPACKAGE_TARNAME=\"\" -DPACKAGE_VERSION=\"\" -DPACKAGE_STRING=\"\" -DPACKAGE_BUGREPORT=\"\" -DPACKAGE=\"ultracam\" -DVERSION=\"7.0.7\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_MATH_H=1  -I. -I.  -I../include  -I/opt/include -I/home/phsaap/software/include  -g -O2 -c shifter.cc
+In file included from /home/phsaap/software/include/subs.h:10,
+                 from shifter.cc:137:
+./list:1: error: stray '\127' in program
+./list:1: error: stray '\1' in program
+./list:1: error: stray '\1' in program
+./list:1: error: stray '\1' in program
+In file included from /home/phsaap/software/include/subs.h:10,
+                 from shifter.cc:137:
+./list:1:8: warning: null character(s) ignored
+./list:1: error: stray '\2' in program
+./list:1:18: warning: null character(s) ignored
+./list:1: error: stray '\3' in program
+./list:1:20: warning: null character(s) ignored
+./list:1: error: stray '\1' in program
+./list:1:22: warning: null character(s) ignored
+./list:1: error: stray '\174' in program
+./list:1: error: stray '\4' in program
+./list:1: error: stray '\8' in program
+./list:1: error: expected constructor, destructor, or type conversion before numeric constant
+./list:1: error: expected `,' or `;' before numeric constant
+./list:1:30: warning: null character(s) ignored
+./list:1: error: stray '\228' in program
+./list:1: error: stray '\255' in program
+./list:1: error: stray '\28' in program
+./list:1:36: warning: null character(s) ignored
+./list:1:42: warning: null character(s) ignored
+./list:1: error: stray '\8' in program
+./list:1:46: warning: null character(s) ignored
+./list:1:48: warning: null character(s) ignored
+./list:1:50: warning: null character(s) ignored
+./list:1:51: warning: null character(s) preserved in literal
+./list:1: error: missing terminating " character
+./list:2: error: stray '\6' in program
+./list:2:2: warning: null character(s) ignored
+./list:2: error: stray '\200' in program
+./list:2: error: stray '\138' in program
+./list:3: error: stray '\8' in program
+./list:3: error: stray '\200' in program
+./list:3: error: stray '\138' in program
+./list:4: error: stray '\8' in program
+./list:4: error: stray '\19' in program
+./list:4:4: warning: null character(s) ignored
+./list:4: error: stray '\19' in program
+./list:4:8: warning: null character(s) ignored
+./list:4: error: stray '\4' in program
+./list:4:11: warning: null character(s) ignored
+./list:4: error: stray '\4' in program
+./list:4:15: warning: null character(s) ignored
+./list:4: error: stray '\229' in program
+./list:4:22: warning: null character(s) ignored
+./list:4: error: stray '\7' in program
+./list:4:43: warning: null character(s) ignored
+./list:4: error: stray '\4' in program
+./list:4:47: warning: null character(s) ignored
+./list:4:68: warning: null character(s) ignored
+./list:4: error: stray '\4' in program
+./list:4:71: warning: null character(s) ignored
+./list:4: error: stray '\16' in program
+./list:4:75: warning: null character(s) ignored
+./list:4: error: stray '\1' in program
+./list:4:79: warning: null character(s) ignored
+./list:4:85: warning: null character(s) ignored
+./list:4: error: stray '\2' in program
+./list:4:91: warning: null character(s) ignored
+./list:4: error: stray '\2' in program
+./list:4:95: warning: null character(s) ignored
+./list:4: error: stray '\5' in program
+./list:4:99: warning: null character(s) ignored
+./list:4: error: stray '\131' in program
+./list:4:103: warning: null character(s) ignored
+./list:4: error: stray '\157' in program
+./list:4:107: warning: null character(s) ignored
+./list:4:111: warning: null character(s) ignored
+./list:4:123: warning: null character(s) ignored
+./list:4: error: stray '\17' in program
+./list:4:127: warning: null character(s) ignored
+./list:4: error: stray '\135' in program
+./list:4:131: warning: null character(s) ignored
+./list:4: error: stray '\139' in program
+./list:4:135: warning: null character(s) ignored
+./list:4: error: stray '\8' in program
+./list:4:143: warning: null character(s) ignored
+./list:4:151: warning: null character(s) ignored
+./list:4:159: warning: null character(s) ignored
+./list:4:163: warning: null character(s) ignored
+./list:4:167: warning: null character(s) ignored
+./list:4:175: warning: null character(s) ignored
+./list:4: error: stray '\137' in program
+./list:4:179: warning: null character(s) ignored
+./list:4: error: stray '\22' in program
+./list:4:183: warning: null character(s) ignored
+./list:4: error: stray '\141' in program
+./list:4:187: warning: null character(s) ignored
+./list:4: error: stray '\14' in program
+./list:4:191: warning: null character(s) ignored
+./list:4:207: warning: null character(s) ignored
+./list:4:215: warning: null character(s) ignored
+./list:4: error: stray '\3' in program
+./list:4:219: warning: null character(s) ignored
+./list:4:223: warning: null character(s) ignored
+./list:4:227: warning: null character(s) ignored
+./list:4:231: warning: null character(s) ignored
+./list:4: error: stray '\7' in program
+./list:4:239: warning: null character(s) ignored
+./list:4: error: stray '\153' in program
+./list:4:243: warning: null character(s) ignored
+./list:4: error: stray '\29' in program
+./list:4:247: warning: null character(s) ignored
+./list:4:251: warning: null character(s) ignored
+./list:4:255: warning: null character(s) ignored
+./list:4: error: stray '\16' in program
+./list:4:259: warning: null character(s) ignored
+./list:4:275: warning: null character(s) ignored
+./list:4:283: warning: null character(s) ignored
+./list:4: error: stray '\140' in program
+./list:4:287: warning: null character(s) ignored
+./list:4: error: stray '\26' in program
+./list:4:291: warning: null character(s) ignored
+./list:4: error: stray '\134' in program
+./list:4:299: warning: null character(s) ignored
+./list:4:303: warning: null character(s) ignored
+./list:4:307: warning: null character(s) ignored
+./list:4: error: stray '\131' in program
+./list:4:315: warning: null character(s) ignored
+./list:4: error: stray '\154' in program
+./list:4:319: warning: null character(s) ignored
+./list:4:335: warning: null character(s) ignored
+./list:4:339: warning: null character(s) ignored
+./list:4: error: stray '\151' in program
+./list:4:347: warning: null character(s) ignored
+./list:4:351: warning: null character(s) ignored
+./list:4: error: stray '\147' in program
+./list:4:355: warning: null character(s) ignored
+./list:4: error: stray '\155' in program
+./list:4:359: warning: null character(s) ignored
+./list:4:371: warning: null character(s) ignored
+./list:4:375: warning: null character(s) ignored
+./list:4:383: warning: null character(s) ignored
+./list:4:387: warning: null character(s) ignored
+./list:4:391: warning: null character(s) ignored
+./list:5:1: warning: null character(s) ignored
+./list:5:13: warning: null character(s) ignored
+./list:5:17: warning: null character(s) ignored
+./list:5:21: warning: null character(s) ignored
+./list:5: error: stray '\145' in program
+./list:5:29: warning: null character(s) ignored
+./list:5: error: stray '\136' in program
+./list:5:37: warning: null character(s) ignored
+./list:5:41: warning: null character(s) ignored
+./list:5: error: stray '\31' in program
+./list:5:45: warning: null character(s) ignored
+./list:5:49: warning: null character(s) ignored
+./list:5:53: warning: null character(s) ignored
+./list:5:57: warning: null character(s) ignored
+./list:5: error: stray '\23' in program
+./list:5:61: warning: null character(s) ignored
+./list:5: error: stray '\127' in program
+./list:5:65: warning: null character(s) ignored
+./list:5: error: stray '\20' in program
+./list:5:73: warning: null character(s) ignored
+./list:5:77: warning: null character(s) ignored
+./list:5:81: warning: null character(s) ignored
+./list:5: error: stray '\149' in program
+./list:5:85: warning: null character(s) ignored
+./list:5: error: stray '\133' in program
+./list:5:109: warning: null character(s) ignored
+./list:5: error: stray '\156' in program
+./list:5:117: warning: null character(s) ignored
+./list:5: error: stray '\142' in program
+./list:5:121: warning: null character(s) ignored
+./list:5:125: warning: null character(s) ignored
+./list:5:129: warning: null character(s) ignored
+./list:5: error: stray '\146' in program
+./list:5:133: warning: null character(s) ignored
+./list:5:153: warning: null character(s) ignored
+./list:5: error: stray '\130' in program
+./list:5:165: warning: null character(s) ignored
+./list:5:169: warning: null character(s) ignored
+./list:5:177: warning: null character(s) ignored
+./list:5: error: stray '\150' in program
+./list:5:181: warning: null character(s) ignored
+./list:5: error: stray '\132' in program
+./list:5:189: warning: null character(s) ignored
+./list:5:193: warning: null character(s) ignored
+./list:5:201: warning: null character(s) ignored
+./list:5:213: warning: null character(s) ignored
+./list:5:217: warning: null character(s) ignored
+./list:5:225: warning: null character(s) ignored
+./list:5: error: stray '\152' in program
+./list:5:229: warning: null character(s) ignored
+./list:5: error: stray '\2' in program
+./list:5:313: warning: null character(s) ignored
+./list:5: error: stray '\4' in program
+./list:5:333: warning: null character(s) ignored
+./list:5: error: stray '\6' in program
+./list:5:349: warning: null character(s) ignored
+./list:5: error: stray '\25' in program
+./list:5:353: warning: null character(s) ignored
+./list:5: error: stray '\30' in program
+./list:5:385: warning: null character(s) ignored
+./list:5: error: stray '\28' in program
+./list:5:401: warning: null character(s) ignored
+./list:5:404: warning: null character(s) preserved in literal
+./list:5: error: missing terminating ' character
+./list:6:1: warning: null character(s) ignored
+./list:6:5: warning: null character(s) ignored
+./list:6: error: `R' does not name a type
+./list:6:13: warning: null character(s) ignored
+./list:6:17: warning: null character(s) ignored
+./list:6:25: warning: null character(s) ignored
+./list:6:29: warning: null character(s) ignored
+./list:6:33: warning: null character(s) ignored
+./list:6: error: stray '\19' in program
+./list:6:37: warning: null character(s) ignored
+./list:6:41: warning: null character(s) ignored
+./list:6:49: warning: null character(s) ignored
+./list:6:57: warning: null character(s) ignored
+./list:6:61: warning: null character(s) ignored
+./list:6:69: warning: null character(s) ignored
+./list:6:73: warning: null character(s) ignored
+./list:6:77: warning: null character(s) ignored
+./list:6:85: warning: null character(s) ignored
+./list:6:89: warning: null character(s) ignored
+./list:6: error: stray '\24' in program
+./list:6:97: warning: null character(s) ignored
+./list:6:101: warning: null character(s) ignored
+./list:6:105: warning: null character(s) ignored
+./list:6:109: warning: null character(s) ignored
+./list:6:117: warning: null character(s) ignored
+./list:6:133: warning: null character(s) ignored
+./list:6: error: stray '`' in program
+./list:6:137: warning: null character(s) ignored
+./list:6:149: warning: null character(s) ignored
+./list:6:153: warning: null character(s) ignored
+./list:6: error: invalid token
+./list:6:157: warning: null character(s) ignored
+./list:6:165: warning: null character(s) ignored
+./list:6:173: warning: null character(s) ignored
+./list:6:181: warning: null character(s) ignored
+./list:6: error: stray '\' in program
+./list:6:185: warning: null character(s) ignored
+./list:6:189: warning: null character(s) ignored
+./list:6: error: stray '\5' in program
+./list:6:193: warning: null character(s) ignored
+./list:6:201: warning: null character(s) ignored
+./list:6: error: stray '\129' in program
+./list:6:205: warning: null character(s) ignored
+./list:6: error: stray '\128' in program
+./list:6:209: warning: null character(s) ignored
+./list:6:213: warning: null character(s) ignored
+./list:6: error: stray '\138' in program
+./list:6:221: warning: null character(s) ignored
+./list:6:225: warning: null character(s) ignored
+./list:6:229: warning: null character(s) ignored
+./list:6:233: warning: null character(s) ignored
+./list:6:241: warning: null character(s) ignored
+./list:6:245: warning: null character(s) ignored
+./list:6: error: stray '\143' in program
+./list:6:257: warning: null character(s) ignored
+./list:6:265: warning: null character(s) ignored
+./list:6: error: stray '\144' in program
+./list:6:273: warning: null character(s) ignored
+./list:6: error: stray '\148' in program
+./list:6:281: warning: null character(s) ignored
+./list:6: error: stray '\7' in program
+./list:6:310: warning: null character(s) ignored
+./list:6: error: stray '\156' in program
+./list:6:317: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:321: warning: null character(s) ignored
+./list:6: error: stray '\2' in program
+./list:6:326: warning: null character(s) ignored
+./list:6:333: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:337: warning: null character(s) ignored
+./list:6: error: stray '\183' in program
+./list:6:341: warning: null character(s) ignored
+./list:6:349: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:353: warning: null character(s) ignored
+./list:6: error: stray '\243' in program
+./list:6: error: stray '\15' in program
+./list:6:358: warning: null character(s) ignored
+./list:6:365: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:369: warning: null character(s) ignored
+./list:6: error: stray '\220' in program
+./list:6:373: warning: null character(s) ignored
+./list:6:381: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:385: warning: null character(s) ignored
+./list:6: error: stray '\28' in program
+./list:6: error: stray '\5' in program
+./list:6:390: warning: null character(s) ignored
+./list:6: error: stray '\1' in program
+./list:6:398: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:401: warning: null character(s) ignored
+./list:6:405: warning: null character(s) ignored
+./list:6: error: stray '\166' in program
+./list:6: error: stray '\5' in program
+./list:6:414: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:417: warning: null character(s) ignored
+./list:6: error: stray '\14' in program
+./list:6:422: warning: null character(s) ignored
+./list:6: error: stray '\242' in program
+./list:6: error: stray '\1' in program
+./list:6:430: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:433: warning: null character(s) ignored
+./list:6: error: stray '\24' in program
+./list:6:437: warning: null character(s) ignored
+./list:6: error: stray '\1' in program
+./list:6:446: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:449: warning: null character(s) ignored
+./list:6: error: stray '\8' in program
+./list:6:454: warning: null character(s) ignored
+./list:6: error: stray '\8' in program
+./list:6: error: stray '\16' in program
+./list:6:461: warning: null character(s) ignored
+./list:6:465: warning: null character(s) ignored
+./list:6: error: stray '\24' in program
+./list:6:467: warning: null character(s) ignored
+./list:6: error: stray '\14' in program
+./list:6:470: warning: null character(s) ignored
+./list:6: error: stray '\198' in program
+./list:6: error: stray '\1' in program
+./list:6:478: warning: null character(s) ignored
+./list:6: error: stray '\18' in program
+./list:6:481: warning: null character(s) ignored
+./list:7:1: warning: null character(s) ignored
+./list:6: error: expected unqualified-id before '!' token
+./list:6: error: expected `,' or `;' before '!' token
+./list:7: error: stray '\8' in program
+./list:7: error: stray '\140' in program
+./list:7:8: warning: null character(s) ignored
+./list:7: error: stray '\17' in program
+./list:7:12: warning: null character(s) ignored
+./list:7: error: stray '\24' in program
+./list:7:14: warning: null character(s) ignored
+./list:7:16: warning: null character(s) ignored
+./list:7: error: `M' does not name a type
+./list:7:24: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:28: warning: null character(s) ignored
+./list:7: error: stray '\145' in program
+./list:7:32: warning: null character(s) ignored
+./list:7: error: stray '\158' in program
+./list:7:40: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:44: warning: null character(s) ignored
+./list:7: error: stray '\174' in program
+./list:7: error: stray '\8' in program
+./list:7:49: warning: null character(s) ignored
+./list:7: error: stray '\128' in program
+./list:7:56: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:60: warning: null character(s) ignored
+./list:7: error: stray '\19' in program
+./list:7:64: warning: null character(s) ignored
+./list:7: error: stray '\184' in program
+./list:7: error: stray '\8' in program
+./list:7:71: warning: null character(s) ignored
+./list:7: error: stray '\17' in program
+./list:7:76: warning: null character(s) ignored
+./list:7: error: stray '\241' in program
+./list:7: error: stray '\255' in program
+./list:7: error: stray '\194' in program
+./list:7: error: stray '\3' in program
+./list:7:81: warning: null character(s) ignored
+./list:7: error: stray '\200' in program
+./list:7: error: stray '\8' in program
+./list:7:88: warning: null character(s) ignored
+./list:7: error: expected unqualified-id before '!' token
+./list:7: error: expected `)' before '!' token
+./list:7: error: expected `,' or `;' before '!' token
+./list:7:92: warning: null character(s) ignored
+./list:7: error: stray '\24' in program
+./list:7:94: warning: null character(s) ignored
+./list:7: error: stray '\233' in program
+./list:7: error: stray '\5' in program
+./list:7:97: warning: null character(s) ignored
+./list:7: error: stray '\238' in program
+./list:7: error: stray '\1' in program
+./list:7:105: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:108: warning: null character(s) ignored
+./list:7: error: stray '\191' in program
+./list:7:112: warning: null character(s) ignored
+./list:7:120: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:124: warning: null character(s) ignored
+./list:7: error: stray '\1' in program
+./list:7:129: warning: null character(s) ignored
+./list:7: error: stray '\165' in program
+./list:7:136: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:140: warning: null character(s) ignored
+./list:7: error: stray '\212' in program
+./list:7: error: stray '\8' in program
+./list:7:145: warning: null character(s) ignored
+./list:7: error: stray '\' in program
+./list:7:152: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:156: warning: null character(s) ignored
+./list:7: error: stray '\186' in program
+./list:7: error: stray '\6' in program
+./list:7:161: warning: null character(s) ignored
+./list:7:168: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:172: warning: null character(s) ignored
+./list:7: error: stray '\235' in program
+./list:7: error: stray '\8' in program
+./list:7:177: warning: null character(s) ignored
+./list:7: error: stray '\162' in program
+./list:7:184: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:188: warning: null character(s) ignored
+./list:7: error: stray '\15' in program
+./list:7:193: warning: null character(s) ignored
+./list:7: error: stray '\130' in program
+./list:7:200: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:204: warning: null character(s) ignored
+./list:7: error: stray '\17' in program
+./list:7: error: stray '\4' in program
+./list:7:209: warning: null character(s) ignored
+./list:7: error: stray '\5' in program
+./list:7: error: stray '\1' in program
+./list:7:217: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:220: warning: null character(s) ignored
+./list:7: error: stray '\145' in program
+./list:7: error: stray '\15' in program
+./list:7:225: warning: null character(s) ignored
+./list:7: error: stray '\232' in program
+./list:7:232: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:236: warning: null character(s) ignored
+./list:7: error: stray '\215' in program
+./list:7:240: warning: null character(s) ignored
+./list:7: error: stray '\193' in program
+./list:7:248: warning: null character(s) ignored
+./list:7: error: stray '\18' in program
+./list:7:252: warning: null character(s) ignored
+./list:7: error: stray '\229' in program
+./list:7: error: stray '\4' in program
+./list:7:257: warning: null character(s) ignored
+./list:7: error: stray '\190' in program
+./list:7: error: stray '\4' in program
+./list:7: error: stray '\8' in program
+./list:7:264: warning: null character(s) ignored
+./list:7:267: warning: null character(s) preserved in literal
+./list:7: error: missing terminating " character
+./list:8: error: stray '\2' in program
+./list:8:2: warning: null character(s) ignored
+./list:8: error: stray '\18' in program
+./list:8:5: warning: null character(s) ignored
+./list:8: error: stray '\15' in program
+./list:8:10: warning: null character(s) ignored
+./list:8: error: invalid token
+./list:8: error: stray '\2' in program
+./list:8:18: warning: null character(s) ignored
+./list:8: error: stray '\18' in program
+./list:8:21: warning: null character(s) ignored
+./list:8: error: stray '\31' in program
+./list:8:25: warning: null character(s) ignored
+./list:8: error: stray '\217' in program
+./list:8:33: warning: null character(s) ignored
+./list:8: error: stray '\18' in program
+./list:8:37: warning: null character(s) ignored
+./list:8: error: stray '\207' in program
+./list:8:41: warning: null character(s) ignored
+./list:8: error: stray '\173' in program
+./list:8: error: stray '\1' in program
+./list:8:50: warning: null character(s) ignored
+./list:8: error: stray '\18' in program
+./list:8:53: warning: null character(s) ignored
+./list:8: error: stray '\159' in program
+./list:8: error: stray '\15' in program
+./list:8:58: warning: null character(s) ignored
+./list:8:65: warning: null character(s) ignored
+./list:8: error: stray '\18' in program
+./list:8:69: warning: null character(s) ignored
+./list:8: error: stray '\153' in program
+./list:9:1: warning: null character(s) ignored
+./list:9: error: stray '\3' in program
+./list:9:9: warning: null character(s) ignored
+./list:9: error: stray '\18' in program
+./list:9:12: warning: null character(s) ignored
+./list:9: error: stray '\245' in program
+./list:10:1: warning: null character(s) ignored
+./list:10: error: stray '\240' in program
+./list:10: error: stray '\8' in program
+./list:10:8: warning: null character(s) ignored
+./list:10: error: expected unqualified-id before ',' token
+./list:10: error: expected unqualified-id before '!' token
+./list:10: error: expected `,' or `;' before '!' token
+./list:10:12: warning: null character(s) ignored
+./list:10: error: stray '\24' in program
+./list:10:14: warning: null character(s) ignored
+./list:10: error: stray '\188' in program
+./list:10: error: stray '\2' in program
+./list:10:17: warning: null character(s) ignored
+./list:10: error: stray '\197' in program
+./list:10: error: stray '\1' in program
+./list:10:25: warning: null character(s) ignored
+./list:10: error: stray '\18' in program
+./list:10:28: warning: null character(s) ignored
+./list:10: error: stray '\194' in program
+./list:10: error: stray '\7' in program
+./list:10:33: warning: null character(s) ignored
+./list:10: error: stray '\19' in program
+./list:10: error: stray '\3' in program
+./list:10:41: warning: null character(s) ignored
+./list:10: error: stray '\18' in program
+./list:10:44: warning: null character(s) ignored
+./list:10: error: stray '\4' in program
+./list:10:49: warning: null character(s) ignored
+./list:10: error: stray '\8' in program
+./list:10: error: stray '\140' in program
+./list:10:56: warning: null character(s) ignored
+./list:10: error: stray '\17' in program
+./list:10:60: warning: null character(s) ignored
+./list:10: error: stray '\24' in program
+./list:10:62: warning: null character(s) ignored
+./list:10: error: stray '\28' in program
+./list:10:64: warning: null character(s) ignored
+./list:10: error: stray '`' in program
+./list:10: error: stray '\166' in program
+./list:10: error: stray '\4' in program
+./list:10: error: stray '\8' in program
+./list:10:71: warning: null character(s) ignored
+./list:10: error: stray '\18' in program
+./list:10:76: warning: null character(s) ignored
+./list:11:1: warning: null character(s) ignored
+./list:11: error: stray '\178' in program
+./list:11: error: stray '\7' in program
+./list:11:4: warning: null character(s) ignored
+./list:11: error: stray '\211' in program
+./list:11:11: warning: null character(s) ignored
+./list:11: error: stray '\18' in program
+./list:11:15: warning: null character(s) ignored
+./list:11:18: warning: null character(s) preserved in literal
+./list:11: error: missing terminating ' character
+./list:12:1: warning: null character(s) ignored
+./list:12: error: stray '\238' in program
+./list:12: error: stray '\1' in program
+./list:12:9: warning: null character(s) ignored
+./list:12: error: stray '\18' in program
+./list:12:12: warning: null character(s) ignored
+./list:13:1: warning: null character(s) ignored
+./list:13: error: stray '\210' in program
+./list:13:8: warning: null character(s) ignored
+./list:13: error: stray '\18' in program
+./list:13:12: warning: null character(s) ignored
+./list:13: error: stray '\156' in program
+./list:13: error: stray '\6' in program
+./list:13:17: warning: null character(s) ignored
+./list:13: error: stray '\169' in program
+./list:13: error: stray '\4' in program
+./list:13: error: stray '\8' in program
+./list:13:24: warning: null character(s) ignored
+./list:13: error: stray '\18' in program
+./list:13:28: warning: null character(s) ignored
+./list:13: error: stray '\6' in program
+./list:13:33: warning: null character(s) ignored
+./list:13: error: stray '\240' in program
+./list:13: error: stray '\8' in program
+./list:13: error: stray '\16' in program
+./list:13:40: warning: null character(s) ignored
+./list:13:44: warning: null character(s) ignored
+./list:13: error: stray '\24' in program
+./list:13:46: warning: null character(s) ignored
+./list:13: error: stray '\255' in program
+./list:13:48: warning: null character(s) ignored
+./list:13: error: stray '\237' in program
+./list:13:56: warning: null character(s) ignored
+./list:13: error: stray '\18' in program
+./list:13:60: warning: null character(s) ignored
+./list:14: error: stray '\8' in program
+./list:14:2: warning: null character(s) ignored
+./list:14: error: stray '\224' in program
+./list:14: error: stray '\6' in program
+./list:14: error: stray '\8' in program
+./list:14:9: warning: null character(s) ignored
+./list:14:12: warning: null character(s) preserved in literal
+./list:14: error: missing terminating " character
+./list:15:1: warning: null character(s) ignored
+./list:15: error: stray '\8' in program
+./list:15:8: warning: null character(s) ignored
+./list:15:12: warning: null character(s) ignored
+./list:15: error: stray '\24' in program
+./list:15:14: warning: null character(s) ignored
+./list:15: error: stray '\228' in program
+./list:15: error: stray '\15' in program
+./list:15:17: warning: null character(s) ignored
+./list:15: error: stray '\187' in program
+./list:15:24: warning: null character(s) ignored
+./list:15: error: stray '\18' in program
+./list:15:28: warning: null character(s) ignored
+./list:15: error: stray '\178' in program
+./list:15: error: stray '\2' in program
+./list:15:33: warning: null character(s) ignored
+./list:15:40: warning: null character(s) ignored
+./list:15: error: stray '\18' in program
+./list:15:44: warning: null character(s) ignored
+./list:15: error: stray '\1' in program
+./list:15:49: warning: null character(s) ignored
+./list:15: error: stray '\8' in program
+./list:15: error: stray '\16' in program
+./list:15:56: warning: null character(s) ignored
+./list:15:60: warning: null character(s) ignored
+./list:15: error: stray '\24' in program
+./list:15:62: warning: null character(s) ignored
+./list:15: error: stray '\224' in program
+./list:15:64: warning: null character(s) ignored
+./list:15: error: stray '\187' in program
+./list:15:72: warning: null character(s) ignored
+./list:15: error: stray '\18' in program
+./list:15:76: warning: null character(s) ignored
+./list:15: error: stray '\4' in program
+./list:15:81: warning: null character(s) ignored
+./list:15: error: stray '\145' in program
+./list:15:88: warning: null character(s) ignored
+./list:15: error: stray '\18' in program
+./list:15:92: warning: null character(s) ignored
+./list:15: error: stray '\236' in program
+./list:16:1: warning: null character(s) ignored
+./list:16: error: stray '\8' in program
+./list:16: error: stray '\144' in program
+./list:16:8: warning: null character(s) ignored
+./list:16: error: stray '\17' in program
+./list:16:12: warning: null character(s) ignored
+./list:16: error: stray '\24' in program
+./list:16:14: warning: null character(s) ignored
+./list:16: error: stray '\173' in program
+./list:16: error: stray '\6' in program
+./list:16:17: warning: null character(s) ignored
+./list:16: error: stray '\223' in program
+./list:16:24: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:28: warning: null character(s) ignored
+./list:16: error: stray '\4' in program
+./list:16:33: warning: null character(s) ignored
+./list:16: error: stray '\1' in program
+./list:16:41: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:44: warning: null character(s) ignored
+./list:16: error: stray '\237' in program
+./list:16:48: warning: null character(s) ignored
+./list:16: error: stray '\179' in program
+./list:16:56: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:60: warning: null character(s) ignored
+./list:16: error: stray '\179' in program
+./list:16: error: stray '\5' in program
+./list:16:65: warning: null character(s) ignored
+./list:16: error: stray '\248' in program
+./list:16: error: stray '\8' in program
+./list:16: error: stray '\16' in program
+./list:16:72: warning: null character(s) ignored
+./list:16:76: warning: null character(s) ignored
+./list:16: error: stray '\24' in program
+./list:16:78: warning: null character(s) ignored
+./list:16: error: stray '\1' in program
+./list:16:81: warning: null character(s) ignored
+./list:16:88: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:92: warning: null character(s) ignored
+./list:16: error: stray '\15' in program
+./list:16:97: warning: null character(s) ignored
+./list:16:104: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:108: warning: null character(s) ignored
+./list:16: error: stray '\146' in program
+./list:16: error: stray '\3' in program
+./list:16:113: warning: null character(s) ignored
+./list:16:120: warning: null character(s) ignored
+./list:16: error: stray '\18' in program
+./list:16:124: warning: null character(s) ignored
+./list:16: error: stray '\134' in program
+./list:17:1: warning: null character(s) ignored
+./list:17:8: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:12: warning: null character(s) ignored
+./list:17: error: stray '\16' in program
+./list:17:17: warning: null character(s) ignored
+./list:17: error: stray '\8' in program
+./list:17:23: warning: null character(s) ignored
+./list:17: error: stray '\16' in program
+./list:17:28: warning: null character(s) ignored
+./list:17: error: stray '\241' in program
+./list:17: error: stray '\255' in program
+./list:17:31: warning: null character(s) ignored
+./list:17: error: stray '\142' in program
+./list:17: error: stray '\1' in program
+./list:17:41: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:44: warning: null character(s) ignored
+./list:17: error: stray '\210' in program
+./list:17: error: stray '\15' in program
+./list:17:49: warning: null character(s) ignored
+./list:17: error: stray '\219' in program
+./list:17:56: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:60: warning: null character(s) ignored
+./list:17: error: stray '\243' in program
+./list:17: error: stray '\5' in program
+./list:17:65: warning: null character(s) ignored
+./list:17: error: stray '\1' in program
+./list:17:73: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:76: warning: null character(s) ignored
+./list:17: error: stray '\219' in program
+./list:17:80: warning: null character(s) ignored
+./list:17: error: `B' does not name a type
+./list:17:88: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:92: warning: null character(s) ignored
+./list:17: error: stray '\5' in program
+./list:17: error: stray '\15' in program
+./list:17:97: warning: null character(s) ignored
+./list:17:104: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:108: warning: null character(s) ignored
+./list:17: error: stray '\15' in program
+./list:17:113: warning: null character(s) ignored
+./list:17: error: stray '\189' in program
+./list:17:120: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:124: warning: null character(s) ignored
+./list:17: error: stray '\8' in program
+./list:17:129: warning: null character(s) ignored
+./list:17: error: stray '\1' in program
+./list:17:137: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:140: warning: null character(s) ignored
+./list:17: error: stray '\235' in program
+./list:17: error: stray '\15' in program
+./list:17:145: warning: null character(s) ignored
+./list:17:152: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:156: warning: null character(s) ignored
+./list:17: error: invalid token
+./list:17: error: stray '\15' in program
+./list:17:161: warning: null character(s) ignored
+./list:17: error: stray '\218' in program
+./list:17:168: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:172: warning: null character(s) ignored
+./list:17: error: stray '\15' in program
+./list:17:177: warning: null character(s) ignored
+./list:17:184: warning: null character(s) ignored
+./list:17: error: stray '\18' in program
+./list:17:188: warning: null character(s) ignored
+./list:17: error: stray '\21' in program
+./list:18:1: warning: null character(s) ignored
+./list:18: error: stray '\162' in program
+./list:18:8: warning: null character(s) ignored
+./list:18: error: stray '\18' in program
+./list:18:12: warning: null character(s) ignored
+./list:18: error: stray '\173' in program
+./list:18:16: warning: null character(s) ignored
+./list:18: error: stray '\8' in program
+./list:18: error: stray '\8' in program
+./list:18:24: warning: null character(s) ignored
+./list:18: error: stray '@' in program
+./list:18:28: warning: null character(s) ignored
+./list:18: error: stray '\24' in program
+./list:18:30: warning: null character(s) ignored
+./list:18: error: stray '\218' in program
+./list:18:32: warning: null character(s) ignored
+./list:18: error: stray '\143' in program
+./list:18:40: warning: null character(s) ignored
+./list:18: error: stray '\18' in program
+./list:18:44: warning: null character(s) ignored
+./list:18: error: stray '\23' in program
+./list:19:1: warning: null character(s) ignored
+./list:19: error: stray '\1' in program
+./list:19:9: warning: null character(s) ignored
+./list:19: error: stray '\18' in program
+./list:19:12: warning: null character(s) ignored
+./list:19:15: warning: null character(s) preserved in literal
+./list:19: error: missing terminating " character
+./list:20: error: stray '\8' in program
+./list:20:2: warning: null character(s) ignored
+./list:20: error: stray '\18' in program
+./list:20:7: warning: null character(s) ignored
+./list:21:1: warning: null character(s) ignored
+./list:21: error: stray '\152' in program
+./list:21: error: stray '\15' in program
+./list:21:4: warning: null character(s) ignored
+./list:21:11: warning: null character(s) ignored
+./list:21: error: stray '\18' in program
+./list:21:15: warning: null character(s) ignored
+./list:21: error: stray '\15' in program
+./list:21:20: warning: null character(s) ignored
+./list:21:27: warning: null character(s) ignored
+./list:21: error: stray '\18' in program
+./list:21:31: warning: null character(s) ignored
+./list:21: error: stray '\230' in program
+./list:21:35: warning: null character(s) ignored
+./list:21: error: invalid token
+./list:21:43: warning: null character(s) ignored
+./list:21: error: stray '\18' in program
+./list:21:47: warning: null character(s) ignored
+./list:21: error: stray '\6' in program
+./list:21:52: warning: null character(s) ignored
+./list:21: error: stray '\8' in program
+./list:21:59: warning: null character(s) ignored
+./list:21:63: warning: null character(s) ignored
+./list:21: error: stray '\24' in program
+./list:21:65: warning: null character(s) ignored
+./list:21: error: stray '\146' in program
+./list:21: error: stray '\2' in program
+./list:21:68: warning: null character(s) ignored
+./list:21: error: stray '\231' in program
+./list:21:75: warning: null character(s) ignored
+./list:21: error: stray '\18' in program
+./list:21:79: warning: null character(s) ignored
+./list:21: error: stray '\156' in program
+./list:22:1: warning: null character(s) ignored
+./list:22:8: warning: null character(s) ignored
+./list:22: error: stray '\18' in program
+./list:22:12: warning: null character(s) ignored
+./list:23:1: warning: null character(s) ignored
+./list:23: error: stray '\1' in program
+./list:23:9: warning: null character(s) ignored
+./list:23: error: stray '\18' in program
+./list:23:12: warning: null character(s) ignored
+./list:23: error: stray '\160' in program
+./list:23: error: stray '\2' in program
+./list:23:17: warning: null character(s) ignored
+./list:23:24: warning: null character(s) ignored
+./list:23: error: stray '\18' in program
+./list:23:28: warning: null character(s) ignored
+./list:23: error: stray '\3' in program
+./list:23:33: warning: null character(s) ignored
+./list:23: error: stray '\238' in program
+./list:23: error: stray '\1' in program
+./list:23:41: warning: null character(s) ignored
+./list:23: error: stray '\18' in program
+./list:23:44: warning: null character(s) ignored
+./list:23: error: stray '\25' in program
+./list:23: error: stray '\15' in program
+./list:23:49: warning: null character(s) ignored
+./list:23:56: warning: null character(s) ignored
+./list:23: error: stray '\18' in program
+./list:23:60: warning: null character(s) ignored
+./list:23: error: stray '\149' in program
+./list:23: error: stray '\8' in program
+./list:23:65: warning: null character(s) ignored
+./list:23: error: stray '\8' in program
+./list:23: error: stray '\4' in program
+./list:23:72: warning: null character(s) ignored
+./list:23:76: warning: null character(s) ignored
+./list:23: error: stray '\24' in program
+./list:23:78: warning: null character(s) ignored
+./list:23: error: stray '\131' in program
+./list:23: error: stray '\4' in program
+./list:23:81: warning: null character(s) ignored
+./list:23: error: stray '\2' in program
+./list:23:89: warning: null character(s) ignored
+./list:23: error: stray '\18' in program
+./list:23:92: warning: null character(s) ignored
+./list:23:96: warning: null character(s) ignored
+./list:23: error: stray '\208' in program
+./list:23: error: stray '\191' in program
+./list:23: error: stray '\4' in program
+./list:23: error: stray '\8' in program
+./list:23: error: expected unqualified-id before '.' token
+./list:23: error: expected `,' or `;' before '.' token
+./list:23:104: warning: null character(s) ignored
+./list:23:107: warning: null character(s) preserved in literal
+./list:23: error: missing terminating " character
+./list:24:1: warning: null character(s) ignored
+./list:24:8: warning: null character(s) ignored
+./list:24: error: stray '\18' in program
+./list:24:12: warning: null character(s) ignored
+./list:24: error: stray '\222' in program
+./list:24: error: stray '\8' in program
+./list:24:17: warning: null character(s) ignored
+./list:24: error: stray '\145' in program
+./list:24:24: warning: null character(s) ignored
+./list:24: error: stray '\18' in program
+./list:24:28: warning: null character(s) ignored
+./list:24: error: stray '\4' in program
+./list:24:33: warning: null character(s) ignored
+./list:24: error: stray '\1' in program
+./list:24:41: warning: null character(s) ignored
+./list:24: error: stray '\18' in program
+./list:24:44: warning: null character(s) ignored
+./list:24: error: stray '\6' in program
+./list:24:49: warning: null character(s) ignored
+./list:24: error: stray '\1' in program
+./list:24:57: warning: null character(s) ignored
+./list:24: error: stray '\18' in program
+./list:24:60: warning: null character(s) ignored
+./list:24: error: stray '\203' in program
+./list:24: error: stray '\15' in program
+./list:24:65: warning: null character(s) ignored
+./list:24:71: warning: null character(s) preserved in literal
+./list:24: error: missing terminating ' character
+./list:25:1: warning: null character(s) ignored
+./list:25:8: warning: null character(s) ignored
+./list:25: error: stray '\18' in program
+./list:25:12: warning: null character(s) ignored
+./list:25: error: stray '\226' in program
+./list:26:1: warning: null character(s) ignored
+./list:26: error: stray '\1' in program
+./list:26:9: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:12: warning: null character(s) ignored
+./list:26: error: stray '\185' in program
+./list:26: error: stray '\4' in program
+./list:26:17: warning: null character(s) ignored
+./list:26: error: stray '\152' in program
+./list:26: error: stray '\8' in program
+./list:26:24: warning: null character(s) ignored
+./list:26:28: warning: null character(s) ignored
+./list:26: error: stray '\24' in program
+./list:26:30: warning: null character(s) ignored
+./list:26: error: stray '\1' in program
+./list:26:33: warning: null character(s) ignored
+./list:26: error: stray '\1' in program
+./list:26:41: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:44: warning: null character(s) ignored
+./list:26: error: stray '\234' in program
+./list:26: error: stray '\2' in program
+./list:26:49: warning: null character(s) ignored
+./list:26: error: stray '\219' in program
+./list:26:56: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:60: warning: null character(s) ignored
+./list:26:64: warning: null character(s) ignored
+./list:26: error: stray '\192' in program
+./list:26: error: stray '\8' in program
+./list:26: error: stray '\1' in program
+./list:26:72: warning: null character(s) ignored
+./list:26: error: stray '\17' in program
+./list:26:76: warning: null character(s) ignored
+./list:26: error: stray '\24' in program
+./list:26:78: warning: null character(s) ignored
+./list:26: error: stray '\3' in program
+./list:26:81: warning: null character(s) ignored
+./list:26: error: stray '\15' in program
+./list:26:88: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:92: warning: null character(s) ignored
+./list:26: error: stray '\3' in program
+./list:26:97: warning: null character(s) ignored
+./list:26: error: stray '\200' in program
+./list:26: error: stray '\8' in program
+./list:26:104: warning: null character(s) ignored
+./list:26: error: stray '@' in program
+./list:26:108: warning: null character(s) ignored
+./list:26: error: stray '\24' in program
+./list:26:110: warning: null character(s) ignored
+./list:26: error: stray '\144' in program
+./list:26: error: stray '\1' in program
+./list:26:113: warning: null character(s) ignored
+./list:26:120: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:124: warning: null character(s) ignored
+./list:26: error: stray '\15' in program
+./list:26:129: warning: null character(s) ignored
+./list:26: error: stray '\184' in program
+./list:26:136: warning: null character(s) ignored
+./list:26: error: stray '\18' in program
+./list:26:140: warning: null character(s) ignored
+./list:27:1: warning: null character(s) ignored
+./list:27: error: stray '\8' in program
+./list:27: error: stray '\8' in program
+./list:27:8: warning: null character(s) ignored
+./list:27:12: warning: null character(s) ignored
+./list:27: error: stray '\24' in program
+./list:27:14: warning: null character(s) ignored
+./list:27: error: stray '\7' in program
+./list:27:17: warning: null character(s) ignored
+./list:27: error: stray '\205' in program
+./list:27: error: stray '\2' in program
+./list:27:25: warning: null character(s) ignored
+./list:27: error: stray '\18' in program
+./list:27:28: warning: null character(s) ignored
+./list:27: error: stray '\188' in program
+./list:27: error: stray '\15' in program
+./list:27:33: warning: null character(s) ignored
+./list:27: error: stray '\18' in program
+./list:28: error: stray '\8' in program
+./list:28: error: stray '\4' in program
+./list:28:3: warning: null character(s) ignored
+./list:28: error: stray '\17' in program
+./list:28:7: warning: null character(s) ignored
+./list:28: error: stray '\14' in program
+./list:28:9: warning: null character(s) ignored
+./list:29:1: warning: null character(s) ignored
+./list:29:8: warning: null character(s) ignored
+./list:29: error: stray '\18' in program
+./list:29:12: warning: null character(s) ignored
+./list:29: error: stray '\147' in program
+./list:29:16: warning: null character(s) ignored
+./list:29: error: stray '\216' in program
+./list:29:24: warning: null character(s) ignored
+./list:29: error: stray '\18' in program
+./list:29:28: warning: null character(s) ignored
+./list:29:32: warning: null character(s) ignored
+./list:29:40: warning: null character(s) ignored
+./list:29: error: stray '\18' in program
+./list:29:44: warning: null character(s) ignored
+./list:29: error: stray '\200' in program
+./list:29:48: warning: null character(s) ignored
+./list:29:56: warning: null character(s) ignored
+./list:29: error: stray '\18' in program
+./list:29:60: warning: null character(s) ignored
+./list:29: error: expected declaration before '}' token
+In file included from shifter.cc:137:
+/home/phsaap/software/include/subs.h:1:1: unterminated #ifndef
+make[1]: *** [shifter.o] Error 1
+make[1]: Leaving directory `/home/phsaap/code/C++/ultracam/src'
+make: *** [all-recursive] Error 1

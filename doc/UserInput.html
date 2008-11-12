@@ -1,0 +1,165 @@
+<html>
+<head>
+<title>ULTRACAM software user input</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>User input to the ULTRACAM pipeline software</h1>
+
+<p>
+User input to the programs is via the command line and/or prompts. I have
+designed it to be similar in flavour to the ADAM parameter system used
+in STARLINK code (e.g. KAPPA, FIGARO etc), although the implementation is pure 
+C++ and there are some differences. It has some features that the Starlink input
+doesn't have, and vice versa, there are some which Starlink has but this does not.
+    
+<p>
+For example, you can invoke a program just by typing its name, e.g. 'sub'. You
+will not get a standard UNIX style 'usage: ...' message, but you will instead be
+prompted for the first argument, then the second, etc. This is helpful when first
+using a program, but can get irritating as you rise to guru status, so you can instead type 
+the whole lot on the command line, e.g. 
+<p>
+<pre>
+sub run003 bias run003
+</pre>
+
+<p>
+In this case the program identifies the arguments by position, but if you are not
+sure of the positions, you can name some or all of them as follows:
+<p>
+<pre>
+sub run003 input2=bias output=run003
+</pre>
+or perhaps as
+<pre>
+sub run003 output=run003 input2=bias
+</pre>
+because the order of named parameters does not matter. You name as few or as many of the parameters as you
+like; you will be prompted for any that you do not name.
+
+<p>
+If you want to specify a parameter with a space such as title="A plot", you should enclose
+the string in quotes.
+
+
+<h3>Default flag</h3>
+
+<p>
+The default is '\' which you need to type as '\\' on the UNIX command line because
+of the special meaning of '\'. The default flag means "assume the default for this
+parameter and any others not explicitly specified". Thus
+<p>
+<strong>sub \\ input2=bias </strong>
+<p>
+takes default values for the first and third parameters, but explicitly sets the second.
+
+<p>
+<h3>Default saving</h3>
+
+<p>
+An important feature of the input system is that at the end of the program, whatever
+values you have input are saved as defaults for the next time in special files. This
+can save a great deal of typing. Some are kept as 'global' defaults that apply to all
+programs which use the same input name. Others are 'local' and apply to the particular
+program in question and none other. You do not need to know which is which, but knowing
+this should let you know why some defaults change and others don't. To avoid simultaneous
+implemetations of the software from interfering, you can re-direct the standard directory
+for storage of the defaults by setting the environment variable <strong>ULTRACAM_ENV</strong>
+to point somewhere else. Sometimes everything may get horribly corrupted (e.g. you manage
+to hit ctrl-C just as the default files are being written), in which case
+you might want to delete the default files and start from scratch. You will either find
+them in the directory pointed at by ULTRACAM_DIR, or, if this is not set, in $HOME/.ultracam.
+An alternative which may be more convenient is to specify <strong>nodefs</strong> on the command 
+line which ensures that no attempt to access the default files will be made at all. This is 
+very useful in batch processing where one typically specifies all arguments on the command line and might
+want to run multiple non-interfering jobs at the same time. Of course in this case, you do not
+get defaults set from previous runs of the command but just the initial "first time" defaults that
+the programm themselves generate, and so you may need to set many parameters explicitly.
+
+<h3>Prompted vs unprompted inputs</h3>
+
+<p>
+Not all inputs are prompted for. In particular parameters that rarely change or have values that 
+you would not normally want to alter are often hidden to save lots of unnecessary prompting.
+For instance the plot device tends to stay the same most of the time and so is not prompted for 
+by default. If you know the name of such a variable (they are listed between square brackets on
+the web pages) you can always specify it on the command line by name: 'device=/xs' for example. 
+Alternatively, to force all variables to be prompted, specify <strong>prompt</strong> on the command line,
+e.g. 'sub prompt'.
+
+<p>
+You can also force a program to list all its inputs using the special keyword <strong>list</strong>.
+
+<p>
+The special parameters, <strong>list</strong>, <strong>prompt</strong> and <strong>nodefs</strong> can be specified for any
+command. Note that unlike ADAM input, other yes/no type variables <strong>cannot be specified just by
+their name</strong>. You have to type 'plot=no' for example, not 'noplot'. They are just like
+other parameters in fact, except that the only values you can specify are 'y', 'yes', 'true',
+or 'n', 'no', 'false'.
+
+<p>
+<h3>Range-checking and how to override it</h3>
+
+<p>
+Input of floats, doubles, ints etc is always checked against an
+allowable range. In some cases this covers the entire possible range
+for that data type, but sometimes the range is just set to "reasonable"
+values. You can set the value to the ends of the range by typing 'min' or 'max'. Mostly these ranges are
+set to prevent silly input, but in some cases they are for
+convenience, in particular for the plot limits which by default just
+cover the full CCD. You may have a reason for wanting to override the
+range-checking, which you can do by starting your input with '>>'. So
+'>>-100' could set the left plot limit to -100 even though the minimum
+value was in fact set to 0.5. A '?' for one of these parameters will
+produce a print out of the allowable range if you are struggling. If
+you enter a value out-of-range without the forcing flag '>>', the program will be aborted.
+
+<p>
+The one other data type that is checked as character data as in single letters,
+which are compared against a list of possibilities. The allowed values can be listed
+by typing '?'. In most cases you will see letters repeated in lower and upper-case;
+this is to give case insensitive testing while allowing for case-sensitivity in
+general.
+
+<p>
+<h3>Listing the defaults</h3>
+
+<p>
+The command <a href="vshow.html">vshow</a> can be used to show what the current defaults
+are for a command, or globally if you sepcify the file GLOBAL. This may be useful on
+occasion if you are struggling to work out what is happening.
+
+<p>
+<h3>Using variables set in one program as the input for another</h3>
+
+<p>
+There is potential to save values computed in one program and retrieve them
+in another. This uses the global default file. Let's say one routine saves a value
+to a variable call 'mean_value'. Then a command such as 
+<pre>
+cdiv image @mean_value image
+</pre>
+will divide image by that value. Starlink afficianados will recognize this as 
+a slightly less flexible version of the Starlink equivalent. Nevertheless it 
+could be useful. 
+
+<p>
+<h3>Running ultracam in batch</h3>
+
+The ultracam pipeline commands can be run in batch like any other commands. 
+You do however need to watch out for possible conflicts with interactive sessions of the pipeline or other batch sessions because
+there could be problems accessing the default storage files. To avoid this it is sensible in long running scripts
+especially to re-define the enviroment variable ULTRACAM_ENV which points to the defualt directory, as in 
+<pre>
+setenv ULTRACAM_ENV defaults
+</pre>
+Without this being set, the pipeline uses a standard directory $HOME/.ultracm and multiple sessions could
+result in problems.
+
+<p>
+<address>
+Tom Marsh, Warwick
+</address> 
+</body>
+</html>

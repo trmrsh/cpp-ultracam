@@ -1,0 +1,3155 @@
+<html>
+<head>
+<title>ULTRACAM software change log</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>ULTRACAM software change log</h1>
+
+<p>
+This file to records changes to the ULTRACAM pipeline software. Each
+entry has a date, a list of affected components and comments.  Look
+here to see what might have changed since your version of the
+software.
+
+<p>
+<table>
+
+<tr valign="top"><td><strong>
+07/11/08
+</strong></td><td><i>
+rtplot.cc<br>
+<font color="red">Version 8.1.16</font>
+</i></td><td>
+Bug fixes to make rtplot cope with non-ULTRACAM data better, e.g. so that
+it can plot 'RISE' data. At the same time I fixed a couple of long-standing 
+minor issues with it.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/11/08
+</strong></td><td><i>
+<font color="red">Version 8.1.15</font>
+</i></td><td>
+A release that I hope will fix bad_alloc problems.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/08/08
+</strong></td><td><i>
+check_for_bad_data.csh<br>
+<font color="red">Version 8.1.14</font>
+</i></td><td>
+New shell script to check for the bad data problem when all ULTRACAM CCDs go
+high.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/08/08
+</strong></td><td><i>
+reduce.cc<br>
+light_plot.c<br>
+<font color="red">Version 8.1.13</font>
+</i></td><td>
+Removed colour reversal; don't like it.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/08/08
+</strong></td><td><i>
+get_server_frame.cc<br>
+<font color="red">Version 8.1.12</font>
+</i></td><td>
+Seg fault occured after 4 GB on large files, so now have to re-initialize
+curl each call to get_server_frame rather than letting it persist. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/07/08
+</strong></td><td><i>
+reduce.cc<br>
+light_plot.cc
+</i></td><td>
+Reversed colours on plots. Not sure its any better to be honest.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/07/08
+</strong></td><td><i>
+shifter.cc<br>
+<font color="red">Version 8.1.11</font>
+</i></td><td>
+Small bug fix for shifter
+</td></tr>
+
+<tr valign="top"><td><strong>
+24/04/08
+</strong></td><td><i>
+configure.ac<br>
+Makefile.am<br>
+<font color="red">Version 8.1.10</font>
+</i></td><td>
+Installation now builds a shareable library to cut down on the excessive space
+allocated to exectutables. This saves almost 200MB.
+</td></tr>
+
+<tr valign="top"><td><strong>
+31/01/08
+</strong></td><td><i>
+parseXML.cc<br>
+<font color="red">Version 8.1.9</font>
+</i></td><td>
+Attempt to fix a problem with xstart > 1
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/01/08
+</strong></td><td><i>
+grab2fits.cc<br>
+parseXML.cc<br>
+<font color="red">Version 8.1.8</font>
+</i></td><td>
+Problem with pointer deallocation caused this program to crash on Vik.
+Also spotted an uninitialised variable in parseXML
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/01/08
+</strong></td><td><i>
+gettime.cc
+<font color="red">Version 8.1.7</font>
+</i></td><td>
+Another tweak to this routine to get it to give a cycle time estimate even when
+no GPS
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/01/08
+</strong></td><td><i>
+get_server_frame.cc<br>
+gettime.cc
+<font color="red">Version 8.1.6</font>
+</i></td><td>
+More bug fixes to account for new server.
+</td></tr>
+
+<tr valign="top"><td><strong>
+25/01/08
+</strong></td><td><i>
+grab2fits.cc<br>
+<font color="red">Version 8.1.5</font>
+</i></td><td>
+Bug in grab2fits.cc encountered by vik.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/01/08
+</strong></td><td><i>
+configure.ac<br>
+folder.cc<br>
+<font color="red">Version 8.1.4</font>
+</i></td><td>
+Removed SOFA library from subs, updated for revised time/position routines.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/11/07
+</strong></td><td><i>
+grab2fits.cc
+</i></td><td>
+Brought into line with grab and ucm2fits
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/11/07
+</strong></td><td><i>
+parseXML.cc<br>
+<font color="red">Version 8.1.3</font>
+</i></td><td>
+parseXML was not picking up the version of the XML properly so the pixel
+binnin bug correction was being made incorrectly.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/11/07
+</strong></td><td><i>
+grab.cc<br>
+reduce.cc<br>
+dsub.cc<br>
+bsub.cc
+</i></td><td>
+Corrections for the possibility that the bias frame has a significant exposure
+time that must be accounted for when subtracting dark frames. Accomplished by
+storing the exposure time of the bias used for the dark and the data. 'bsub'
+is a new command to replace 'msub' for bias subtraction.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/11/07
+</strong></td><td><i>
+ucm2fits.cc
+</i></td><td>
+Hope this the final update to this. Now displays OK with ds9.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/11/07
+</strong></td><td><i>
+ucm2fits.cc
+</i></td><td>
+Upgrade to pass through the ULTRACAM headers as a FITS table
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/11/07
+</strong></td><td><i>
+shifter.cc
+</i></td><td>
+More upgrade to include timing and FWHM information in the final output file
+generated by shifter.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/11/07
+</strong></td><td><i>
+shifter.cc
+</i></td><td>
+Upgrade to account for the NBLUE option.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/11/07
+</strong></td><td><i>
+gettime.cc
+</i></td><td>
+Upgrade to allow for initial bad times. Now searches forward for a good time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/07/07
+</strong></td><td><i>
+read_header.cc<br>
+reduce.cc<br>
+<font color="red">Version 8.1.2</font>
+</i></td><td>
+Bug fix resulting from the u-coadd option; was getting the exposure times
+incorrect for the blue frames when the co-add option was in place.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/07/07
+</strong></td><td><i>
+fits2ucm.cc<br>
+trm_windata.h<br>
+<font color="red">Version 8.1.1</font>
+</i></td><td>
+Poshak Gandhi was suffering some unusual ambiguity when trying to compile on a
+64-bit system so I introduced a more explicit command called row to be used in
+fits2ucm and possibly in other places too.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/07/07
+</strong></td><td><i>
+makeflat.cc
+</i></td><td>
+Changed so that saturated pixels are only counted over windowed region rather
+than the whole chip.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/07/07
+</strong></td><td><i>
+Many
+</i></td><td>
+Many changes owing to the change of the header class and the backwards
+incompatible API.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/07/07
+</strong></td><td><i>
+parseXML.cc<br>
+de_multiplex.cc<br>
+<font color="red">Version 8.1.0</font>
+</i></td><td>
+Changed method of handling the pixel shift problem. This was what I used to
+think was the 'binning problem', but in fact was a problem with all modes
+binned or not. The cure is simply to junk the left-most pixel (or right-most for
+right-hand windows) of all windows. Note that this is a significant change in that it will lead to 
+incompatibilities in the formats of ucm files generated with earlier pipeline versions from all ULTRACAM data taken 
+prior to 2007 and ucm files generated with the new software.
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/06/07
+</strong></td><td><i>
+fmatch.py<br>
+ultracam.py<br>
+unique.py<br>
+missbias.py<br>
+<font color="red">Version 8.0.9</font>
+</i></td><td>
+New commands to search for xml files matching the format of a specific one,
+identify any runs without corresponding biases etc. (python scripts).
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/06/07
+</strong></td><td><i>
+rtplot.cc
+</i></td><td>
+Fix for bug caused by recent updates.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/06/07
+</strong></td><td><i>
+read_header.cc<br>
+get_server_frame.cc<br>
+reduce.cc
+</i></td><td>
+More fixes for the NBLUE option. I think I have now got the timing right.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/06/07
+</strong></td><td><i>
+rtplot.cc<br>
+combine.cc<br>
+reduce.cc<br>
+<font color="red">Version 8.0.8</font>
+</i></td><td>
+Fixes for the NBLUE option for rtplot to allow it to skip junk data when 
+trying to profile fit. 'combine' now skips bad blue frames. 'reduce' does not
+try to re-compute the star's position on bad data.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/06/07
+</strong></td><td><i>
+reduce.cc<br>
+rejig_apertures.cc<br>
+rtplot.cc
+</i></td><td>
+Fixes for VLT run I hope.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/05/07
+</strong></td><td><i>
+plot.cc<br>
+plot_images.cc<br>
+rtplot.cc<br>
+<font color="red">Version 8.0.7</font>
+</i></td><td>
+Small fixes, re-release.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/07
+</strong></td><td><i>
+<font color="red">Version 8.0.7</font>
+</i></td><td>
+Version release to prepare for upcoming run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/05/07
+</strong></td><td><i>
+parseXML.cc<br>
+read_header.cc
+</i></td><td>
+More u-band co-add mods. This time to try to get the right times.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/05/07
+</strong></td><td><i>
+parseXML.cc<br>
+read_header.cc
+</i></td><td>
+More u-band co-add mods. This time to try to get the right times.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/05/07
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+First shot at modifying reduce for u-band co-adds
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/05/07
+</strong></td><td><i>
+get_server_frame.cc<br>
+plot_images.cc<br>
+read_header.cc
+</i></td><td>
+Added code to identify some of the status flags to cope with the u-band skip
+option. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/01/07
+</strong></td><td><i>
+makebias.csh
+</i></td><td>
+Update for new version of grab.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/12/06
+</strong></td><td><i>
+read_header.cc
+</i></td><td>
+Put in timing stuff for ULTRASPEC
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/12/06
+</strong></td><td><i>
+ppos.cc<br>
+Many others
+</i></td><td>
+Lots of small bug fixes and upgrades during La Scilla ULTRASPEC run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/11/06
+</strong></td><td><i>
+hist.cc
+</i></td><td>
+Extensively re-worked so as to handle multiple input files
+More upgrades.
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/11/06
+</strong></td><td><i>
+l3gain.pl
+</i></td><td>
+A crude script to help compute the avalanche gain. Requires 'ponto' to be installed.
+More upgrades.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/11/06
+</strong></td><td><i>
+sreduce.cc<br>
+read_sreduce_file.cc<br>
+plot_trail.cc<br>
+sky_fit.cc<br>
+grab2fits.cc
+</i></td><td>
+More upgrades. Added a dump to molly option in 'sreduce'; this
+requires that another package 'colly' is installed. For ease of
+installation for those not interested in spectrum reduction,
+the colly code is simply excluded if the colly library is not found.
+</td></tr>
+
+<tr valign="top"><td><strong>
+20/11/06
+</strong></td><td><i>
+setwin.cc
+</i></td><td>
+Modified so that it makes windows compatible with the data file, if
+any is used.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/11/06
+</strong></td><td><i>
+ppos.cc<br>
+setup.pl
+</i></td><td>
+New routine to measure positions of peaks in collapsed frame. 'setup.pl'
+is a script for helping with setting up the CCD.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/11/06
+</strong></td><td><i>
+rtplot.cc<br>
+grab.cc<br>
+parseXML.cc<br>
+lplot.cc<br>
+collapse.cc
+</i></td><td>
+De-bugging
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/11/06
+</strong></td><td><i>
+read_header.cc
+</i></td><td>
+Added some stuff to deal roughly with times.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/11/06
+</strong></td><td><i>
+lplot.cc<br>
+trm_window.h<br>
+trm_window.cc
+</i></td><td>
+New routine to plot collapsed frames as line plots. Also added a couple of
+trivial routines to Window.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/11/06
+</strong></td><td><i>
+grab.cc
+</i></td><td>
+Added debias, threshold and accumulate options. The accumulate option will need
+some more work to get the times right.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/11/06
+</strong></td><td><i>
+trm_ultracam.h<br>
+rtplot.cc<br>
+plot_setupwins.cc
+</i></td><td>
+Modifications for the new setup window format from udriver and usdriver.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/11/06
+</strong></td><td><i>
+trm_ccd.h<br>
+trm_ccd.cc<br>
+trm_mccd.h<br>
+trm_mccd.cc
+</i></td><td>
+Added a step function transform to help with L3CCD stuff.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/11/06
+</strong></td><td><i>
+collapse.cc<br>
+expand.cc
+</i></td><td>
+Two new commands to collapse/expand regions of a frame in either X or Y. This is a support
+routine for spectroscopy mainly. Roughly corresponds to 'extract', 'ystract',
+'isxdiv' etc from FIGARO.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/11/06
+</strong></td><td><i>
+Many
+</i></td><td>
+Changed basic object structure of CCD<> and MCCD<>. CCD<> is now inherited from
+a vector; the case of data is handled separately with the new classes Image and
+Mimage. MCCD<> is reserved for the ASCII objects such as Aperture.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/11/06
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+More alterations to allow for L3CCD
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/11/06
+</strong></td><td><i>
+stats.cc
+</i></td><td>
+Added option to automatically generate windows covering all the frame.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/11/06
+</strong></td><td><i>
+parseXML.cc<br>
+de_multiplex.cc
+</i></td><td>
+De-bugging to see if we can read in a frame.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/11/06
+</strong></td><td><i>
+parseXML.cc<br>
+ultracam.h<br>
+de_multiplex.cc<br>
+get_server_frame.cc
+</i></td><td>
+More changes for L3CCD data.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/11/06
+</strong></td><td><i>
+parseXML.cc<br>
+ultracam.h
+</i></td><td>
+More changes for L3CCD data.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/10/06
+</strong></td><td><i>
+parseXML.cc<br>
+ultracam.h
+</i></td><td>
+Started making changes to read L3CCD data.
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/10/06
+</strong></td><td><i>
+reduce.cc<br>
+sreduce.cc<br>
+include/Makefile.am<br>
+<font color="red">Version 8.0.6</font>
+</i></td><td>
+Removed references to obsolete trm_llsqr header, added some headers to
+the distribution.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/09/06
+</strong></td><td><i>
+reduce.cc<br>
+light_plot.cc
+</i></td><td>
+A couple of enhancements for reducing non-ULTRACAM data. First to
+allow a valid "transmission" plot to be calculated when exposure times
+vary and second to extend the x-axis properly when reducing data with
+large gaps in time between different sets.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/09/06
+</strong></td><td><i>
+reduce.cc<br>
+light_plot.cc
+</i></td><td>
+Enhancement to allow hardcopy plots at the end of 'reduce' without prior
+'real-time' plots. This is for batch reduction.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/08/06
+</strong></td><td><i>
+<font color="red">Version 8.0.5</font>
+</i></td><td>
+Update after prolonged period of down time
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/05/06
+</strong></td><td><i>
+setreg.cc
+</i></td><td>
+First version of program to define spectroscopic extraction regions.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/05/06
+</strong></td><td><i>
+gentemp.cc
+</i></td><td>
+Added sky line option to the template file generator; fixed a bug with the
+spectra.
+</td></tr>
+
+<tr valign="top"><td><strong>
+24/05/06
+</strong></td><td><i>
+Mac version works
+</i></td><td>
+Finally seemed to have got the code working properly on Vik's Mac.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/06
+</strong></td><td><i>
+read_header.cc<br>
+de_multiplex.cc
+</i></td><td>
+Added code to account for whether the machine is big- or little-endian.
+The raw data files are written under linux (little-endian) and hence require
+byte-swapping to be read on big-endian machines such as macs (Vik's fault).
+The code uses the header 'endian.h' to identify what type the machine is.
+I believe this to be gcc-specific and it may not be very portable to other
+compilers, although it would not be hard to change.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/06
+</strong></td><td><i>
+Many
+</i></td><td>
+I decided to upgrade the aperture position values from float to double 
+to avoid any round off errors in cases of high signal-to-noise. In addition
+I added one digit of precision to the log file outputs for the positions and
+their errors. Be careful if you read these assuming a particular format!
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/06
+</strong></td><td><i>
+fits2ucm<br>
+</i></td><td>
+Added in NOT/ALFOSC format.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/05/06
+</strong></td><td><i>
+Lots<br>
+</i></td><td>
+Lots of changes to accomodate withdrawl of operator+ string functions.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/05/06
+</strong></td><td><i>
+gettime.cc
+</i></td><td>
+Was looking for the wrong XML parameter to ID the May 2002 run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/05/06
+</strong></td><td><i>
+reduce.cc<br>
+light_plot.cc
+</i></td><td>
+Added some extra messages for two pass mode. Added titles to the light curve plots.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/04/06
+</strong></td><td><i>
+plot.cc<br>
+plot_images.cc<br>
+shifter.cc
+</i></td><td>
+Added some more hidden options to 'plot' to allow more flexibility plus a
+relatd change to 'plot_images.cc'. Improved output of 'shifter'.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/04/06
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Tiny bug when using multiple star radii; no change to results.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/03/06
+</strong></td><td><i>
+read_reduce_file.cc<br>
+reduce.cc<br>
+extract_fluxes.cc<br>
+rejig_apertures.cc<br>
+trm_reduce.h<br>
+reduce.red
+</i></td><td>
+New option to allow gaussian weights but moffat fits. My hope is that the
+quicker truncation of a gaussian may improve extraction, but it is yet to be
+proven. It is designed so that the gaussian matches the Moffat in terms of FWHM.
+</td></tr>
+
+<tr valign="top"><td><strong>
+24/03/06
+</strong></td><td><i>
+read_header.cc
+</i></td><td>
+Had made a mistake with the decimal equivalent of FBB. Not a serious one this,
+as has only just been released in version 8.0.4.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/03/06
+</strong></td><td><i>
+Lots<br>
+<font color="red">Version 8.0.4</font>
+</i></td><td>
+Making changes to remove all case dependency in filenames. This is to make the 
+code more portable. All headers having trm_ added to reduce chance of clashes
+with system files.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/03/06
+</strong></td><td><i>
+parseXML.cc<br>
+read_head.cc
+</i></td><td>
+Added some history to the headers. Passed gain speed setting to read_header
+to allow for different calculation of the video time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/03/06
+</strong></td><td><i>
+makebias
+</i></td><td>
+A new helper script to generate mean biases quickly.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/03/06
+</strong></td><td><i>
+grab.cc
+</i></td><td>
+Minor fix for bug introduced with recent edits to grab.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/03/06
+</strong></td><td><i>
+times.cc<br>
+read_header.cc
+</i></td><td>
+Fixed two small bugs in read_header.cc induced by the recent changes. Added a bit
+more functionality to times.cc
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/03/06
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Added aspect ratio for finer control of plots for archival purposes.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/03/06
+</strong></td><td><i>
+read_header.cc
+</i></td><td> 
+I have gone over this with a fine toothcomb and now think that my old
+version was pretty much right.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/03/06
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Added some hidden parameters to this to allow finer control of plots.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/03/06
+</strong></td><td><i>
+grab.cc
+</i></td><td>
+Added option to restrict the range of frames grabbed.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/03/06
+</strong></td><td><i>
+backsub.cc
+</i></td><td>
+New routine to subtract the background off a frame, window by window.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/03/06
+</strong></td><td><i>
+folder.cc
+</i></td><td>
+Modified to account for changes to the Ephem class
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/03/06
+</strong></td><td><i>
+read_header.cc
+</i></td><td> 
+I believe that I have found a bug in the timing code for
+windowed and drift modes for runs between July 2003 and Jan 2005. This
+is the period when there was an unsuspected problem with the
+timestamps owing to a change of the timing board. I believe that my
+previous fix for this was wrong and would have had the effect of
+making reported times earlier by 1 frame than they should have
+been. Apologies.  
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/02/06
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+New fix for the X binning registration problem which I now believe to
+be general.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/02/06
+</strong></td><td><i>
+<font color="red">Version 8.0.3</font>
+</i></td><td>
+Another micro-update to fix a problem with gettime which should NOT be
+compiled & linked with g77.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/02/06
+</strong></td><td><i>
+configure.ac<br>
+<font color="red">Version 8.0.2</font>
+</i></td><td>
+Switched to using g77 as the linker since it seems easier
+to get it to work when linking gcc4.x.x and g77 PGPLOT.
+Also this should fix an installation problem with the 
+ultracam guide. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+01/02/06
+</strong></td><td><i>
+gettime.cc
+</i></td><td>
+Started to put in some of the fixes for timing problems 
+to help do the logs.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/01/06
+</strong></td><td><i>
+lllccd.cc<br>
+<font color="red">Version 8.0.1</font>
+</i></td><td>
+Backwards compatibility issue with lllccd, and a new release
+to help out Erik Broaders/Conny Aerts. Note this works with subs 
+version 1.4.16.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/01/06
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Minor bug fix for the mulitple radius case where it was still trying to
+plot stuff.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/01/06
+</strong></td><td><i>
+debias.csh
+</i></td><td>
+A support script for 'foreign' data. This carries out debiassing 
+using a constant determined from an overscan region.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/01/06
+</strong></td><td><i>
+makerflat.cc
+</i></td><td>
+Added a hidden option here to allow you to specify a sub-region 
+of the flats to use to normlise them. This is to cope with
+non-ULTRACAM data where the chip may not be fully illuminated.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/01/06
+</strong></td><td><i>
+fits2ucm.cc
+</i></td><td>
+Added SAAO option for some frame-transfer data from Patrick
+Woudt. Fixed a bug whereby it was not closing the fits files 
+properly which prebented it from converting more than a certain 
+number (maximum open file presumably). Also changed so that
+the ultracam files can be written out in 2-byte integer or floating
+point form.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/01/06
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Improved the safety features of the coercion of calibration frames and made it
+behave better when applying coercion in the sense that when converting a
+flat-field from 1x1 to 2x2 it will divide the result by 4 to maintain a fixed 
+average. Should have done this a long time ago. It does the same to any gain or 
+readout noise frame while bad pixel and dark frames are simply added. It will
+refuse to change the binning factors of bias frames
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/01/06
+</strong></td><td><i>
+dsub.cc
+</i></td><td>
+New command to automate dark subtraction of a series of frames, correctly scaling by exposure time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/01/06
+</strong></td><td><i>
+Window.cc<br>
+parseXML.cc
+</i></td><td>
+Allowed llx to go below 1 to cope with binned readout problem 
+I discovered in VLT data. Crude initial fix is to shift left windows
+left by 1, and the right windows right by one, but I don't know
+whether this applies to anything but recent data or for binning
+factors other than 2 in X.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/01/06
+</strong></td><td><i>
+newreduce.pl<br>
+<font color="red">Version 8.0.0</font>
+</i></td><td>
+Many changes to reduce file format, and various new routines, so 
+a new version release.
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/12/05
+</strong></td><td><i>
+addbad.cc<br>
+reduce.cc<br>
+read_reduce_file.cc<br>
+rejig_apertures.cc
+</i></td><td>
+Minor debugs of all of these owing to recent changes.
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/12/05
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Upgrade to account for user-defined header info from the XML files as
+implemented during the May 2005 VLT run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+21/12/05
+</strong></td><td><i>
+addbad.cc
+</i></td><td>
+New program to convert defects into bad pixels
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/12/05
+</strong></td><td><i>
+reduce<br>
+light_plot.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Rationalising the names of many of the reduce file parameters, which had
+different styles for parameters doing pretty much the same thing. Means ots of
+changes to these routines.
+</td></tr>
+
+<tr valign="top"><td><strong>
+25/11/05
+</strong></td><td><i>
+rtplot.cc<br>
+plot_images.cc
+</i></td><td>
+Minor changes to prevent excessive round off when printing the plot levels.
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/11/05
+</strong></td><td><i>
+gettime.cc
+</i></td><td>
+Bug in this routine which meant that the run length reported was wrong.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/11/05
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+rejig_apertures.cc
+</i></td><td>
+Put in code to allow a given CCD to be skipped during extraction simply by 
+commenting out the corresponding extraction line. Also now checks that for every
+CCD with an extraction control line that there are some apertures defined and
+that you don't try to do anything with a CCD for which you have not commented
+out the extraction line.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/11/05
+</strong></td><td><i>
+splitr.pl
+</i></td><td>
+New script to split up multi-aperture reduce files into individual normal logs.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/11/05
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+reduce file format<br>
+light_plot.cc<br>
+newreduce.pl
+</i></td><td>
+Slight change to the reduce file format (sorry, but please use 'newreduce' if 
+this causes you problems). 'reduce' now plots different symbols according to the
+problesm it encounters which should be more informative during observing. There 
+are now special symbols for saturation and peppering. The change to the reduce
+file format is to add an aperture to the 'lcurve_fwhm' line to ensure that
+appropriate warning symbols can be plotted, although the transmission plot is
+always better since in fact the seeing is associated with all reference
+apertures rather than any one of them.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/11/05
+</strong></td><td><i>
+noise.cc<br>
+genspec.cc<br>
+gentemp.cc
+</i></td><td>
+'genspec' has now become 'gentemp' which will be a more general generator of
+template ASCII files. 'noise' debugged and looks as though it is working.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/11/05
+</strong></td><td><i>
+noise.cc<br>
+genspec.cc<br>
+Spectrum.cc
+</i></td><td>
+Extensive changes to this routine in order to be able to simulate the effect of
+L3 CCDs. Bug fix to genspec to get it to produce valid spectrum files; added
+safety checks to Spectrum.cc 
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/10/05
+</strong></td><td><i>
+addfield.cc<br>
+addspec.cc<br>
+addsky.cc<br>
+genseries.cc
+</i></td><td>
+The 'add ...' routines have all been modified to add to one or a
+series of frames. 'genseries' is a new command to create a series
+of frames regularly spaced in time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/10/05
+</strong></td><td><i>
+Aperture.h<br>
+Window.h<br>
+Windata.h<br>
+and many others
+</i></td><td>
+Started to move lots of routines under Ultracam namespace. Starting to
+eliminate the 'M****.h' headers such as 'Mtarget.h'
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/10/05
+</strong></td><td><i>
+addspec.cc<br>
+genspec.cc
+</i></td><td>
+First versions of routines to generate fake spectra
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/10/05
+</strong></td><td><i>
+bcrop.cc<br>
+<font color="red">Version 7.0.9</font>
+</i></td><td>
+Debugged the 'bcrop' routine; time for a new version release.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/10/05
+</strong></td><td><i>
+bcrop.cc
+</i></td><td>
+Routine to crop frame while acounting for the pre-2005 binning problem.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/10/05
+</strong></td><td><i>
+Target.h<br>
+Target.cc<br>
+Mtarget.h
+</i></td><td>
+Changed 'Target' to 'Star' as a more obvious name. Also moved inside
+the Ultracam namespace since this is an Ultracam-specific implementation.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/10/05
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Added format to the numbers printed by 'cplot'
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/10/05
+</strong></td><td><i>
+Target.h<br>
+Target.cc<br>
+addfield.cc<br>
+setfield.cc
+</i></td><td>
+Changed so that the target strength is specified in terms of the total
+number of counts using the analytic integral of the Moffat
+profile. This should allow proper simulation of constant flux
+data. This means that addfield can now allow the profile width to change.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/09/05
+</strong></td><td><i>
+gettime.cc<br>
+get_server_frame.cc
+</i></td><td>
+Changed these so that they support large files (> ~2GB). This allows any program
+that reads the raw data files ('reduce', 'grab', 'rtplot' etc) to read such
+files. I believe that one needs at least the 3.4 series of gcc to allow this.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/09/05
+</strong></td><td><i>
+smooth.cc<br>
+boxavg.cc<br>
+boxmed.cc
+</i></td><td>
+Changed 'smooth' to 'boxavg' and created a new command 'boxmed' to median in
+boxes. Boxes now allowed to be rectangular, not just square.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/08/05
+</strong></td><td><i>
+reduce.cc<br>
+plot.cc<br>
+rtplot.cc<br>
+<font color="red">Version 7.0.8</font>
+</i></td><td>
+Made the plot devices local to prevent their interfering 
+with each other which is irritating while observing.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/08/05
+</strong></td><td><i>
+Installation<br>
+<font color="red">Version 7.0.7</font>
+</i></td><td>
+I have started using 'automake' which has lead to some fairly radical
+changes in the installation and a hence a new version although code
+functions have not changed. I anticipate a good number of teething
+problems. Please let me have them as you encounter them.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/08/05
+</strong></td><td><i>
+Makefile.in<br>
+<font color="red">Version 7.0.6</font>
+</i></td><td>
+Installation has got into a mess owing to changes I have been making to remove
+links so that I can make use of CVS. Have rejigged it so that the distribution
+directory structure more accurately reflects the structure that I have. This has
+pushed down the directory levels by one in the distribution tar file.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/08/05
+</strong></td><td><i>
+getstart.cc<br>
+gettime.cc
+</i></td><td>
+'getstart' retired and replaced by 'gettime' which returns the start and end
+times.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/08/05
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+A segmentation fault was occurring when no bias frame was supplied owing to the
+need to have some sort of bias (even if only = 0) in extract_flux in order to
+warn about saturation. Modified so that it fakes up a bias frame if necessary. 
+Bug spotted by Simon Jeffery
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/06/05
+</strong></td><td><i>
+getstart.cc
+</i></td><td>
+Added this routine as part of the distribution although it can also function standalone.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/05/05
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Added print out of the file name.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/05/05
+</strong></td><td><i>
+rtplot.cc
+</i></td><td>
+Added some extra help about the aperture_star_radii option
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/05
+</strong></td><td><i>
+rtplot.cc<br>
+<font color="red">Version 7.0.5</font>
+</i></td><td>
+Changed the way it warns of bias problems. Now just a straight low
+and high level. This runs the risk of false triggers on the the high
+level due to sky counts, slightly reduced by setting a level at which 
+a frame counts as a flat.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/05
+</strong></td><td><i>
+rtplot.cc<br>
+<font color="red">Version 7.0.4</font>
+</i></td><td>
+Enhancement to grab which can now get the last frame or a specific
+frame. You will need to delete the file ~/.ultracam/grab.def before
+using this (if you use the standard location for the default files).
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/05
+</strong></td><td><i>
+rtplot.cc<br>
+<font color="red">Version 7.0.3</font>
+</i></td><td>
+Minor bug fix in the way 'rtplot' reports the low bias problem.
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/05/05
+</strong></td><td><i>
+reduce.cc<br>
+extract_flux.cc<br>
+light_plot.cc
+</i></td><td>
+'Negative sky' now only triggered if sky < -5. Fixed bug which meant
+that 'peppered' and saturated values were not being reported.
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/05/05
+</strong></td><td><i>
+read_header.cc
+<font color="red">Version 7.0.2</font>
+</i></td><td>
+In fact what Andy V. told me was not correct. 'nsec' still represents
+the number of seconds since the start of the week sat/sun, but can go
+over 1 week (might have true before but perhaps we have not had a
+midnight bug on the sat/sun boundary before).
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/05
+</strong></td><td><i>
+light_plot.cc<br>
+read_header.cc<br>
+plot.cc<br>
+<font color="red">Version 7.0.1</font>
+</i></td><td>
+Enabled ignoring of 'none' as a plot colour so that error bars can
+genuinely be ignored. Fixed bug at midnight, re-introduced by some
+changes to the software that I was unaware of. Fixed bug in the new
+stats stuff in cplot
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/05
+</strong></td><td><i>
+rtplot.cc<br>
+plot_setupwins.cc<br>
+plot.cc<br>
+reduce.cc<br>
+read_reduce_file.cc<br>
+extract_flux.cc<br>
+ultracam.h<br>
+newreduce.pl
+<font color="red">Version 7.0.0</font>
+</i></td><td>
+Added test for low level red bias that sometime happens after a power
+on. Typical red bias ~ 2200; when low it goes below 1000, so set 1500
+as the trigger point. It just tests the lower-left window of the red
+CCD. If this triggers immediately after a power-on, then there is very
+likely a problem. Cured beeping on every plot rather than just ones
+with errors. Added stats info to the 'show' command of cplot which now
+reports min, max, mean, median and rms of a little region around the
+cursor. Added warning of saturation and peppering via error code.
+This required a change of the reduced file format and therefore
+another major version change. The 'newreduce.pl' script should update 
+from the previous two versions.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/05/05
+</strong></td><td><i>
+read_reduce_file.cc<br>
+light_plot.cc<br>
+reduce.cc<br>
+wjoin.cc<br>
+<font color="red">Version 6.0.0</font>
+</i></td><td>
+Several changes to allow conditions to be judged
+better when using 'reduce' for observing. (1) you can now plot the percentage transmission. This is
+judged by scaling from the maximum flux measured on a specified
+aperture, (2) you can plot the seeing. Major version release because of
+the additions to the reduce file, (3) Option to make a hardcopy of the
+final plot. 'wjoin' bugs to do with binning fixed.
+</td></tr>
+
+<tr valign="top"><td><strong>
+07/05/05
+</strong></td><td><i>
+src/Makefile.in<br>
+<font color="red">Version 5.0.6</font>
+</i></td><td>
+Fixed the automatic version updating of reduce.cc which was not being
+carried out properly.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/05/05
+</strong></td><td><i>
+wjoin.cc<br>
+ucm2fits.cc
+</i></td><td>
+Corrected a bug in wjoin when it fails to prompt for the output file
+name. Made ucm2fits skip the dummy HDU when there is only a single
+window and the CCDs are being split.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/05/05
+</strong></td><td><i>
+plot.cc<br>
+fit_plot_profile.cc<br>
+rtplot.cc<br>
+<font color="red">Version 5.0.5</font>
+</i></td><td>
+New feature: carries out aperture photometry (aperture radii scaled
+from FWHM, normal extraction) after fits.  Fixed 'area' reported for
+profile fits. Fixed bug in rtplot where it reports one more than the
+actual frame number.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/05/05
+</strong></td><td><i>
+rtplot.cc
+</i></td><td>
+New feature: when two stars are selected, the angle of the line
+joining them with respect to the horizontal (rows) direction is now
+reported.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/05/05
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Edited to take account of the change to the scale of the expose_delay
+numbers. I now look for the 'user' parameter fed in from Udriver which
+will only appear in XML dating from the change to the time-scale. This
+is bit nasty so I have added a warning from parseXML to say what time
+step is being 
+</td></tr>
+
+<tr valign="top"><td><strong>
+25/04/05
+</strong></td><td><i>
+addfield.cc
+</i></td><td>
+Added print out of offset added to the field preparatory to testing photometry.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/04/05
+</strong></td><td><i>
+folder.cc<br>
+<font color="red">Version 5.0.4</font>
+</i></td><td>
+Changed behaviour on encountering no reference stars which now depends
+upon whether there were any reference apertures in the first place.
+Fixed bug which Vik encountered in which it was not updating the frame 
+number.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/02/05
+</strong></td><td><i>
+read_reduce_file.cc<br>
+reduce.cc
+</i></td><td>
+Added possibility of multiple extractions using different
+radii. The idea is to save time when one wants to use multiple radii.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/02/05
+</strong></td><td><i>
+rejig_apertures.cc
+</i></td><td>
+Bug: it was not testing the validity of the apertures properly so that 
+it would be possible to store invalid apertures for the next frame and then
+permanently disable a particular CCD during the reduction. Also I think this
+routine was being too fussy about what apertures were counted as OK. Essentially
+it kicked out any which overlapped the edge of the window even though they can
+give OK positions. I have removed these checks.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/02/05
+</strong></td><td><i>
+<font color="red">Version 5.0.3</font>
+</i></td><td>
+New release so that Vik & Stu can check out rtplot & Udriver if they want.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/01/05
+</strong></td><td><i>
+plot_setupwins.cc<br>
+rtplot.cc
+</i></td><td>
+Changing this to be able to read the windows from the Java program Udriver
+acting as a server. Also found some bugs in the checks applied to windows which
+ were being over-zealous.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/01/05
+</strong></td><td><i>
+read_header.cc<br>
+<font color="red">Version 5.0.2</font>
+</i></td><td>
+Checked the read_header routine as now the timing bug has definitely been 
+identified with the change to the clock board made in July 2003. I now have
+fixed dates set to define when or when not to apply the bug for the clock 
+board fix.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/01/05
+</strong></td><td><i>
+get_server_frame.cc<br>
+sky_estimate.cc<br>
+<font color="red">Version 5.0.1</font>
+</i></td><td>
+Fixed what I think was a bug in two-pass mode where on the second pass it tried
+to open a file that in some cases could already be open. This would occur when
+using two-pass mode but not reducing all of the data I think. Encountered by
+CSB. Removed fixed sized arrays from the sky estimation routine.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/01/05
+</strong></td><td><i>
+fits2ucm
+</i></td><td>
+Added Dolores option to this conversion routine. Fixed a bug in that it was not closing the
+fits files and so ran out of file pointers at 327-ish
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/01/05
+</strong></td><td><i>
+cplot
+</i></td><td>
+Changed plot so that now 'plot' is just a straight plot while 'cplot' throws up a cursor.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/01/05
+</strong></td><td><i>
+light_plot.cc<br>
+read_reduce_file.cc<br>
+reduce.cc
+</i></td><td>
+I have changed the meaning of lcurve_extend_xrange to just extent the X-range by a
+fixed additive amount. This prevents the current rather scrunched up look that
+can occur. As a result of this, I have eliminated lcurve_xbuffer.
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/12/04
+</strong></td><td><i>
+times.cc<br>
+<font color="red">Version 5.0.0</font>
+</i></td><td>
+Ensured that 'clock' parameter is always set true unless specified. Made sure
+that unreliable times were set = 0 in the output. With lots of fixes, I thought
+a new version would be worth releasing although it could be a bit buggy as I
+have not tested it at all fully.
+</td></tr>
+
+<tr valign="top"><td><strong>
+20/12/04
+</strong></td><td><i>
+Timing code
+</i></td><td>
+I think that the timing problems may finally be sorted, so I thought that it would
+be worth detailing what they are here. In July 2003 we believe that a hardware
+upgrade from a 50 Mhz to a 250 Mhz system introduced a problem. Prior to this
+date, timestamps were taken when a particular bit went from 1 to 0; after this
+date the stamps were taken when the bit went from 0 to 1. This altered the part
+of the cycle that the timestamps were taken away from that which was
+documented. For instance in windowed mode the sequence of events is as follows
+<ol>
+<li> Clear CCD
+<li> Expose CCD (accumulating photons)
+<li> Frame transfer (no photons acculumulated)
+<li> Readout (accumulating photons)
+<li> Go back to step 2
+</ol>
+In the 50 Mhz system, the timestamp was taken between steps 3 and 4 while in the
+250 Mhz system is was taken between steps 4 and 2. There were similar problems
+with all modes. The problem came to light with drift mode where the combination
+of this problem and pipeshifts lead to an offset betwen the exposure time and
+frame number which added periodic variations to the count rate data. For both
+windowed and drift mode, the timestamps were taken one readout apart. This is
+the error made to the absolute times. If you want to judge the effect upon your
+data, apply the program 'times' to your run, and use the 'clock' switch to
+toggle between correct and incorrect times. The main uncertainty is exactly when
+the problem started. This leaves a question over the status of the May 2003 run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+20/12/04
+</strong></td><td><i>
+times.cc<br>
+extract_times<br>
+ultracam.h<br>
+read_header.cc
+</i></td><td>
+Added an extra argument to limit how many times one takes. 'extract_times' is a
+little script to take the first 100 times of all ULTRACAM files. Added option in
+'times' of reversing default timestamping correction in order to judge the
+effect of the timestamping problem of July 2003 to Dec 2004. Implemented
+workaround for the timestamping problem in all modes.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/12/04
+</strong></td><td><i>
+ultracam.h
+</i></td><td>
+Changed the code that decides whether a frame is junk. Now the first nwin frames
+of drift mode are so regarded and the first frame of windowed mode is too
+because they either have no data or short exposures.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/12/04
+</strong></td><td><i>
+read_header.cc<br>
+times.cc<br>
+ultracam.h
+</i></td><td>
+Found a bug in the drift mode timing which was contributing to what Vik and I referred
+to as the '8-frame problem'. This was because I was failing to
+account for the binning factor in Y when calculating both the number of windows
+in the masked area and the time taken to shift the data. This means that the
+times were both shifted by several frames and incorrectly shifted to the central
+times and the exposure times were wrong too. OK for unbinned drift mode. Any
+drift mode data taken with a binning factor in Y greater than 1 must be
+re-reduced. Other changes: I added extra header information to 'times' to help
+interpret the timing information.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/12/04
+</strong></td><td><i>
+times.cc
+</i></td><td>
+New command to list timing information from a run. Designed to help track
+timing problems.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/11/04
+</strong></td><td><i>
+rejig_apertures.cc<br>
+reduce.cc.template
+</i></td><td>
+Now the min and max limits on aperture radii are enforced, come what may. This
+allows one to override aperture radii on all apertures just by adjusting the
+reduce file.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/11/04
+</strong></td><td><i>
+light_plot.cc
+</i></td><td>
+Cured problem with silly y-scaling.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/11/04
+</strong></td><td><i>
+rejig_apertures.cc
+</i></td><td>
+Stopped it reporting no reference aperture when one does not actually want to
+find any.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/09/04
+</strong></td><td><i>
+Many
+</i></td><td>
+I am starting on a program of code clarification to lead to more stream-lined 
+programs that should be easier to maintain and improve I hope. The main elements
+of this will be an improved version of Windata and the removal of various
+unmemorable typedefs. The downside of all this will be a slight change to the 'ucm'
+format. However, it should be transparent to users as I will make the code
+backwards compatible.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/09/04
+</strong></td><td><i>
+fits2ucm<br>
+<font color="red">Version 4.0.3</font>
+</i></td><td>
+Updated to handle Faulkes telescope FITS files.
+</td></tr>
+
+<tr valign="top"><td><strong>
+25/08/04
+</strong></td><td><i>
+INSTALL
+</i></td><td>
+Updated the installation instructions.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/08/04
+</strong></td><td><i>
+ultracam.h<br>
+parseXML.cc<br>
+read_header.cc<br>
+<font color="red">Version 4.0.2</font>
+</i></td><td>
+Added code to deal with the new ap5b option of two windows
+with a clear. New version released for Vik to use.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/07/04
+</strong></td><td><i>
+shifter.cc
+</i></td><td>
+Added profile fitting to be able to select on FWHM.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/07/04
+</strong></td><td><i>
+rtplot.cc
+</i></td><td>
+Mini-bug: it was not plotting the circle with the fitted FWHM but with the default FWHM.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/07/04
+</strong></td><td><i>
+shifter.cc
+</i></td><td>
+First go at a shift-and-add summation routine. i.e. it tracks the objects position in the CCDs 
+and then shifts and adds to give a good image.
+</td></tr>
+
+<tr valign="top"><td><strong>
+01/07/04
+</strong></td><td><i>
+wjoin.cc
+</i></td><td>
+Implemented multi-file version of 'wjoin' in which it overwrites inputs, courtesy of Alan Giltinan.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/06/04
+</strong></td><td><i>
+reduce.cc.template<br>
+<font color="red">Version 4.0.1</font>
+</i></td><td>
+Change so that the version number of the pipeline is automatically inserted into 'reduce.cc' and
+therefore the ASCII log files. This should make the tracking of problems easier.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/06/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+sky_estimate.cc<br>
+extract_flux.cc<br>
+movie.cc<br>
+badgen.cc<br>
+<font color="red">Version 4.0.0</font>
+</i></td><td>
+Put in new code to allow for the inclusion of a bad pixel mask. The bad pixel mask is an ordinary ULTRACAM frame set to
+zero everywhere except on bad pixels where it should take values of 10 or more with the convention that the larger
+the number, the worse the pixel is. What counts as 'bad' is subjective, but this allows the user to decide for him/herself.
+The idea is then that the value of the worst (maximum) pixel within the star aperture will be returned and written to the log 
+file. Normally this should be zero. This has required a change to the reduce file version number and unfortunately, another
+change to the log file output format which now includes an extra integer per aperture immediately before the old error flag.
+As a result 'movie' required updating. In the process of changing reduce, I think I found a bug which would affect the
+estimated uncertainties on the extracted counts (and would make them too small). This bug affected version 3.1.0 only.
+Finally, a new command 'badgen' is supposed to make it easier to generate bad pixel masks.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/06/04
+</strong></td><td><i>
+smooth.cc<br>
+list.cc
+</i></td><td>
+Programs to carry out box-car smoothing of frames and to list all pixels within a given range of values, as helpers 
+for finding bad pixels.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/06/04
+</strong></td><td><i>
+rtplot.cc<br>
+transform.pl<br>
+plot_defects.cc<br>
+Defect.h<br>
+Defect.cc
+</i></td><td>
+Created a new script to compute the relative orientations of the CCDs given the positions of two stars
+in each CCD via an aperture file. This can then be loaded into 'rtplot' to allow all CCD defects on
+any one CCD. This is to help during setup.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/05/04
+</strong></td><td><i>
+movie.cc<br>
+updateaper.pl
+<font color="red">Version 3.1.0</font>
+</i></td><td>
+Finally fixed and tested 'movie' to cope with new log file format. Also created
+a helper script to convert old aperture files to the new format. New version released.
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/05/04
+</strong></td><td><i>
+shiftaper.pl
+</i></td><td>
+Added another script to allow an X,Y shift to be applied to an aperture file.
+This makes for faster updating for the same field.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/04
+</strong></td><td><i>
+extract_fluxes.cc
+</i></td><td>
+Discovered a serious bug in this routine which was making extraction occur over a square shaped region fitted around the circular star aperture.
+Pixellation correction was being applied in a ring, but crucially, pixels outside the star aperture but within the bounding box containing it
+were being included. This bug affects versions 3.0.0 to 3.0.4. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/06/04
+</strong></td><td><i>
+setwin.cc
+</i></td><td> 
+Segmentation fault was occurring because I was only reading a specific CCD in.
+I should probably avoid the particular constructor involved as it does not save that much time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/06/04
+</strong></td><td><i>
+window.cc<br>
+Frame.h<br>
+Frame.cc<br>
+Windata.h<br>
+Windata.cc<br>
+Window.h<br>
+Window.cc<br>
+CCD.h<br>
+CCD.cc<br>
+ncal.cc
+</i></td><td> 
+New routine to window a frame according to a window file. Also added option to use windows
+to define regions for noise calibration.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/06/04
+</strong></td><td><i>
+subaframe<br>
+mdiv
+</i></td><td> 
+Removed 'subaframe' from the distribution; 'msub' is much faster. New routine 'mdiv'
+added for division of many frames by one.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/06/04
+</strong></td><td><i>
+setaper.cc
+</i></td><td> Added a means to append extra apertures to a given sky
+aperture. The idea will be to allow the inclusion of nearby stars in an aperture
+when their exclusion would cause problems without having to make an enormous
+aperture. Unfortunately I had to change the aperture file format a bit, which
+makes old files redundant. Sorry about this. It is possible to convert a file to
+the new format if you are really desperate by adding "; masked =; extra =" to
+lines without masks, and just "; extra=" to lines with masks, while changing the
+comma before 'mask' into a semi-colon, and finally changing various other commas
+to semi-colons  when they separate differet fields as in
+<pre>
+rstar,rsky1,rsky2 = 15, 20, 25; ref = 0; 
+</pre>
+rather than 
+<pre>
+rstar,rsky1,rsky2 = 15, 20, 25, ref = 0; 
+</pre>
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/06/04
+</strong></td><td><i>
+folder.cc<br>
+profit_init.cc<br>
+plot.cc<br>
+pos_tweak.cc<br>
+reduce.cc<br>
+rtplot.cc<br>
+setaper.cc
+</i></td><td>
+More changes associated with proper variance stuff. This is quite a big upgrade.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/06/04
+</strong></td><td><i>
+findpos.cc<br>
+rejig_apertures.cc<br>
+reduce.cc<br>
+Frame.h<br>
+Frame.cc<br>
+fit_plot_profile.cc<br>
+ultracam.h<br>
+extract_flux.cc
+</i></td><td>
+To aid proper dark subtraction I have started to implement a proper variance computation within reduce.
+Proper in the sense that it includes both dark subtraction and flat fielding properly which was not the case
+before. Prior to this the variance was estimated from readout noise squared plus counts/gain where counts
+was the bias & dark subtracted, flat-fielded value. This is not correct, and although the problem.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/06/04
+</strong></td><td><i>
+Environment variables
+</i></td><td>
+I have added TRM_ to several environment variables so that they can be easily distinguished from 
+any others that people might have. I have only done this where it might not be otherwise obvious.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/05/04
+</strong></td><td><i>
+read_header.cc<br>
+movie.cc<br>
+fit_plot_profile.cc
+<font color="red">Version 3.0.4</font>
+</i></td><td>
+Changed a fatal condition to a warning to solve problems that Carolyn was having with no satellite runs. Modified movie.cc
+for new output file format. Have not tested it however. Made some small modifications to the output when fitting in rtplot.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/04/04
+</strong></td><td><i>
+rtplot.cc<br>
+fit_plot_profile.cc<br>
+<font color="red">Version 3.0.3</font>
+</i></td><td>
+Added some enhancements to rtplot that Vik wanted: says unbinned pixels and gives the area under the fit to give an idea of counts.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/04/04
+</strong></td><td><i>
+plot_setupwins.cc<br>
+rtplot.cc<br>
+reduce.cc<br>
+<font color="red">Version 3.0.2</font>
+</i></td><td>
+Removed restriction from the setup window part of rtplot that Y1 had to be at least 2 since it no longer applies.
+Also added new option to rtplot to warn if levels of CCD 1 differ by more than a user-defined amount. Simple
+way to spot the high bias problem I hope. Fixed bug in reduce that was preventing it reading files via the ATC server.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/04/04
+</strong></td><td><i>
+copymask.pl<br>
+setaper.cc<br>
+reduce.cc<br>
+all script files<br>
+<font color="red">Version 3.0.1</font>
+</i></td><td>
+Added a new script for manipulation of aperture files. Changed location of all script files,
+updated documentation a bit. Made a minor change to the output from <a href="reduce.html">reduce</a>
+and also made the minimum and maximum limits of the extraction control options apply to fixed as well
+as variable apertures. This allows simple changing of the aperture size in the fixed case.
+New minor version.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+04/03/04
+</strong></td><td><i>
+<font color="red">Version 3.0.0</font>
+</i></td><td>
+Changes seem to be working well enough to release a new version. New features of this release are: 
+<ul>
+<li> Two pass operation to allow for variations in relative positions of targets even when one or more are 
+so faint that one would normally link it or them. Such variations are expected as a result of atmospheric refraction.
+<li> Minimum and maximum radii on the star apertures as well as the sky apertures. This may be useful in crowded fields.
+<li> Ability to mask nearby interfering stars from apertures. This applies to the estimation of the sky background
+in reduce and to position measurements from profile fits. It is also supported in 'setaper' under a new option called
+'C' which allows one to re-centre an aperture. If that aperture has masks then they will be included. Here is an
+<a href="aper.gif">example</a> of these masks in action.
+<li> More information in the output files which now come with uncertainties on the positions and also differentiate between
+measured and fitted positions to take account of the two-pass case. Both are written to try to keep the lines constant
+in format. Also the number of sky pixels used is reported. However, note that you will need to modify any programs that 
+you have for reading these files. Sorry.
+<li> More accurate computation of statistical uncertainties and correctly weighted profile fitting.
+<li> Stricter control of whether a measured position is good or not.
+<li> Corrected timing for the chjange to the clock board that took place over the summer 2003. This applies in
+particular to the November 2003 data.
+</ul>
+The several changes to the reduce file in particular have prompted the major version change from 2 to 3. Lots
+of changes, so expect bugs.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/03/04
+</strong></td><td><i>
+parseXML.cc<br>
+read_header.cc<br>
+get_server_frame.cc
+</i></td><td>
+Had to put changes in to account for change in the frame transfer time parameter.
+Unfortunately the XML files have no date info so I have to wait to read the data
+frame before computing the frame transfer time.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+02/03/04
+</strong></td><td><i>
+setaper.cc
+</i></td><td>
+Added re-centering option which may help in complicated cases.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/02/04
+</strong></td><td><i>
+findpos.cc<br>
+fit_plot_profile.cc
+</i></td><td>
+Finally found the problem with over-estimation of uncertainties. I was squaring the readout 
+noise twice.
+</td></tr>
+
+<tr valign="top"><td><strong>
+25/02/04
+</strong></td><td><i>
+read_reduce_file.cc
+</i></td><td>
+Cut out output concerning light curve plotting to the log file since it is all irrelevant once the display has
+disappeared and just obscures the important information. The information is still sent to stdout since it is 
+useful for someone running reduce interactively.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+25/02/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+reduce.h<br>
+rejig_apertures.cc<br>
+findpos.cc
+</i></td><td>
+Still more changes. Also taking this opportunity to make other changes to the reduce data file because it is going through
+a new version number in any case because of the additional parameters for the two pass mode: aperture_twopass, aperture_twopass_counts,
+etc. So in addition I have added minimum and maximum radii for the star aperture in the extraction control statement as I can see 
+cases where these would be useful.
+</td></tr>
+
+<tr valign="top"><td><strong>
+24/02/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+reduce.h<br>
+rejig_apertures.cc<br>
+findpos.cc
+</i></td><td>
+Many extensive changes for the two pass processing. 'findpos.cc' now reports uncertainties on its positions which I will
+probably add to the output from 'reduce' at some stage. There are sure to be a fair few new bugs from all this work.
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/02/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+reduce.h
+</i></td><td>
+Started the upgrade for a two-pass reduction with a first pass to determine positions and a second
+pass to extract fluxes. The first pass will involve polynomial fits to position offsets which will then
+be applied to reference psotions to come up with the positions for the extraction stage.
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/02/04
+</strong></td><td><i>
+Aperture.h<br>
+Aperture.cc<br>
+sky_estimate.cc
+</i></td><td>
+Added option of being able to have masks associated with apertures to eliminate
+stars from contamination of the sky annulus. 'sky_estimate' ignores these.
+</td></tr>
+
+<tr valign="top"><td><strong>
+18/02/04
+</strong></td><td><i>
+light_plot.cc<cr>
+sky_estimate.cc
+</i></td><td>
+Subroutines for the light curve plotting section of reduce and for the sky estimation
+task.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/02/04
+</strong></td><td><i>
+extract_flux.cc
+</i></td><td>
+Continuing to modularise reduce by separating out the flux extraction section.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/02/04
+</strong></td><td><i>
+rejig_apertures.cc
+</i></td><td>
+Extracted aperture updating part from <a href="reduce.html">reduce</a>.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/02/04
+</strong></td><td><i>
+reduce.cc<br>
+<font color="red">Version 2.4.2</font>
+</i></td><td>
+If reference_plus_tweak option fails to locate any reference stars, all other apertures will now be
+made invalid to reduce risk of trying to locate on silly positions.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/02/04
+</strong></td><td><i>
+setaper.cc
+</i></td><td>
+Added option to unlink apertures, a convenience to allow easy changing of aperture files.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/02/04
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Changed skip option so that it can be used to reduce amount of output which might be useful
+for really small frames while stil allowing some output.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/02/04
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Added buffering of the light-curve plot when re-setting to speed it up.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/02/04
+</strong></td><td><i>
+makeflat.cc<br>
+arith.cc<br>
+carith.cc
+</i></td><td>
+Allowed 'makeflat' to cope with a CCD having no valid frames. It now just sets it = 1 in this case. Enabled
+prompting for nccd and nwin in 'uset' as it is silly not to. Also added warning when nccd and/or nwin are
+not set for the whole frame since this is potentially a bit dangerous.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/02/04
+</strong></td><td><i>
+multiframe.cc<br>
+</i></td><td>
+As an aid in debiassing, I have added a program to carry out subtraction of one frame from many. This saves
+multiple I/O of the single frame compared to the running a script.
+</td></tr>
+
+<tr valign="top"><td><strong>
+30/01/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+<font color="red">Version 2.4.1</font>
+</i></td><td>
+Bad dose of versionitis today. Modified reduce for Vik so that it is not so bothered if it can't find any times. This only
+works for lists of '.ucm' files with the light-curve plotting switched off. Also fixed the documentation distribution.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+30/01/04
+</strong></td><td><i>
+findpos.cc<br>
+reduce.cc<br>
+read_reduce_file.cc<br>
+<font color="red">Version 2.4.0</font>
+</i></td><td>
+Discovered that 'findpos' was not locating objects exactly as I thought. I meant it to search without bias over a region centred
+on some initial start value, but in fact it was searching preferentially near to the initial start value, which for large regions
+meant it could miss the target. Still the old method has some advantages so I have now made it an option. This means updating 
+'reduce' and the reduce file version number unfortunately, so old scripts will need updating.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/01/04
+</strong></td><td><i>
+folder.cc<br>
+findpos.cc<br>
+<font color="red">Version 2.3.6</font>
+</i></td><td>
+Tracked down Vik's bug in 'folder'. Also spotted redundant file input in input 'u' option.
+Made a minor modification to 'findpos'.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/01/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Added new aperture position option 'reference_plus_tweak'. The idea is to use 'reference' stars as set in 
+<a href="setaper.html">setaper</a> to determine an initial shift that can be applied to other feebler
+stars before then measuring their positions in the same way as the individual option. This is to allow
+one to cope with fairly major position changes during a run. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/01/04
+</strong></td><td><i>
+folder.cc<br>
+shift_and_add.cc<br>
+<font color="red">Version 2.3.5</font>
+</i></td><td>
+Changed 'reduce' so that plotting light curves or not is decided at run time rather than with the file. This is 
+for easier batch processing.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/01/04
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc<br>
+<font color="red">Version 2.3.4</font>
+</i></td><td>
+Changed 'reduce' so that plotting light curves or not is decided at run time rather than with the file. This is 
+for easier batch processing.
+</td></tr>
+
+<tr valign="top"><td><strong>
+14/01/04
+</strong></td><td><i>
+CCD.cc<br>
+<font color="red">Version 2.3.3</font>
+</i></td><td>
+Bug in CCD.cc cropping owing to a misunderstanding of mine as to what references do. Will need to check for
+it in other places, but releasing this version for the sake of speed.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/01/04
+</strong></td><td><i>
+<font color="red">Version 2.3.2</font>
+</i></td><td>
+Version 2.3.2 put onto web pages.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/01/04
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Small change. There is a test time that is used for skipping bad times, as are mainly generated by drift mode data. I have now made it 
+1 Jan 1999 to allow times taken without the GPS (taken from the rack PC clock). Such times are allocated to 1 Jan 2000 to make it obvious that 
+they are not correct. If this change causes problems, please let me know.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Tiny change: if no profile fit is made, all apertures are invalidated.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/12/03
+</strong></td><td><i>
+<font color="red">Version 2.3.1</font>
+</i></td><td>
+Version 2.3.1 put onto web pages.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/12/03
+</strong></td><td><i>
+fitmoffat.cc<br>
+fitgaussian.cc
+</i></td><td>
+As a result of profiling with gprof I saw a way to speed these routines up. It seems
+to have worked pretty well, giving a factor >2 gain.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/12/03
+</strong></td><td><i>
+FAQ.html
+</i></td><td>
+Started a 'Frequently Asked Questions' web page.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/12/03
+</strong></td><td><i>
+Documentation
+</i></td><td>
+Tidied up the documentation a bit, including adding a couple more of the scripts.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/12/03
+</strong></td><td><i>
+plot_setupwins.cc
+</i></td><td>
+Changed so that nx, ny are measured in unbinned pixels.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/12/03
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Finally squashed the parseXML segmentation fault bug!! Oh happy day! All to do with changes made to the
+Xerces software that meant one has to be ultra-careful to release any Xerces resources before terminating
+it. Not helped by the original examples supplied with the software being incorrect themselves. A sufficiently
+subtle bug that I don't begrudge the hours I spent trying to fix it too much.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/12/03
+</strong></td><td><i>
+vshow.cc
+</i></td><td>
+New command to show default file values, equivalent to FIGARO command of the same name.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/12/03
+</strong></td><td><i>
+<font color="red">Version 2.3</font>
+</i></td><td>
+Version 2.3 put onto web pages
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+gain and readout values were not being set properly in the position fit stage of profile fitting.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/12/03
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Another hack at this routine in a desperate attempt to prevent the segmentation fault which has
+not gone away. Better control of resources I hope.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Switched from printing **** when things go wrong to 0 and -1 for the error to aid in floating-point based input.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Removed updating of shape defaults during profile fits as one porr-ish fit was leading to difficulties.
+Added check for valid aperture set.
+</td></tr>
+
+<tr valign="top"><td><strong>
+08/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Added stdio.h header to 'reduce.cc' to help Will Feline out with problems associated with 'sprintf'.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+08/12/03
+</strong></td><td><i>
+read_header.cc
+</i></td><td>
+I have put in a test & fix for the 'midnight bug', at least for recently acquired data. It appears that sometimes
+the GPS date does not update although the seconds have just gone past the midnight boundary. I test for this
+by comparing the day of the week computed from the number of seconds (which run from the sat/sun boundary) and 
+from the date. If the latter is 1 less, I add a day to the time. A warning is given when such a date is corrected.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/12/03
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+parseXML segmentation fault occurred again. What a nightmare! Finally bit the bullet and changed it for the
+newer version of the xerces stuff. Mostly a case of switching to pointers. Could not indetify any obvious bugs
+in earlier version however, so I may not have solved the problem.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/12/03
+</strong></td><td><i>
+reduce.cc<br>
+reduce.h<br>
+read_reduce_file.cc
+</i></td><td>
+Extensive series of changes to the whole extraction method definition. Now do so with a line called 'extraction_control'
+for each CCD. Also changed the 'fixed' aperure reposition mode to 'static'. Will be released in version 2.1 as this is
+a significant change even from version 2.0 which was under development. This requires yet another version date update
+and changes to the 'reduce' datafile. Also found & fixed a bug in the implementation of optimal extraction (unimportant
+in that no-one has used it yet).
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Changed number of stars printed when bad apertures occur to line up correctly with numbers. Added a check against trying
+to plot CCDs that do not exist in the light curve plotting section.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/12/03
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Started the upgrade to 'optimal' extraction. This will be in version 2.0. Version date of reduce file changed to 04/12/03. 
+Added 'extraction_method' option.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/12/03
+</strong></td><td><i>
+CCD.cc
+</i></td><td>
+Bug found in the crop routine. How it did not cause problems when testing I don't know. The bug
+affects binning factors that differ from 1 and is severe for these cases. Results derived with
+binning factors that differ from 1 should not be trusted.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/12/03
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+I have changed the output format of reduce to guarantee consistent behaviour across platforms. Previously I was relying to a certain
+extent upon default formats which were proving too inaccurate in some cases. This should now be fixed. This is now released as version
+1.8.
+</td></tr>
+
+<tr valign="top"><td><strong>
+03/12/03
+</strong></td><td><i>
+docgen.pl
+</i></td><td>
+Updated documentation a bit to have the correct link to the software.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/12/03
+</strong></td><td><i>
+makeflat.cc<br>
+<font color="red">Version 1.7</font>
+</i></td><td>
+Modified makeflat; not sure its changed much. What I thought was a bug leading to over-rejection was not.
+Its just that when applying sigma-clipping, if too harsh a reject threshold is set, the 'sigma' itself is
+underestimated leading to too much rejection. e.g. 1.96 sigma leads to 11% rejection rather than the expected
+5%. Added some information for makeflat on the numbers of frames selected. Fixed a new memory leak bug inside
+'sigma_reject.cc' which was affecting makeflat and combine. Fixed problem with reporting progress inside makeflat
+which was caused by exceeding the 32-bit unsigned integer limit. Unfortunately it turns out that 'long int's are
+no different from 'int's in this respect, as least as far as gcc is concerned.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+27/11/03
+</strong></td><td><i>
+read_reduce_file.cc<br>
+reduce.cc<br>
+reduce.red<br>
+makeflat.cc<br>
+<font color="red">Version 1.6</font>
+</i></td><td>
+Made it possible to set individual aperture radius scaling factors for each CCD; added code to output
+fitted FWHM and beta, set to 0 if no fit occurred. (beta set to zero also if gaussian fitting used.) Parameters
+output in all cases to keep a consistent output. New 'version' date in the reduce data file.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/11/03
+</strong></td><td><i>
+crop.cc
+</i></td><td>
+Found bug is basic routine for adding standard extensions. Could have caused rather confusing
+errors. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/11/03
+</strong></td><td><i>
+crop.cc
+</i></td><td>
+Generalised the cropping to allow for different binning factors, as long as they are commensurate.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+09/11/03
+</strong></td><td><i>
+Window.h
+</i></td><td>
+Increased the maximum binning factor to 100 in X and Y.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+07/11/03
+</strong></td><td><i>
+many routines
+</i></td><td>
+A subtle problem with binned pixels identified. Will need some careful testing to establish
+that I have cured them all and not introduced new bugs. It affected the positioning of apertures
+obtained through cross-correlation. Have now introduced new member function for Window which translate
+from global to CCD coordinates to pixel coordinates of a Window and vice versa.
+</td></tr>
+
+<tr valign="top"><td><strong>
+06/11/03
+</strong></td><td><i>
+setaper.cc<br>
+plot.cc<br>
+rtplot.cc<br>
+fitmoffat.cc<br>
+fit_plot_profile.cc
+</i></td><td>
+To these and other routines: extensive series of changes to profile fitting to streamline
+and simplify it. Can now fit symmetric and elliptical gaussian and moffat profiles.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/11/03
+</strong></td><td><i>
+setaper.cc
+</i></td><td>
+Added some restrictions on reference versus linked apertures. An aperture cannot
+be both linked to another <strong>and</strong> a reference aperture. Also standardised
+input of aperture radii for new apertures.
+</td></tr>
+
+
+
+
+
+<tr valign="top"><td><strong>
+30/10/03
+</strong></td><td><i>
+setaper.cc<br>
+profit_init.cc<br>
+fit_plot_moffat.cc<br>
+fit_plot_gaussian.cc
+</i></td><td>
+Fixed bug when using binned data and when selecting a position
+outside any window.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/10/03
+</strong></td><td><i>
+setaper.cc
+</i></td><td>
+More work in readiness for extensive profile fitting. This time to ensure that
+the positions produced during 'setaper' can be dreived in the same way as will
+be the case for 'reduce'
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/10/03
+</strong></td><td><i>
+plot.cc<br>
+rtplot.cc
+</i></td><td>
+More changes in readiness for extensive profile fitting
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/10/03
+</strong></td><td><i>
+pos_tweak.cc<br>
+fit_plot_moffat.cc<br>
+fit_plot_gaussian.cc
+</i></td><td>
+Starting to extract components of the profile fitting to gear up for variable aperture photometry.
+This will lead to version 1.4 of the software. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+24/10/03
+</strong></td><td><i>
+moffat_reject.cc
+</i></td><td>
+One of those bugs which makes you wonder how the thing ever worked in the first place.
+Just was not working correctly and therefore rejecting almost all pixels. This might have been
+the cause of Tariq's problems.
+</td></tr>
+
+<tr valign="top"><td><strong>
+17/10/03
+</strong></td><td><i>
+de_multiplex.cc
+</i></td><td>
+Bug fixed in this routine for full-frame overscan, after Vik encountered problems in 'grab2fits'.
+Problem involved an incorrect offset in the overscan part causing some parts of the data not to be
+initialised.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/09/03
+</strong></td><td><i>
+combine.cc
+</i></td><td>
+Fixed fairly serious error which was leading to a miscalculation of the
+means for each CCD within this routine. For instance this affects the offsets computed when 
+combining bias frames. Do not understand when I introduced this bug as I am sure that it once
+worked.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/09/03
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Fixed invalid error message about WARNING status.
+</td></tr>
+
+<tr valign="top"><td><strong>
+22/08/03
+</strong></td><td><i>
+<font color="red">Version 1.3</font>
+</i></td><td>
+New version number given recent changes.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+22/08/03
+</strong></td><td><i>
+read_header.cc
+</i></td><td>
+Changes to accomodate the new "no GPS" mode. Added documentation of timing to pipeline.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/08/03
+</strong></td><td><i>
+parseXML.cc
+</i></td><td>
+Small changes to accomodate different readout mode names.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/06/03
+</strong></td><td><i>
+makeflat.cc
+</i></td><td>
+New program to automate the otherwise tedious business of preparing flats.
+</td></tr>
+
+
+<tr valign="top"><td><strong>
+26/05/03
+</strong></td><td><i>
+rtplot.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Major upgrade with the addition of Moffat profile fitting. This seems to give a much better
+representation of a seeing profile than a gaussian. The latter was so bad that it was giving
+inconsistent results, especially on bright objects when most of the central pixels could
+be rejected.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/05/03
+</strong></td><td><i>
+de_multiplex.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Removed various bugs from these. some were the result of the change to gcc-3.2, but a more serious
+one was caused a segmentation fault for differing numbers of pixels in X first noticed with a 6
+window mode.
+</td></tr>
+
+<tr valign="top"><td><strong>
+09/05/03
+</strong></td><td><i>
+addfield.cc
+</i></td><td>
+Removed 2 minor bugs froim this routine.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/12/02
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Added option to turn off error bar plotting if a negative number is inserted.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/12/02
+</strong></td><td><i>
+Makefile.in<br>
+fixdate.sed.template
+</i></td><td>
+I have modified and added a new file to add some date stamping to the ultracam alias
+definition script. This is to help when people report problems.
+</td></tr>
+
+<tr valign="top"><td><strong>
+05/12/02
+</strong></td><td><i>
+wjoin.cc
+</i></td><td>
+New command to join windows together into 1 big one. Useful if trying to reduce data covering
+the join between two halfs of the CCDs.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/09/02
+</strong></td><td><i>
+movie.cc
+</i></td><td>
+New command 'movie' to make stills of a movie showing a CCD image and a light curve at the same time.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/09/02
+</strong></td><td><i>
+reduce.cc
+</i></td><td>
+Modified to cope with negative counts when plotting magnitudes.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/09/02
+</strong></td><td><i>
+setaper.cc
+</i></td><td>
+Added code to re-plot apertures in the link section.
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/09/02
+</strong></td><td><i>
+get_server_frame.cc<br>
+oneline.cc
+</i></td><td>
+Fixed a bug in get_server_frame for local .dat file and added a new command to
+spit out a one-line of information on a run.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/09/02
+</strong></td><td><i>
+rtplot
+</i></td><td>
+Added option to plot ucm files and a file of test windows.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/09/02
+</strong></td><td><i>
+Many routines
+</i></td><td>
+Second ULTRACAM run: very many changes, too numerous to list. Major ones are: image scaling now done on what 
+is displayed rather than the whole frame; FITS I/O added (crudely); medadd removed and upgraded to 'combine' which 
+includes sigma clipping; different modes recognised and change in definition of chip position to allow for 
+overscan mode.
+</td></tr>
+
+<tr valign="top"><td><strong>
+29/08/02
+</strong></td><td><i>
+rtplot.cc<br>
+reduce.cc<br>
+grab.cc<br>
+folder.cc<br>
+read_header.cc<br>
+get_server_frame.cc<br>
+ultracam.h
+</i></td><td>
+Upgraded time correction stuff to match Vik's e-mail. Now account for the different readout modes. Still
+requires double-checking however. Also made 'rtplot' less sensitive to problems with gaussian fitting.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/08/02
+</strong></td><td><i>
+rtplot.cc
+</i></td><td>
+Added option to plot a file of defect; debugged.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/08/02
+</strong></td><td><i>
+setdefect.cc
+</i></td><td>
+Finally debugged this routine, and added option to show the value of a pixel.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/08/02
+</strong></td><td><i>
+folder.cc
+</i></td><td>
+Added linear interpolation option, fixed bug in shift direction.
+</td></tr>
+
+<tr valign="top"><td><strong>
+28/08/02
+</strong></td><td><i>
+folder.cc<br>
+reduce.cc<br>
+grab.cc<br>
+rtplot.cc
+</i></td><td>
+Have made the server parameters (waiting time etc) uniform in all these programs, reflecting the new subroutine get_server_data. 
+Have also switched the local file stuff in reduce to reading a list of files rather than working from a root file name. Various
+parameters switched from the reduction file to the command line.
+</td></tr>
+
+<tr valign="top"><td><strong>
+27/08/02
+</strong></td><td><i>
+folder.cc
+</i></td><td>
+Added light travel and time-scale corrections. Don't really know if they are working yet.
+</td></tr>
+
+<tr valign="top"><td><strong>
+26/08/02
+</strong></td><td><i>
+folder.cc<br>
+rtplot.cc<br>
+grab.cc<br>
+reduce.cc
+</i></td><td>
+Debugging of folder started. Added option to save temporary results. Collected up getting data from
+server into a single function.
+</td></tr>
+
+<tr valign="top"><td><strong>
+23/08/02
+</strong></td><td><i>
+hedit.cc<br>
+folder.cc
+</i></td><td>
+Two new programs, the first to edit headers, the second to perform phase folding.
+</td></tr>
+
+<tr valign="top"><td><strong>
+19/08/02
+</strong></td><td><i>
+plot.cc<br>
+rtplot.cc
+</i></td><td>
+Put in gaussian fitting into 'rtplot', added extra parameters for controlling it, and put these into plot too.
+</td></tr>
+
+<tr valign="top"><td><strong>
+16/08/02
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Pretty much completed gaussian fitting part of 'plot' with the exception of uncertainties on the elliptical shape parameters -- rather
+complex to compute. 
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/08/02
+</strong></td><td><i>
+plot.cc
+</i></td><td>
+Added options to change the gaussian fitting parameters on the command line as well as interactively. Also added
+rejection loop to the gaussian fits.
+</td></tr>
+
+<tr valign="top"><td><strong>
+15/08/02
+</strong></td><td><i>
+fitgauss2D.cc
+</i></td><td>
+Fixed bug causing segmentation faults in this function. Seems to work quite well inside 'plot'. Also added 
+code to send back covariances of the fit.
+</td></tr>
+
+
+
+<tr valign="top"><td><strong>
+13/08/02
+</strong></td><td><i>
+read_reduce_file.cc
+</i></td><td>
+Option added to control whether or not the log file will clobber an already existing file of the
+same name.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/08/02
+</strong></td><td><i>
+reduce.cc<br>
+read_reduce_file.cc
+</i></td><td>
+Name of the log file is now one of the command-line arguments to emphasize the importance
+of this parameter.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/08/02
+</strong></td><td><i>
+grab.cc<br>
+rtplot.cc<br>
+reduce.cc<br>
+parseXML.cc<br>
+de_multiplex.cc
+</i></td><td>
+Added option to trim off lower row of junk data from windows. This should mainly be helpful for autoscaling of plots
+and judging whether saturation has occurred.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/08/02
+</strong></td><td><i>
+fitgauss2D.cc<br>
+plot.cc
+</i></td><td>
+First working version of this routine implemented in the plotting routine.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/08/02
+</strong></td><td><i>
+setwin.cc<br>
+setfield.cc
+</i></td><td>
+Minor bugs resulting from command input changes fixed.
+</td></tr>
+
+
+
+<tr valign="top"><td><strong>
+12/08/02
+</strong></td><td><i>
+fitgauss2D.cc
+</i></td><td>
+Another go at 2D gaussian fitting, based upon the NR routine 'mrqmin'. The idea is to allow fitting of either axially-symmetric
+or asymmetric gaussians to stellar profiles.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/08/02
+</strong></td><td><i>
+Defect.h<br>
+setedefect.cc<br>
+plot_defects.cc
+</i></td><td>
+Started addition of another basic object class to represent CCD defects with the intention of
+getting rtplot to plot a map of defects when setting on a target. Should help avoid worst flat-field
+features.
+</td></tr>
+
+<tr valign="top"><td><strong>
+02/08/02
+</strong></td><td><i>
+crop.cc
+</i></td><td>
+Added option to crop to a frame as well as a multi-window file.
+</td></tr>
+
+<tr valign="top"><td><strong>
+13/03/02
+</strong></td><td><i>
+noise.cc<br>
+plot.cc
+</i></td><td>
+Added options to handle lists of files.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/02/02
+</strong></td><td><i>
+Windata.h
+</i></td><td>
+Removed bias stuff. Changed computation of mean to double 
+precision as it was losing accuracy in float given large pixel numbers.
+</td></tr>
+
+<tr valign="top"><td><strong>
+12/02/02
+</strong></td><td><i>
+Windata.h
+</i></td><td>
+Switched back to 2D array as basic data.
+</td></tr>
+
+<tr valign="top"><td><strong>
+11/02/02
+</strong></td><td><i>
+Windata.h<br>
+plot.cc
+</i></td><td>
+Edited 'centile' of Windata class to prevent scrambling of data. Worth 
+looking for one to avoid need to copy data. Edited plot to bring up to
+date.
+</td></tr>
+
+<tr valign="top"><td><strong>
+10/02/02
+</strong></td><td><i>
+Makefile
+</i></td><td>
+Changed X11 to X11R6 for laptop install. Added ' to ultracam
+maker.
+</td></tr>
+
+<tr valign="top"><td><strong>
+04/02/02
+</strong></td><td><i>
+Makefile<br>
+docgen.pl
+</i></td><td>
+Changed the PGPLOT directories to decouple from STARLINK
+installation. Added conditional code for ease of installation on
+different systems. Also changed parts which create links to files
+to copying them to make installation more standalone. Added a link
+in docgen.pl to the Changes file.
+</td></tr>
+
+
+
+
+</table>
+
+</table>
+
+<p>
+<hr>
+<address>
+Tom Marsh, Warwick
+</address> 
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

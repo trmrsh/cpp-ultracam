@@ -1,0 +1,347 @@
+#!/usr/bin/perl 
+#
+# docgen.in is the template file from which 'docgen.pl' will be created by
+# the makefile. Only edit 'docgen.in'
+
+require "document.pl";
+
+$time = localtime;
+
+(@ARGV == 1) or die "usage: docgen.pl directory\n";
+
+$html = shift;
+
+# Command classes. Individual files require pointers
+# to these to get into them.
+
+%classes = (
+	    'Testing'        => 'Programs for testing purposes.',
+	    'Display'        => 'Programs especially for display.',
+	    'Information'    => 'Information routines.',
+	    'Arithematic'    => 'Arithematical manipulations.',
+	    'Observing'      => 'Programs of use during observing.',
+	    'Reduction'      => 'Reduction programs.',
+	    'IO'             => 'Input/Output programs.',
+	    'FITS'           => 'FITS related programs.',
+	    'Scripts'        => 'Useful scripts.',
+	    'Manipulation'   => 'Frame modification.',
+	    'Spectra'        => 'Routines useful with spectra.',
+	    );
+
+# now generate individual command documentation.
+
+# normal programs
+
+foreach $file ('addbad.cc', 'addfield.cc', 'addsky.cc', 'addspec.cc', 'arith.cc', 
+	       'backsub.cc', 'badgen.cc', 'bcrop.cc', 'boxavg.cc', 'boxmed.cc',
+	       'carith.cc', 'collapse.cc', 'combine.cc', 'crop.cc',
+	       'dsub.cc',
+	       'expand.cc',
+	       'fits2ucm.cc', 'folder.cc',
+	       'genseries.cc', 'gentemp.cc', 'gettime.cc', 'grab.cc', 'grab2fits.cc', 
+	       'hedit.cc', 'hedlis.cc', 'hist.cc',
+	       'list.cc', 'lplot.cc',
+	       'makeflat.cc', 'movie.cc', 'multiframe.cc', 
+	       'ncal.cc', 'noise.cc', 
+	       'oneline.cc', 
+	       'pixel.cc', 'plot.cc', 'ppos.cc',
+	       'reduce.cc', 'rtplot.cc', 
+	       'setaper.cc', 'setdefect.cc', 'setfield.cc', 'setreg.cc', 'setwin.cc', 'shifter.cc', 
+	       'sreduce.cc', 'stats.cc', 
+	       'times.cc',
+	       'ucm2fits.cc', 'uinfo.cc', 'uinit.cc',
+	       'vshow.cc', 
+	       'window.cc', 'wjoin.cc',
+	       ){
+    document("../src/$file",$html,"html","html","");
+}
+
+# shell, Perl, python scripts
+
+foreach $file ('addaframe.csh', 'breakup.csh', 'copymask.pl', 'dummy.pl', 'extract_times.csh', 'fmatch.py', 'l3gain.pl',
+	       'loggen.csh', 'makebias.csh', 'missbias.py', 'mulaframe.csh', 'newreduce.pl', 'setup.pl', 
+	       'shiftaper.pl', 'splitr.pl', 'sumframes.csh', 'transform.pl', 'ucat.csh', 'uls.csh', 'ult2asc.pl', 
+	       'unique.py', 'updateaper.pl'){
+    document("../scripts/$file",$html,"html","html","#");
+}
+
+# generate overall index file
+
+open(INDEX, ">$html/index.html") or die "Could not open index file\n";
+print INDEX <<END1;
+<html>
+<head>
+<title>ULTRACAM Pipeline Software Version ZzZzZ</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+
+<h1>The ULTRACAM Pipeline Software Version ZzZzZ Home Page</h1>
+<p>
+This is the main page for documentation on the ULTRACAM pipeline software. The purpose of this 
+software is to enable reduction and analysis of ULTRACAM multi-CCD data. The software comes as a 
+suite of stand-alone programs which carry out various obvious operations, such as adding two frames 
+etc. The 'look \& feel' is based upon STARLINK packages such as FIGARO and KAPPA, with a few differences. 
+See the section on <a href="UserInput.html">user input</a> for more details; you should read this at least
+once, whether or not you are familiar with STARLINK software.
+
+<p>
+If you are wondering whether you want to upgrade to this version of the software from an earlier one, you
+should look at the <a href="Changes.html">list of changes</a> to the software.
+<p>
+<h2>What is 'ULTRACAM'?</h2>
+
+ULTRACAM is a high-speed CCD camera for astronomy; see <a 
+href="http://www.shef.ac.uk/~phys/people/vdhillon/ultracam/">Vik Dhillon's ULTRACAM pages</a>
+for extensive details of it. The pipeline software is dedicated to turning the raw data that
+ULTRACAM produces in abundance into something understandable. 
+
+<p>
+<h2>Overview of the Software</h2>
+
+<p> There are two main aspects to the pipeline software. First, data from the
+instrument is stored in two files, one an XML file containing a description of
+the data format, and named something like 'run034.xml', and the other a single
+large file containg all the raw data and times of a given run called in this
+case 'run034.dat'. Since a run could be many minutes or even hours on one target
+at high-speed, these data files can be very large. Owing to filesystems
+limitations they used to be no more than 2GB, and although they can now exceed
+this, they rarely do in practice. The pipeline software can interact with these
+files through several programs, collectively part of the <a
+href="Observing.html">Observing</a> class. You can expect to need these programs
+quite a bit during an observing run. They access the raw data files through a
+server (the 'ATC server'). They make http requests and the server delivers the
+data over the network.  You will need to have this server installed and running
+before using any of these programs in this way (unless you have the files on a
+local disk in which case the server is not required).
+
+<p> The second side of the pipeline software is all the other programs. These
+work on individual files, 1 per exposure, in the spirit of standard CCD
+observing, except that each file contains multiple (3 in the case of ULTRACAM)
+CCDs-worth of data. Thus a single 'run' could be split into hundreds of
+individual frames (see the program <a href="grab.html">grab</a>). These
+individual files come with the extension ".ucm". Most of the pipeline programs
+operate on these files. You can also convert them to FITS for display with other
+programs such as 'GAIA' (GAIA in particular makes a nice job of the multiple
+HDUs that are typically created).
+
+<p>
+<h2>Batch processing</h2>
+
+<p>
+If you expect to carry out batch processing with more than one ultracam program running simultaneously,
+you should review the <strong>nodefs</strong> option of the <a href="UserInput.html">user input</a> 
+section or, better still, make use of the ability to redirect the location of the defaults files,
+again described in the <a href="UserInput.html">user input</a> section.
+
+<p>
+<h2>Reduce data file</h2>
+
+<p>
+The main reduction program <a href="reduce.html">reduce</a> is primarily controlled through an ASCII input
+file. Although I try not to change the format of this file more than necessary, it does sometimes have
+to be updated. Download <a href="reduce.red">this file</a> for an up-to-date example file which is compatible
+with version ZzZzZ of the pipeline.
+
+<h2>Links to detailed information on the programs</h2>
+
+<p>
+<table>
+
+<tr><td><a href="Alphabet.html">Alphabetical</a></td>
+<td>Alphabetical list of all programs.</td></tr>
+
+<tr><td><a href="Classified.html">Classified</a></td>
+<td>Programs classified into groups of related purpose.</td></tr>
+
+<tr><td><a href="GettingStarted.html">Getting Started</a></td>
+<td>A quick guide to getting going, useful during observing.</td></tr>
+
+<tr><td><a href="ultracam_guide.pdf">PDF guide</a></td>
+<td>A somewhat more detailed look at reduction.</td></tr>
+
+<tr><td><a href="UserInput.html">User input</a></td>
+<td>How to specify command input, what options are available.</td></tr>
+
+<tr valign="top"><td><a href="reduce.red">reduce file</a></td>
+<td>Example of the ASCII file for controlling the main reduction program, <a href="reduce.html">reduce</a>.</td></tr>
+
+<tr><td><a href="Errors.html">Errors</a></td>
+<td>Descriptions of the meanings of error messages that you may encounter.</td></tr>
+
+<tr valign="top"><td><a href="Timing.html">Timing</a></td>
+<td>A description of how the GPS timestamps are translated into the times listed by
+the pipeline. If you are interested in precise absolute times, be aware that the correctness of
+everything has yet to be demonsatrated.
+</td></tr>
+
+<tr><td><a href="FAQ.html">FAQ</a></td>
+<td>Frequently Asked Questions. If you are puzzled about something, perhaps the 
+solution is here.
+</td></tr>
+
+</table>
+
+<h2>Other Links</h2>
+
+<p>
+<table>
+<tr><td><a href="api/html/index.html">API docs</a></td>
+<td>For programmers only!</td></tr>
+
+<tr><td><a href="Changes.html">Changes</a></td>
+<td>List of changes made to the software.</td></tr>
+
+<tr valign="top"><td><a href="http://deneb.astro.warwick.ac.uk/phsaap/software/ultracam.tar.gz">ultracam.tar.gz</a></td>
+<td>gzipped tar file of the latest version of the pipeline software.</td></tr>
+
+</table>
+
+<h2>Installation</h2>
+
+<p>
+Please refer to my main <a href="http://deneb.astro.warwick.ac.uk/phsaap/software/">software page</a></td>,
+for installation details.
+
+<p><hr>
+<address>Page generated $time</address>
+</body></html>
+END1
+close(INDEX);
+
+open(CLASSI, ">$html/Classified.html") or 
+    die "Could not open class index file\n";
+print CLASSI <<END2;
+<html>
+<head>
+<title>ULTRACAM classified listing</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>ULTRACAM classified list</h1>
+<p>
+This page gives links to lists of the ULTRACAM software components
+classified loosely by purpose.
+
+<p>
+<table>
+END2
+
+# write class entries and class pages at the same time
+
+foreach $class (sort keys %classes){
+    print CLASSI
+	"<tr><td><a href=\"$class.html\">$class</a></td>".
+	    "<td>$classes{$class}</td></tr>\n";
+
+    open(CLASS,">$html/$class.html") or 
+	die "Could not open html/$class.html\n";
+    print CLASS "<html>\n";
+    print CLASS "<head>\n";
+    print CLASS "<title>$classes{$class}</title>\n";
+    print CLASS "<link rel=stylesheet href=\"ultracam.css\"".
+	" type=\"text/css\">\n";
+    print CLASS "</head>\n";
+    print CLASS "<body>\n";
+    print CLASS "<h1>$classes{$class}</h1>\n\n<p>\n";
+    print CLASS "<table>\n";
+    foreach $item (sort keys %index){
+	$print = 0;
+	foreach $clss (@{$index{$item}->{class}}){
+	    if($clss eq $class){$print = 1;}
+	}
+	if($print){
+	    print CLASS 
+		"<tr><td><a href=\"$index{$item}->{file}\">".
+		    "$item</a></td><td>".
+			"$index{$item}->{description}</td>\n";
+	}
+    }
+    print CLASS "</table><p><hr>\n";
+    print CLASS "<address>Page generated $time</address>\n";
+    print CLASS "</body></html>\n";
+    close(CLASS);
+}
+
+# finish off class index file
+
+print CLASSI <<END3;
+</table>
+
+<p><hr>
+<address>Page generated $time</address>
+</body></html>
+END3
+close(CLASSI);
+
+
+# write alphabetical list of all commands.
+
+open(ALPHA, ">$html/Alphabet.html") or 
+    die "Could not open command list\n";
+print ALPHA <<END4;
+<html>
+<head>
+<title>ULTRACAM software</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>ULTRACAM software</h1>
+<p>
+This page gives links to all of the programs available in the pipeline. The individual
+pages contain invocation lines such as
+<pre>
+ addfield field base root over nimage (seed xd yd xrms yrms)
+</pre>
+This shows the list of arguments, which are explained in more detail on each page. The
+round brackets denote arguments which may or may not be prompted for, depending upon the 
+values of earlier arguments. Square brackets as in
+<pre>
+cadd input constant output [nccd nwin]
+</pre>
+show arguments which by default are never prompted for, unless 'prompt' is specified on the command line.
+In this case they allow the user to add a constant to only one of the CCDs or one window of one CCD.
+
+Here is a full specification showing all possible variations:
+
+<p>
+rtplot [device source] ((url)/(file) first trim [(ncol nrow) twait tmax])/(flist) [pause] nccd [def] (defect) [setup]
+setwin bias (biasframe) ([stack]) xleft xright yleft yright iset  (i1 i2)/(p1 p2) (gauss) ([fwhm hwidth readout 
+gain sigma sigrej symm onedsrch (fwhm1d hwidth1d)])
+
+<p>
+The first two arguments are not prompted for. Depending upon the value of 'source' (in this case),
+either of url/file or flist will be prompted. If url or file are requested then 'first' and 'trim'
+will be requested, etc.
+
+<p>
+To setup the arguments fully the first time, you may want to type 'program prompt'. Having done this
+once, then subsequent calls without prompt will require a smaller number of inputs.
+
+<p>
+<table>
+END4
+
+foreach $item (sort keys %index){
+    print ALPHA 
+	"<tr><td><a href=\"$index{$item}->{file}\">$item</a>".
+	"</td><td>$index{$item}->{description}</td>\n";
+}
+
+print ALPHA "</table><p><hr>\n";
+print ALPHA "<address>Page generated $time</address>\n";
+print ALPHA "</body></html>\n";
+close(ALPHA);
+
+exit;
+
+
+
+
+
+
+
+
+
+
+

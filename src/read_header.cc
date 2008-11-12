@@ -1,0 +1,813 @@
+#include <deque>
+#include "trm_subs.h"
+#include "trm_format.h"
+#include "trm_constants.h"
+#include "trm_date.h"
+#include "trm_time.h"
+#include "trm_ultracam.h"
+#include "trm_constants.h"
+
+// little structure to save data relevant to the blue co-add option
+struct Blue_save { 
+    Blue_save(const Subs::Time& time, float expose, bool reliable){
+	this->time     = time;
+	this->expose   = expose;
+	this->reliable = reliable;
+    }
+    Subs::Time time;
+    float expose;
+    bool reliable;
+};
+
+/**
+ * Interpret the ULTRACAM header info. This is the routine that handles all the ULTRACAM
+ * timing stuff. It carries out byte swapping depending upon the endian-ness of the machine.
+ * \param buffer        pointer to start of header buffer
+ * \param serverdata    data from the XML file needed for interpreting the times. This will be slightly
+ *                      modified to reflect whether the data is affected by the timestamping bug of Dec 2004
+ * \param timing        all the timing info derived from the header (returned)
+ */
+
+void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata, Ultracam::TimingInfo& timing){
+
+    const bool LITTLE = Subs::is_little_endian();
+    
+    union IntRead{
+	char c[4];
+	int  i;
+	unsigned short int usi;
+	short int si;
+    } intread;
+  
+    // Frame number. First one = 1
+    
+    // The raw data files are written on a little-endian (linux) machine. Bytes
+    // must be swapped if reading on big-endian machines such as Macs
+    
+    if(LITTLE){
+	intread.c[0] = buffer[4];
+	intread.c[1] = buffer[5];
+	intread.c[2] = buffer[6];
+	intread.c[3] = buffer[7];
+    }else{
+	intread.c[0] = buffer[7];
+	intread.c[1] = buffer[6];
+	intread.c[2] = buffer[5];
+	intread.c[3] = buffer[4];
+    }
+    
+    int frame_number = intread.i;
+    
+    // Number of seconds
+    if(LITTLE){
+	intread.c[0] = buffer[9];
+	intread.c[1] = buffer[10];
+	intread.c[2] = buffer[11];
+	intread.c[3] = buffer[12];
+    }else{
+	intread.c[0] = buffer[12];
+	intread.c[1] = buffer[11];
+	intread.c[2] = buffer[10];
+	intread.c[3] = buffer[9];
+    }
+    
+    int nsec = intread.i;
+    
+    // number of nanoseconds
+    if(LITTLE){
+	intread.c[0] = buffer[13];
+	intread.c[1] = buffer[14];
+	intread.c[2] = buffer[15];
+	intread.c[3] = buffer[16];
+    }else{
+	intread.c[0] = buffer[16];
+	intread.c[1] = buffer[15];
+	intread.c[2] = buffer[14];
+	intread.c[3] = buffer[13];
+    }
+    
+    int nnanosec = intread.i;
+    
+    // number of satellites. -1 indicates no GPS, and thus times generated from
+    // when software loaded into kernel. Useful for relative times still.
+    if(LITTLE){
+	intread.c[0] = buffer[21];
+	intread.c[1] = buffer[22];
+    }else{
+	intread.c[0] = buffer[22];
+	intread.c[1] = buffer[21];
+    }
+
+    int nsatellite = int(intread.si);
+
+    // is the u-band junk data?
+    bool bad_blue = (serverdata.nblue > 1) && ((buffer[0] & 1<<3) == 1<<3); 
+
+    // Flag so that some things are only done once
+    static bool first = true;
+    static Subs::Format form(8);
+
+    // Now translate date info. All a bit complicated owing to various
+    // bugs in the system early on. Date has no meaning when nsat=-1
+    // in this case, set the date to an impossible one
+
+    Subs::Time gps_timestamp;  // This is the raw gps timestamp
+    static Subs::Time old_gps_timestamp;  // This is the raw gps timestamp of the previous frame
+    static double vclock_frame = 0;  // Number of seconds taken to shift one row.
+    Subs::Time ut_date;   // this will be the time at the centre of the exposure
+    static int old_frame_number = -1000;     // frame number stored in previous call
+    bool reliable = false;              // is time reliable?
+    float exposure_time = 0.f;          // length of exposure
+
+    // Clock board was changed in July 2003 and this resulted in the wrong sense of bit
+    // change for the timestamps. Thus the timing code has to change in between this date
+    // and the date when it was fixed in early 2005. Basically the timestamps started to
+    // occur immediately after readout as opposed to immediately prior to the frame shift
+    // into the masked region.
+    const Subs::Time clock_board_change(1,Subs::Date::Aug,2003); 
+    const Subs::Time clock_board_fixed(1,Subs::Date::Jan,2005); 
+
+    if(nsatellite == -1){
+
+	gps_timestamp.set(1,Subs::Date::Jan,2000,0,0,0.);
+	gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+
+	if(first){
+
+	    std::cerr << "WARNING: no satellites, so the date unknown. In this case the timing settings cannot" << std::endl;
+	    std::cerr << "be determined. Values for > July 2003 will be used by default. If this is not right" << std::endl;
+	    std::cerr << "and timing matters for these data, please contact Vik Dhillon or Tom Marsh." << std::endl;
+
+	}
+
+	if(serverdata.v_ft_clk > 127){
+	    vclock_frame = 6.e-9*(40+320*(serverdata.v_ft_clk - 128));
+	}else{
+	    vclock_frame = 6.e-9*(40+40*serverdata.v_ft_clk);
+	}
+
+    }else{
+
+	// For several modes we need to store information from earlier frames to get correct times.
+	// We also need to do this to correct May 2002 times.
+	if(serverdata.which_run == Ultracam::ServerData::MAY_2002){
+      
+	    // The first ULTRACAM run in May 2002 did not have date info. Offset from start of week
+	    // which was 0 UT on 12 May 2002
+	    gps_timestamp.set(12,Subs::Date::May,2002,0,0,0.);
+	    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+      
+	    // For times which run over the next week
+	    if(gps_timestamp < Subs::Time(16,Subs::Date::May,2002)) gps_timestamp.add_hour(168.);
+      
+	    // Correct 10 second error that affected May 2002 run, but only if we are running frame by frame
+	    // Cannot fix first whatever; a fairly rare problem luckily
+	    if(frame_number == old_frame_number+1 && gps_timestamp < old_gps_timestamp) gps_timestamp.add_second(10.);
+      
+	    // The first night of the May run had a short vertical clock that caused problems
+	    if(gps_timestamp < Subs::Time(17, Subs::Date::May, 2002, 12.)){
+		vclock_frame = 10.0e-6; 
+	    }else{
+		vclock_frame = 24.46e-6; 
+	    }
+      
+	}else{
+      
+	    // Starting with the second night of the September 2002 run, we have date
+	    // information. We try to spot rubbish dates by their silly year      
+	    unsigned char day_of_month  = buffer[17];
+	    unsigned char month_of_year = buffer[18];
+
+	    if(LITTLE){
+		intread.c[0] = buffer[19];
+		intread.c[1] = buffer[20];
+	    }else{
+		intread.c[0] = buffer[20];
+		intread.c[1] = buffer[19];
+	    }
+	    unsigned short int year = intread.usi;
+      
+	    // hack for partial fix with day and month ok but not year
+	    if(month_of_year == 9 && year == 263) year = 2002;
+      
+	    if(year < 2002){
+		gps_timestamp.set(8,Subs::Date::Sep,2002,0,0,0.);
+		gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+	    }else{
+	
+		if(month_of_year == 9 && year == 2002){
+	  
+		    // Yet another special case!! day numbers seem problematic in the
+		    // September run, but seem to be correct to within 1 day. So just try 
+		    // to use them to indicate which week we are in, refining the final number
+		    // using 'nsec'
+		    // The problem is that the day number seems to change, but not exactly on
+		    // midnight UT, leaving times near midnight in a bit of a mess. We recover
+		    // from this using 'nsec', the number of seconds from the start of the week
+		    // (saturday/sunday boundary), but then we have to be careful to identify
+		    // this correctly. The next bit of code does this.
+	  
+		    Subs::Time first_week(8,Subs::Date::Sep,2002,0,0,0.);
+		    Subs::Time test_time(day_of_month,month_of_year,year,0,0,0.);
+		    double secdiff = test_time - first_week;
+		    int    nweek   = int(secdiff/Constants::IDAY/7.);
+		    double days    = (secdiff - Constants::IDAY*7*nweek)/Constants::IDAY;
+	  
+		    if(days > 3.5 && nsec < 2*Constants::IDAY){
+			// 'days' indicates a date late in the week while nsec indicates
+			// early. This means 'nweek' is one too small
+			nweek++;
+		    }else if(days < 3.5 && nsec > 5*Constants::IDAY){
+			// 'days' indicates a date early in the week while nsec indicates
+			// late. This means 'nweek' is one too large (not sure this case ever arises,
+			// but here for safety).
+			nweek--;
+		    }
+	  
+		    // OK, now have correct week. Set gps_time to the start of the week
+		    gps_timestamp = first_week;
+		    gps_timestamp.add_day(7*nweek);
+	  
+		    // Now just add in the fraction of the week
+		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+	
+		}else{ 
+ 
+		    // nsec represents the number of seconds since the start of the week, but
+		    // the date is the date of the relevant day therefore we set the date to be the date measured 
+		    // and then add the number of seconds modulo 86400. This can lead to an error just after
+		    // midnight when the date is taken before midnight while the times are after. This is corrected
+		    // down below.
+		    gps_timestamp.set(day_of_month,month_of_year,year,0,0,0.);
+
+		    // We have the  right date, now just add in the fraction of the day
+		    gps_timestamp.add_second(double(nsec % Constants::IDAY) + double(nnanosec)/1.e9);
+
+		}
+
+		// Set the vertical clock time. Have to account for the change of
+		// clock board that occured in July 2003 which altered the conversion
+		// formulae.
+
+		if(gps_timestamp > clock_board_change){
+		    if(serverdata.v_ft_clk > 127){
+			vclock_frame = 6.e-9*(40+320*(serverdata.v_ft_clk - 128));
+		    }else{
+			vclock_frame = 6.e-9*(40+40*serverdata.v_ft_clk);
+		    }
+		}else{
+		    if(serverdata.v_ft_clk > 127){
+			vclock_frame = 6.e-9*(80+160*(serverdata.v_ft_clk - 128));
+		    }else{
+			vclock_frame = 6.e-9*(80+20*serverdata.v_ft_clk);
+		    }
+		}
+	    }
+	}
+    }
+
+    // 'midnight bug' corrector. Spot this by working out the day 
+    // of the week from the seconds and the date. If they do not match, we add a day to 
+    // the time. Extra % 7 added 14/05/2005 to cope with changes made before May 2005 VLT run
+
+    if((gps_timestamp.int_day_of_week() + 1) % 7 == ((nsec / Constants::IDAY) % 7)){
+	std::cerr << "WARNING: Midnight bug detected and corrected *****." << std::endl;
+	gps_timestamp.add_day(1);
+    }
+
+    // We finally have a correct raw timestamp 'gps_timestamp'
+    // Now we get onto working out the time at the centre of the exposures
+    // which depends upon the mode employed and the particular run to some extent because of
+    // of the bug introduced with the clock board change of summer 2003 which we only spotted
+    // in Dec 2004. Decide how to fix times, accounting for inverting switch
+    timing.fix_as_documented = 
+	(serverdata.clock_board_default  && (gps_timestamp < clock_board_change || gps_timestamp > clock_board_fixed)) ||
+	(!serverdata.clock_board_default && (gps_timestamp > clock_board_change && gps_timestamp < clock_board_fixed));
+
+
+    // One-off variables that need saving
+    static double clear_time;
+    static double readout_time;
+    static double frame_transfer;
+    static std::deque<Subs::Time> gps_times;
+
+    static std::deque<Blue_save> blue_times;
+
+    // Clear old times and status flags if frame numbers not consecutive
+    if(frame_number != old_frame_number + 1){
+	gps_times.clear();
+	blue_times.clear();
+    }
+  
+    // Push current gps time onto front of deque. This ensures
+    // that there will always be at least one time in the deque.
+    // For clarity in what follows I consistently use gps_times[n]
+    // even when n = 0, for which I could instead use gps_timestamp
+    // gps_times[n] is the n-th previous timestamp to the current one
+    gps_times.push_front(gps_timestamp);
+
+    // Timing parameters from Vik
+    //  const double INVERSION_DELAY = 110.;   // microseconds
+    const double VCLOCK_STORAGE  = vclock_frame;   // microseconds
+    const double HCLOCK          = 0.48;   // microseconds
+    const double CDS_TIME_FBB    = 4.4;    // microseconds
+    const double CDS_TIME_CDD    = 10.;    // microseconds
+    const double SWITCH_TIME     = 1.2;    // microseconds
+
+    // Ultraspec timing parameter from Naidu. Frame transfer time is fixed.
+    const double USPEC_FT_TIME = 0.0067196; // seconds
+
+    double cds_time = 10.;
+    if(first){
+	if(serverdata.instrument == "ULTRACAM"){
+	    if(serverdata.gain_speed == "3293"){
+		// 3293 == CDD in hex
+		cds_time = CDS_TIME_CDD;
+	    }else if(serverdata.gain_speed == "4027"){
+		// 4027 == FBB in hex
+		cds_time = CDS_TIME_FBB;
+	    }else{
+		std::cerr << "Unrecognised gain speed setting = "            << serverdata.gain_speed << std::endl;
+		std::cerr << "Recognised values are 3293==CDD and 4027==FBB" << std::endl;
+		std::cerr << "Will set CDS time = to CDD time, but this may not be right" << std::endl;
+		cds_time = CDS_TIME_CDD;
+	    }
+	}else if(serverdata.instrument == "ULTRASPEC"){
+	    std::cerr << "Ultracam::read_header WARNING: timing for ULTRASPEC still to be worked out!!" << std::endl;
+	    cds_time = 0.;
+	}
+    }
+
+    const double VIDEO = SWITCH_TIME + cds_time;
+
+    // OK now start on timing code
+    if(serverdata.instrument == "ULTRACAM"  &&
+       (serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_CLEAR || 
+	serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_OVERSCAN ||
+	serverdata.readout_mode == Ultracam::ServerData::WINDOWS_CLEAR)){
+
+	// Never need more than 2 times
+	if(gps_times.size() > 2) gps_times.pop_back(); 
+
+	if(first){
+
+	    std::cout << "#" << std::endl;
+	    if(timing.fix_as_documented)
+		std::cout << "# Standard timing mode" << std::endl;
+	    else
+		std::cout << "# Non-standard timing mode" << std::endl;
+
+	    std::cout << "# Exposure delay      = " << form(serverdata.expose_time) << " seconds" << std::endl;
+      
+	}
+
+	// Order of events: [expose, frame transfer, readout, clear]
+	if(timing.fix_as_documented){
+
+	    // Timestamp is placed at start of 'expose', so this is easy and accurate
+	    ut_date = gps_times[0];
+	    ut_date.add_second(serverdata.expose_time/2.);
+	    exposure_time = serverdata.expose_time;
+	    reliable = true;
+
+	}else{
+
+	    // Timestamp in this case is placed between 'readout' and 'clear' so one must 
+	    // backtrack to get to mid 'expose'. Reliability of this is unclear to me.
+
+	    if(first){
+
+		// Time taken to clear CCD
+		clear_time   = (1033. + 1027)*vclock_frame;
+
+		// Time taken to read CCD (assuming cdd mode) ?? needs generalising ??
+		if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_CLEAR){
+		    readout_time = (1024/serverdata.ybin)*(VCLOCK_STORAGE*serverdata.ybin + 536*HCLOCK + (512/serverdata.xbin+2)*VIDEO)/1.e6;
+
+		}else if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_OVERSCAN){
+		    readout_time = (1032/serverdata.ybin)*(VCLOCK_STORAGE*serverdata.ybin + 540*HCLOCK + (540/serverdata.xbin+2)*VIDEO)/1.e6;
+
+		}else{
+
+		    const Wind& lwin = serverdata.window[0];
+		    const Wind& rwin = serverdata.window[1];
+		    int nxu          = serverdata.xbin*rwin.nx;
+		    int nxb          = rwin.nx;
+		    int nyb          = rwin.ny;
+		    int xleft        = lwin.llx;
+		    int xright       = rwin.llx + nxu - 1;
+		    int diff_shift   = abs(xleft - 1 - (1024 - xright) );
+		    int num_hclocks  = (xleft - 1 > 1024 - xright) ? nxu + diff_shift + (1024 - xright) + 8 : nxu + diff_shift + (xleft - 1) + 8;
+
+		    readout_time = nyb*(VCLOCK_STORAGE*serverdata.ybin + num_hclocks*HCLOCK + (nxb+2)*VIDEO)/1.e6;
+
+		}
+
+		// Frame transfer time
+		frame_transfer = 1033.*vclock_frame;
+
+		std::cout << "#" << std::endl;
+		std::cout << "# Vertical clock time = " << form(vclock_frame) << " seconds" << std::endl;
+		std::cout << "# Clear time          = " << form(clear_time)     << " seconds" << std::endl;
+		std::cout << "# Frame transfer time = " << form(frame_transfer) << " seconds" << std::endl;
+		std::cout << "# Exposure delay      = " << form(serverdata.expose_time) << " seconds" << std::endl;
+		std::cout << "# Read time           = " << form(readout_time) << " seconds" << std::endl;
+
+	    }
+
+	    if(gps_times.size() == 1){
+
+		// Case where we have not got a previous timestamp
+		ut_date = gps_times[0];
+		ut_date.add_second(-frame_transfer-readout_time-serverdata.expose_time/2.);
+		reliable = false;
+
+	    }else{
+
+		// Case where we have got previous timestamp is somewhat easier and perhaps
+		// more reliable.
+		ut_date = gps_times[1];
+		ut_date.add_second(clear_time + serverdata.expose_time/2.);
+		reliable = true;
+
+	    }
+	    exposure_time = serverdata.expose_time;
+      
+	}
+
+    }else if(serverdata.instrument == "ULTRACAM" && 
+	     (serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_NOCLEAR || 
+	      serverdata.readout_mode == Ultracam::ServerData::WINDOWS)){
+
+	// Never need more than 3 times
+	if(gps_times.size() > 3) gps_times.pop_back(); 
+
+	if(first){
+
+	    // Time taken to move 1033 rows.
+	    frame_transfer = 1033.*vclock_frame;
+
+	    if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_NOCLEAR){
+		readout_time = (1024/serverdata.ybin)*(VCLOCK_STORAGE*serverdata.ybin + 536*HCLOCK + (512/serverdata.xbin+2)*VIDEO)/1.e6;
+
+	    }else{
+ 
+		readout_time = 0.;
+	
+		int xbin = serverdata.xbin;
+		int ybin = serverdata.xbin;
+		for(size_t np=0; np<serverdata.window.size(); np += 2){
+
+		    int nx     = xbin*serverdata.window[np].nx;
+		    int ny     = ybin*serverdata.window[np].ny;
+			
+		    int ystart = serverdata.window[np].lly;
+		    int xleft  = serverdata.window[np].llx;
+		    int xright = serverdata.window[np+1].llx + nx - 1;
+	  
+		    int ystart_m = np > 0 ? serverdata.window[np-2].lly : 1;
+		    int ny_m     = np > 0 ? ybin*serverdata.window[np-2].ny : 0;
+			
+		    // Time taken to shift the window next to the storage area
+		    double y_shift = np > 0 ? (ystart-ystart_m-ny_m)*VCLOCK_STORAGE : (ystart-1)*VCLOCK_STORAGE;
+			
+		    // Number of columns to shift whichever window is further from the edge of the readout
+		    // to get ready for simultaneous readout.
+		    int diff_shift   = abs(xleft - 1 - (1024 - xright) );
+
+		    // Time taken to dump any pixels in a row that come after the ones we want.
+		    // The '8' is the number of HCLOCKs needed to open the serial register dump gates
+		    // If the left window is further from the left edge than the right window is from the
+		    // right edge, then the diffshift will move it to be the same as the right window, and
+		    // so we use the right window parameters to determine the number of hclocks needed, and
+		    // vice versa.
+		    int num_hclocks  = (xleft - 1 > 1024 - xright) ? nx + diff_shift + (1024 - xright) + 8 : nx + diff_shift + (xleft - 1) + 8;
+			
+		    // Time taken to read one line. The extra 2 is required to fill the video pipeline buffer
+		    double line_read = VCLOCK_STORAGE*ybin + num_hclocks*HCLOCK + (nx/xbin+2)*VIDEO;
+		
+		    readout_time += y_shift + (ny/ybin)*line_read;
+		}
+		readout_time /= 1.e6;
+	    }
+
+	    std::cout << "#" << std::endl;
+      
+	    if(timing.fix_as_documented)
+		std::cout << "# Standard timing mode" << std::endl;
+	    else
+		std::cout << "# Non-standard timing mode" << std::endl;
+            
+	    std::cout << "# Vertical clock time = " << form(vclock_frame) << " seconds" << std::endl;
+	    std::cout << "# Frame transfer time = " << form(frame_transfer) << " seconds" << std::endl;
+	    std::cout << "# Exposure delay      = " << form(serverdata.expose_time) << " seconds" << std::endl;
+	    std::cout << "# Readout time        = " << form(readout_time) << " seconds" << std::endl;
+      
+	}
+
+	// Order of events: [expose, frame transfer, readout]
+	// For all except first frame, the actual exposure covers [readout+expose]
+
+	if(timing.fix_as_documented){
+
+	    // Timestamp here is placed between 'frame transfer' and 'readout'
+	    if(frame_number == 1){
+	
+		// First frame of all is a special case. It has an exposure part but no
+		// preceding read.
+		ut_date = gps_times[0];
+
+		// This used to add the frame_transfer, but I think it should subtract it
+		ut_date.add_second(-frame_transfer-serverdata.expose_time/2.);
+		exposure_time = serverdata.expose_time;
+		reliable = true;
+	
+	    }else{
+	
+		if(gps_times.size() > 1){
+	  
+		    // If the stored parameters result from the previous call then we can get a good time.
+		    double texp = gps_times[0] - gps_times[1] - frame_transfer;
+		    ut_date = gps_times[1];
+		    ut_date.add_second(texp/2.);
+		    exposure_time = texp;
+		    reliable = true;
+	  
+		}else{
+	  
+		    // Do not have an earlier call to fall back on. Do the best that we can which
+		    // is to skip back over the frame transfer that took place after the exposure
+		    // and half the estimated exposure
+		    double texp = readout_time + serverdata.expose_time;
+		    ut_date = gps_times[0];
+
+		    ut_date.add_second(-frame_transfer-texp/2.);
+
+		    exposure_time    = texp;
+		    reliable = false;
+		}
+	    }
+
+	}else{
+
+	    // non-standard mode
+
+	    // Timestamp here is placed between 'read' and 'expose', skipping
+	    // the expose at the start.
+	    if(frame_number == 1){
+	
+		// First frame of all is a special case and we can't get a reliable value
+		// Just try to skip back over the frame transfer and readout
+		ut_date = gps_times[0];
+		ut_date.add_second(-frame_transfer-readout_time);
+		exposure_time = serverdata.expose_time;
+		reliable = false;
+	
+	    }else{
+
+		// We need in this case to backtrack two frames
+		if(gps_times.size() > 2){
+	  
+		    // If the stored parameters result from the previous calls then we can get a good time.
+		    double texp = gps_times[1] - gps_times[2] - frame_transfer;
+		    ut_date = gps_times[1];
+		    ut_date.add_second(serverdata.expose_time-texp/2.);
+		    exposure_time = texp;
+		    reliable = true;
+
+		}else if(gps_times.size() == 2){
+
+		    // Only one back, use difference of most recent as estimate for one before
+		    // probably not too bad, but must call it unreliable
+		    double texp = gps_times[0] - gps_times[1] - frame_transfer;
+		    ut_date = gps_times[1];
+		    ut_date.add_second(serverdata.expose_time-texp/2.);
+		    exposure_time = texp;
+		    reliable = false;
+	  
+	  
+		}else{
+	  
+		    // No earlier call. Must rely on estimates
+		    double texp = readout_time + serverdata.expose_time;
+		    ut_date = gps_times[0];
+		    ut_date.add_second(-texp-frame_transfer+serverdata.expose_time-texp/2.);
+		    exposure_time = texp;
+		    reliable = false;
+
+		}
+	    }
+	}
+
+    }else if(serverdata.instrument == "ULTRACAM" && serverdata.readout_mode == Ultracam::ServerData::DRIFT){
+
+	// The trickiest of them all, but essentially boils down to
+	// an nwins-1 shifted version of the case above
+
+	static int nwins;
+
+	// Calculate these just once
+	if(first){
+
+	    int xbin = serverdata.xbin;
+	    int ybin = serverdata.xbin;
+      
+	    int nx     = xbin*serverdata.window[0].nx;
+	    int ny     = ybin*serverdata.window[0].ny;
+      
+	    int ystart = serverdata.window[0].lly;
+	    int xleft  = serverdata.window[0].llx;
+	    int xright = serverdata.window[1].llx + nx - 1;
+
+	    // Maximum number of windows in pipeline
+	    nwins = int((1033./ny+1.)/2.);
+
+	    double pipe_shift = (int)(1033.-(((2.*nwins)-1.)*ny));
+
+	    // Time taken for (reduced) frame transfer, the main advantage of drift mode
+	    frame_transfer = (ny + ystart - 1)*vclock_frame;
+	  
+	    // Number of columns to shift whichever window is further from the edge of the readout
+	    // to get ready for simultaneous readout.
+	    int diff_shift   = abs(xleft - 1 - (1024 - xright) );
+
+	    // Time taken to dump any pixels in a row that come after the ones we want.
+	    // The '8' is the number of HCLOCKs needed to open the serial register dump gates
+	    // If the left window is further from the left edge than the right window is from the
+	    // right edge, then the diffshift will move it to be the same as the right window, and
+	    // so we use the right window parameters to determine the number of hclocks needed, and
+	    // vice versa.
+	    int num_hclocks  = (xleft - 1 > 1024 - xright) ? nx + diff_shift + (1024 - xright) + 8 : nx + diff_shift + (xleft - 1) + 8;
+			
+	    // Time taken to read one line. The extra 2 is required to fill the video pipeline buffer
+	    double line_read = VCLOCK_STORAGE*ybin + num_hclocks*HCLOCK + (nx/xbin+2)*VIDEO;
+		
+	    readout_time = ((ny/ybin)*line_read + pipe_shift*VCLOCK_STORAGE)/1.e6;
+
+	    std::cout << "#" << std::endl;
+
+	    if(timing.fix_as_documented)
+		std::cout << "# Standard timing mode" << std::endl;
+	    else
+		std::cout << "# Non-standard timing mode" << std::endl;
+
+	    std::cout << "# NWIN                         = " << nwins << std::endl;
+	    std::cout << "# Vertical clock time          = " << form(vclock_frame)   << " seconds" << std::endl;
+	    std::cout << "# Frame transfer time          = " << form(frame_transfer) << " seconds" << std::endl;
+	    std::cout << "# Exposure delay               = " << form(serverdata.expose_time) << " seconds" << std::endl;
+	    std::cout << "# Mean readout time (inc pipe) = " << form(readout_time)   << " seconds" << std::endl;
+
+	}
+
+	// Never need more than nwins+2 times
+	if(int(gps_times.size()) > nwins+2) gps_times.pop_back(); 
+
+	if(timing.fix_as_documented){
+
+	    // Pre board change or post-bug fix
+	    if(int(gps_times.size()) > nwins){
+
+		double texp = gps_times[nwins-1] - gps_times[nwins] - frame_transfer;
+		ut_date = gps_times[nwins];
+		ut_date.add_second(texp/2.);
+		exposure_time = texp;
+		reliable = true;
+
+	    }else{
+
+		// Set to silly value for easy checking
+		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+		exposure_time    = serverdata.expose_time;
+		reliable = false;
+	
+	    }
+
+	}else{
+
+	    // Non-standard mode
+
+	    if(int(gps_times.size()) > nwins+1){
+
+		double texp = gps_times[nwins] - gps_times[nwins+1] - frame_transfer;
+		ut_date = gps_times[nwins];
+		ut_date.add_second(serverdata.expose_time-texp/2.);
+		exposure_time = texp;
+		reliable = true;
+	
+	    }else if(int(gps_times.size()) == nwins+1){
+
+		double texp = gps_times[nwins-1] - gps_times[nwins] - frame_transfer;
+		ut_date = gps_times[nwins];
+		ut_date.add_second(serverdata.expose_time-texp/2.);
+		exposure_time = texp;
+		reliable = false;
+
+	    }else{
+	  
+		// Set to silly value for easy checking
+		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+		exposure_time    = serverdata.expose_time;
+		reliable = false;
+
+	    }
+	}
+
+    }else if(serverdata.instrument == "ULTRASPEC"){
+
+	// Avoid accumulation of timestamps.
+	if(gps_times.size() > 2) gps_times.pop_back(); 
+
+	// Two sequences:
+	// Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
+	// Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
+	// 
+	// Non-clear the total accumulation time is read+ft apart
+	// from first frame.
+
+	ut_date = gps_times[0];
+
+	if(serverdata.l3data.en_clr || frame_number == 1){
+
+	    ut_date.add_second(-serverdata.expose_time/2.);
+	    exposure_time = serverdata.expose_time;
+	    reliable = true;
+
+	}else if(gps_times.size() > 1){
+
+	    double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+	    ut_date.add_second(-texp/2.);
+	    exposure_time = texp;
+	    reliable = true;
+
+	}else{
+
+	    // Could be improved with an estimate of the read time
+	    ut_date.add_second(-serverdata.expose_time/2.);
+	    exposure_time = serverdata.expose_time;
+	    reliable = false;
+
+	}
+    }
+  
+    // Save old values
+    old_frame_number     = frame_number;
+    old_gps_timestamp    = gps_timestamp;
+
+    // Return some data
+    timing.ut_date           = ut_date;
+    timing.exposure_time     = exposure_time;
+    timing.reliable          = reliable && nsatellite > 2;
+    timing.frame_number      = frame_number;
+    timing.gps_time          = gps_timestamp;
+    timing.nsatellite        = nsatellite;
+    timing.vclock_frame      = vclock_frame;
+    timing.blue_is_bad       = bad_blue;
+
+    if(serverdata.nblue > 1){
+
+	// The mid-exposure time for the OK blue frames in this case is computed by averaging the 
+	// mid-exposure times of all the contributing frames, if they are available.
+	blue_times.push_front(Blue_save(ut_date, exposure_time, reliable));
+
+	if(bad_blue){
+	    // just pass through the standard time for the junk frames
+	    timing.ut_date_blue       = timing.ut_date;
+	    timing.exposure_time_blue = exposure_time;
+	    timing.reliable_blue      = timing.reliable;
+	}else{
+
+	    // if any of the contributing times is unreliable, then so is the final time. This is
+	    // also unreliable if any contributing frame times are missing. Time is calculated
+            // as half-way point between start of first and end of last contributing exposure.
+	    // Corrections are made if there are too few contributing exposures (even though the
+	    // final value will still be flagged as unreliable
+
+	    int    ncont  = std::min(serverdata.nblue, int(blue_times.size()));
+	    double start  = blue_times[ncont-1].time.mjd() - blue_times[ncont-1].expose/Constants::DAY/2;
+	    double end    = blue_times[0].time.mjd()       + blue_times[0].expose/Constants::DAY/2;
+	    double expose = end - start;
+
+	    // correct the times
+	    bool ok = (ncont == serverdata.nblue);
+	    if(!ok){
+		expose *= serverdata.nblue/float(ncont);
+		start   = end - expose;
+	    }else{
+		ok = blue_times[0].reliable && blue_times[ncont-1].reliable;
+	    }
+	    timing.ut_date_blue       = Subs::Time((start+end)/2.);
+	    timing.exposure_time_blue = Constants::DAY*expose;
+	    timing.reliable_blue      = ok;
+	}
+
+	// Avoid wasting memory storing past times
+	if(int(blue_times.size()) > serverdata.nblue) blue_times.pop_back();
+	    
+    }else{
+	timing.ut_date_blue       = timing.ut_date;
+	timing.exposure_time_blue = exposure_time;
+	timing.reliable_blue      = timing.reliable;
+    }	
+	
+    first = false;
+}

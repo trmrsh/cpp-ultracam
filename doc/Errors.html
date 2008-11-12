@@ -1,0 +1,44 @@
+<html>
+<head>
+<title>ULTRACAM software errors</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>ULTRACAM software errors</h1>
+
+<p>
+You are likely to encounter a number of rather obscure looking error messages while
+running the Ultracam software. The ones I know about are not software errors so much
+as incorrect inputs, although I am sure there are software errors too. The software
+tries not to impose more limits than need be, but sometimes has to give up because of
+incompatible input frames etc. I hope in this file to list some of the more common ones
+and provide a fuller explanation. It is not possible for the software itself to do this
+in anything but a fairly generic manner without a great deal more effort from me, which
+I don't think is warranted.
+
+<p>
+This page is more for general users' benefit than my own, so please send me any faults
+which you don't understand and I will put them here.
+
+<p>
+<h2>Error cropping frames</h2>
+
+<p>
+<a href="reduce.html">reduce</a> will sometimes stop immediately with an error such as
+<pre>
+Processing frame number 1, time = 19 Sep 2002, 20:37:08.19754
+
+Ultracam::Ultracam_Error:
+Ref window 1
+No enclosing window in void CCD<Windata>::crop(const CCD<Window>& win)
+</pre>
+
+<p>
+If this happen take a look with <a href="uinfo,html">uinfo</a> at the frame 
+formats of the input data (you may have to grab one for this), and the calibration 
+frames. It needs the data frame windows to be fully inside the calibration frame windows.
+The first step on reading a data frame is to crop the windows of the calibration frames 
+down to match those of the data. If it can't do this it gives up with this message.
+
+</body>
+</html>

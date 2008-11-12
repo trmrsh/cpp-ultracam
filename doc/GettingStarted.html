@@ -1,0 +1,167 @@
+<html>
+<head>
+<title>Getting started with the ULTRACAM software</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>Getting started with the ULTRACAM pipeline software</h1>
+
+<p>
+This page attempts to give you an idea of how to get going with the software,
+without going into extensive details. Follow the links for further information;
+see towards the end for a bit on spectra.
+
+<p>
+Let's suppose that you are observing, or that you have come back with data from a run.
+Your data will consist of pairs of files of the form 'run012.xml' and 
+'run012.dat'. The XML file is an ASCII file which describes the format
+of the data in a fairly obvious html-ish way. The '.dat' file contains raw binary data 
+plus times stored during a complete ULTRACAM run. These store all the data from, say, 45 minutes of 1 second
+exposures. These files can be large.  Here is how you might go about dealing with this data.
+
+<p>
+<table>
+
+<tr valign="top">
+<td><strong>1</strong></td>
+<td width=20%><strong>Firing up the software</strong></td>
+<td>First of all you need to to define the aliases for the ULTRACAM programs. This requires
+sourcing a script file called Ultracam that should be located in the top-level of the installed
+distribution. It is well worth defining an alias e.g. 'ultracam' to carry this out for you..
+In addition, if you are accessing the data at the telescope, you need to start the ATC FileServer 
+which dishes out the raw data to the pipeline across a network via http requests; this is independent 
+of the pipeline software. If you have the raw data on a local disk, you will not need it.</td>
+</tr>
+
+<tr valign="top">
+<td><strong>2</strong></td> <td><strong>What do my data look like?</strong></td> 
+<td>Typically you first want to plot the data. The program you want is <a href="rtplot.html">rtplot</a> which will allow
+you to plot data even as it accumulates into the .dat file. It accesses the 
+large data files and plots images sequentially. It also contains facilities for setting
+up your windows, avoiding CCD defects and for fitting profiles to stars which is
+useful when focussing.</td></tr>
+
+<tr valign="top">
+<td><strong>3</strong></td> <td><strong>Setting up windows
+</strong></td> <td><a href="rtplot.html">rtplot</a> has an option to load an
+ASCII file defining the windows which it plots over the data.
+As each new frame comes in it re-reads the file so you can adjust 
+it by editing the file. The idea is to run in a heavily binned (4 by 4) fast acquisition mode and ask
+the TO to move the telescope and/or rotator until your field is where you want it. You
+must always save the window setup file to disk for it to be re-loaded by <a href="rtplot.html">rtplot</a>.
+Beware CCD defects! You need to look at all 3 CCDs to ensure that you are not
+affected by any. <a href="rtplot.html">rtplot</a> now includes the option of
+accessing windows contained by a Java-based program called Udriver which can act
+as a server.
+</td></tr>
+
+<tr valign="top">
+<td><strong>4</strong></td> <td><strong>Grabbing frames</strong></td>
+<td><a href="rtplot.html">rtplot</a> is very much a first look. To do
+more you may want to grab individual exposures and save them to the
+pipeline's native format, ".ucm" files. The program you want is <a
+href="grab.html">grab</a>.  This spits out one file per exposure,
+which could amount to hundreds or thousands for a single run so very often
+you may want to ctrl-C it. For
+example, this is useful if you want to apply bias subtraction in <a
+href="rtplot.html">rtplot</a>. First grab a bias run, then combine the
+resulting files with <a href="combine.html">combine</a>. Incidentally,
+if you do ctrl-C during <a href="grab.html">grab</a>, you may want to
+delete the last file which may be corrupted (typically it is corrupted
+if <a href="grab.html">grab</a> did not report that it was written to disk
+and yet it exists). Once you have data in native form, a suite of standard
+programs can be run on them. Alternatively you may prefer to operate with 
+a reduction code of your choice, in which case you can save to FITS files using 
+<a href="grab2fits.html">grab2fits</a>. This is certainly useful if you
+want access to good image display programs such as 'ds9' and 'gaia' because 
+the pipeline does not attempt to replicate the features of such programs.
+</td></tr>
+
+<tr valign="top">
+<td><strong>5</strong></td> <td><strong>Getting a light
+curve</strong></td> <td>Next you may want to see a light curve of some
+sort. The program <a href="reduce.html">reduce</a> is what you
+want. This can run off the large raw files, or sequences of files as
+produced by <a href="grab.html">grab</a>.  I normally run off the raw
+files, but you will in any case need to grab some of the data
+initially in order to set up apertures with <a
+href="setaper.html">setaper</a>. <a href="reduce.html">reduce</a> is
+mainly controlled by an <a href="reduce.red">input ASCII file</a> which 
+you can (and should) edit with normal text editors. <a href="reduce.html">reduce</a> 
+saves its results to an ASCII file which is the key product of the software.
+Once you have set up the apertures and edited the control file, you can run
+reduce. You will be able to determine whether you want to plot images and/or
+the light curve at the time you invoke reduce.
+</td></tr>
+
+<tr valign="top">
+<td><strong>6</strong></td> 
+<td><strong>Going further with your data</strong></td>
+<td>The light-curve files are ASCII files with one line per CCD and a 
+set of instructions at the top detailing their contents. Any standard package should 
+be able to read these files and make suitable plots. However note that you may want to re-do all the reduction
+at the end of a run with the two-pass mode of <a href="reduce.html">reduce</a> which has certain
+advantages.
+</td></tr>
+
+</table>
+
+
+<h2>Spectra</h2>
+
+<p>
+If you have spectra to reduce then there are some other routines that you may
+want to use.
+
+<table>
+
+<tr valign="top">
+<td><strong>1</strong></td> <td><strong>Profiles</strong></td> 
+<td>With spectra one often wants to looks at cuts through the data. The commands
+to do this are <a href="collapse.html">collapse</a> and <a
+href="lplot.html">lplot</a>.</td></tr>  
+
+<tr valign="top">
+<td><strong>2</strong></td> <td><strong>Defining apertures</strong></td> 
+<td>To define extraction and sky regions, use the command <a
+href="setreg.html">setreg</a>.
+</td></tr>  
+
+<tr valign="top">
+<td><strong>3</strong></td> <td><strong>Reducing</strong></td> 
+<td>The command for reducing spectra is <a href="sreduce.html">sreduce</a>.
+It runs off an ASCII file in the same way that <a href="reduce.html">reduce</a>
+does. See <a href="sreduce.sre">sreduce.sre</a> for an example.
+</td></tr>  
+
+<tr valign="top">
+<td><strong>4</strong></td> <td><strong>Looking at the results</strong></td> 
+<td>The spectra are dumped to a molly file, so it is useful to have molly
+installed.
+</td></tr>  
+
+<tr valign="top">
+<td><strong>5</strong></td> <td><strong>Measuring avalanche gain</strong></td> 
+<td>L3CCDs with low count levels have either 0 or 1 electron per
+pixel. The histogram of these gives a spike for all those with 0 electrons
+plus an exponential distribution for the single electron pixels. This can be
+fitted to give an estimate of the gain. I have made a crude script to do this
+called <a href="l3gain.html">l3gain</a>.
+</td></tr>  
+
+<tr valign="top">
+<td><strong>6</strong></td> <td><strong>Spectrograph setup</strong></td> 
+<td>There are a few routines helpful in setting up spectrographs
+with Hartmann shutter exposures of arcs. These are <a
+href="collapse.html">collapse</a>, <a href="lplot.html">lplot</a>,
+<a href="ppos.html">ppos</a> and possibly <a href="expand.html">expand</a>.
+</td></tr>  
+
+</table>
+
+<p>
+<address>
+Tom Marsh, Warwick
+</address> 
+</body>
+</html>

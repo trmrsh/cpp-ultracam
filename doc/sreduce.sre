@@ -1,0 +1,44 @@
+#
+# The file is required to drive the ultracam pipeline program 'sreduce' for
+# spectrum reduction. See the on-line help on 'reduce' for a full description 
+# of the format and parameters
+#
+
+version                   = 04/12/2006
+abort_behaviour	          = fussy
+naccum                    = 5                 # number to stack up
+threshold                 = no                # apply photon-counting threshold or not
+photon                    = 50                # number above which = 1 photon
+region_file               = sregion.spa       # create with 'setreg'
+region_reposition_mode    = individual        # 'static', 'individual' or 'reference'  
+region_fwhm	          = 4                 # FWHM for gaussian x-cor Y position measurement, binned
+region_max_shift          = 5                 # maximum shift in Y position
+region_hwidth             = 5                 # median filter half-width
+clobber                   = yes               # clobber any existing log file
+calibration_coerce        = yes               # coerce calibration frames to have right format
+calibration_bias          = bias              # bias frame
+calibration_dark          =                   # dark frame
+calibration_flat          =                   # flat field
+bad_pixel	          =                   # bad pixel frame
+calibration_gain          = 1.1               # gain value or frame
+calibration_readout       = 3.5               # readout noise or frame
+spectrum_device	          = 1/xs              # device for spectrum line plots
+trail_device	          = 2/xs              # device for trailed spectra
+trail_start               = 20                # number of spectrum slots for the trail at the start (also increment size when full)
+hard_device	          =  /ps              # device for hardcopy of trail
+saturation                = 50000             # value indicative of saturation
+sky_fit	                  = yes               # carry out a sky subtraction or not
+sky_npoly	          = 2                 # number of poly coefficients to use
+sky_reject                = 3                 # rejection threshold for the sky fits
+terminal_output           = full              # type of terminal output
+spectrum_scale_individual = yes               # apply spectrum scaling method for plots one by one or on all of them
+spectrum_scale_method     = direct            # scaling method: direct, automatic, percentile
+spectrum_ylow             = 0                 # lower limit if direct
+spectrum_yhigh            = 2000              # upper limit if direct
+spectrum_plow             = 1                 # lower percentile limit if percentile
+spectrum_phigh            = 99                # upper percentile limit if percentile
+trail_scale_method        = direct            # scaling method: direct, automatic, percentile
+trail_ilow                = 0                 # lower limit if direct
+trail_ihigh               = 2000              # upper limit if direct
+trail_plow                = 1                 # lower percentile limit if percentile
+trail_phigh               = 99                # upper percentile limit if percentile

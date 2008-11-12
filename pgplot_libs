@@ -1,0 +1,17 @@
+
+# Previous line should remain blank
+#
+# This file is to help with linking PGPLOT to C++ code using 'g77'. The basic
+# point, part from inclusion of various standard libraries, is to find where 
+# the library libg2c.a needed for g77 is without screwing up the C++
+# libraries.
+
+
+fordir=`g95 -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
+
+cppdir=`g++ -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
+
+#echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz -L$cppdir -L$fordir"
+
+echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz"
+

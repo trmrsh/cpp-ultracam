@@ -1,0 +1,29 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Getting the software}{}
+\BOOKMARK [1][-]{section.3}{Getting the data}{}
+\BOOKMARK [1][-]{section.4}{Reduction}{}
+\BOOKMARK [2][-]{subsection.4.1}{First steps -- getting oriented}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Making bias frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Making dark frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{Making flat fields}{section.4}
+\BOOKMARK [2][-]{subsection.4.5}{Making bad pixel frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.6}{Setting up apertures}{section.4}
+\BOOKMARK [2][-]{subsection.4.7}{Reducing your data}{section.4}
+\BOOKMARK [3][-]{subsubsection.4.7.1}{Rebinning/cropping}{subsection.4.7}
+\BOOKMARK [1][-]{section.5}{Problems}{}
+\BOOKMARK [2][-]{subsection.5.1}{Midnight bug}{section.5}
+\BOOKMARK [2][-]{subsection.5.2}{Binning problem No. 1}{section.5}
+\BOOKMARK [2][-]{subsection.5.3}{Binning problem No. 2}{section.5}
+\BOOKMARK [3][-]{subsubsection.5.3.1}{Peppering}{subsection.5.3}
+\BOOKMARK [3][-]{subsubsection.5.3.2}{Bias level problems}{subsection.5.3}
+\BOOKMARK [1][-]{section.A}{ULTRACAM timing}{}
+\BOOKMARK [2][-]{subsection.A.1}{Introduction}{section.A}
+\BOOKMARK [2][-]{subsection.A.2}{Special cases}{section.A}
+\BOOKMARK [3][-]{subsubsection.A.2.1}{May 2002 run}{subsection.A.2}
+\BOOKMARK [3][-]{subsubsection.A.2.2}{September 2002 run}{subsection.A.2}
+\BOOKMARK [3][-]{subsubsection.A.2.3}{No GPS mode}{subsection.A.2}
+\BOOKMARK [3][-]{subsubsection.A.2.4}{Midnight bug}{subsection.A.2}
+\BOOKMARK [2][-]{subsection.A.3}{Correcting the times for the readout mode}{section.A}
+\BOOKMARK [3][-]{subsubsection.A.3.1}{Full-frame + clear, full-frame + overscan and 2-window + clear modes}{subsection.A.3}
+\BOOKMARK [3][-]{subsubsection.A.3.2}{Full-frame no-clear and windowed modes}{subsection.A.3}
+\BOOKMARK [3][-]{subsubsection.A.3.3}{Drift mode}{subsection.A.3}

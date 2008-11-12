@@ -1,0 +1,31 @@
+#/*! \mainpage ULTRACAM Pipeline Software Version ZzZzZ API Documentation
+
+\section intro Introduction
+
+You have reached the home page of the documentation of ULTRACAM pipeline software Application
+Programmer's Interface. Links from here give details of the various classes used by ULTRACAM.
+These pages do not describe the executable programs which make up the bulk of the files that
+come with the software. If you are a user you may want to <a href="../../index.html">refer to these</a>
+instead.
+	
+\section Overview
+
+The ULTRACAM software is written in C++. The philosophy is to
+represent individual components by C++ objects. This leads to a natural
+correspondence between the code and reality and makes maintenance of the many
+programs easier.
+
+The main classes are as follows. First, there are classes which represent individual
+objects that one might find on a CCD such as an \ref Aperture and \ref Target. Next there is a class
+called \ref CCD that can bundle these together into a group representing a CCD's worth of such objects.
+Finally, a class called \ref MCCD groups several CCD's worth to make a frame's worth, where
+a "frame" is an entire ULTRACAM set of 3 CCDs. These classes and the software in general
+make extensive use of the Standard Template Library (STL), and so you should be familiar with
+this if you want to create your own programs.
+
+Undoubtedly the easiest way to make your own program is to start from an existing one of similar
+purpose.
+
+*/
+
+

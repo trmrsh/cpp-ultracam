@@ -1,0 +1,12 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}
+\BOOKMARK [1][-]{section.2}{Getting the software}{}
+\BOOKMARK [1][-]{section.3}{Getting the data}{}
+\BOOKMARK [1][-]{section.4}{Reduction}{}
+\BOOKMARK [2][-]{subsection.4.1}{First steps -- getting oriented}{section.4}
+\BOOKMARK [2][-]{subsection.4.2}{Making bias frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.3}{Making dark frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.4}{Making flat fields}{section.4}
+\BOOKMARK [3][-]{subsubsection.4.4.1}{Peppering}{subsection.4.4}
+\BOOKMARK [2][-]{subsection.4.5}{Making bad pixel frames}{section.4}
+\BOOKMARK [2][-]{subsection.4.6}{Setting up apertures}{section.4}
+\BOOKMARK [2][-]{subsection.4.7}{Reducing your data}{section.4}

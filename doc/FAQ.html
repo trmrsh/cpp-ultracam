@@ -1,0 +1,225 @@
+<html>
+<head>
+<title>ULTRACAM Frequently Asked Questions</title>
+<link rel=stylesheet href="ultracam.css" type="text/css">
+</head>
+<body>
+<h1>ULTRACAM Frequently Asked Questions</h1>
+
+<p>
+If you are puzzled by aspects of the pipeline software, before
+asking me, please look here to see if someone else has already asked it
+(or whether I have just invented it for that matter ..).
+
+<p>
+<ol>
+
+<li> <a href="#help">Help! There are loads of commands. Where do I start?</a>
+
+<li> <a href="#bias">Why when I change the binning on a frame with 'crop' does the bias level come out wrong?</a>
+
+<li> <a href="#reference">'reduce' complains that it can't find a "reference aperture". What does it mean?</a>
+
+<li> <a href="#optimal">Why are the 'optimal' and 'normal' counts quite different?</a>
+
+<li> <a href="#absolute">How can I put optimal counts on a proper magnitude scale?</a>
+
+<li> <a href="#installation">Everything compiled & installed OK but when I try to run commands, they
+complain about not finding libraries ...</a>
+
+<li> <a href="#slalib">I can't find SLALIB anywhere ...</a>
+
+<li> <a href="#combine">When I use 'combine' or 'makeflat' to average a few
+frames, they sometimes falls over ...</a>
+
+<li> <a href="#batch">Can I run two sessions of the software simultaneously, for instance a batch
+and interactive session or two batch jobs? </a>
+
+<li> <a href="#stats">I don't understand the windows files needed by the stats
+command ...</a>
+
+<li> <a href="#bad_pixel">If I try using a bad pixel file, every sky pixel gets
+kicked out. What is going on?</a>
+
+<li> <a href="#binning">Cannot subtract frames even when coerce=yes; what does llx=0 mean?</a>
+
+<li><a href="#unsigned">I get an error like "Cannot retrieve an unsigned int from int-type header items"?</a>
+
+</ol>
+
+<p>
+<hr>
+<h2> <a name="help">Help! There are loads of commands. Where do I start?</a></h2>
+
+<p>
+The place to start is to look at the brief <a href="GettingStarted.html">getting started</a> guide.
+It emphasizes brevity over completeness.
+
+<p>
+<hr>
+<h2><a name="bias">Why when I change the binning on a frame with 'crop'
+does the bias level come out wrong?</a></h2>
+
+<p>
+The problem here is that the rebinning behaviour of <a href="crop.html">crop</a>
+is to sum all of the pixel values that contribute to the new larger pixels (one cannot
+go to less binning). This is OK for the true counts but does not apply to the bias
+level. In fact one should really take frames of the same format for deducing the
+bias correctly. Otherwise dividing by the number of old pixels which contribute to
+each new pixel may get you to approximately the right level. This means that if you want to 
+bin normal data you <strong>must subtract the bias from it first!!!</strong>
+
+<p>
+<hr>
+<h2> 
+<a name="reference">'reduce' complains that it can't find a "reference aperture". What does it mean?</a>
+</h2>
+
+<p>
+If you want variable aperture radii and/or optimal extraction, profile fits are needed. In this case
+you must specify which targets you want to use to define the profile shapes. The reposition
+mode 'reference_plus_tweak' also requires this. This is done in 
+<a href="setaper.html">setaper</a>. If you fail to define any such targets for a CCD, 
+<a href="reduce.html">reduce</a> will abort with an error message (prior to version 2.3 it 
+carried on in normal mode but I realised that this would be misleading).
+
+<p>
+<hr>
+<h2> 
+<a name="optimal">Why are the 'optimal' and 'normal' counts fairly different?</a>
+</h2>
+
+<p>
+Tim Naylor's optimal photometry only works when you take the ratio of target and comparison.
+It would be possible to provide a correct normalisation if the profile fits were an accurate
+representation of the profiles. This is not usually the case, although I have tried to apply corrections
+on the basis that the profile fits are accurate. Still, its only the ratios that are useful.
+<p>
+
+<hr>
+<h2> 
+<a name="absolute">How can I put optimal counts on a proper magnitude scale then?</a></h2>
+
+<p>
+Easy this one: you can't, at least not directly. As said above, optimal counts can only be used
+in ratios, but also they can only be used as ratios between <i>two targets on the same frame</i>.
+Therefore to put a proper scale on, one should also carry out a normal extraction of the comparison
+star you used, do the same for a standard star and use their ratio to provide a correction
+to magnitudes.
+
+<hr>
+<h2> 
+<a name="installation">Everything compiled & installed OK but when I try to run commands, they
+complain about not finding libraries ...</a></h2>
+
+<p>
+Have you set your LD_LIBRARY_PATH environment variable up correctload library path up correctly?
+If you don't know what this is about, look again at the installation instructions. You need to
+tell the software where to find shareable libraries for PGPLOT and Xerces.
+
+<p>
+<hr>
+<h2> 
+<a name="slalib">I can't find SLALIB anywhere ...</a>
+</h2>
+
+<p>
+Sorry I can't distribute SLALIB; you must get it from Pat Wallace at RAL. You want the
+C version. 
+
+<p>
+<hr>
+<h2> <a name="combine">When I use 'combine' or 'makeflat' to average a few
+frames, they sometimes falls over ...</a></h2>
+
+<p>
+This can happen if when you invoked <a href="grab.html">grab</a> to get the
+frames you terminated it with ctrl-C. In this case the last frame can be partial
+and therefore corrupt. This is typically the case if the last file was not
+reported as having been written by <a href="grab.html">grab</a>. If you
+inadvertently include such a file in your list for <a
+href="combine.html">combine</a> (or other similar routines), then it falls
+over. The solution is to delete such corrupt files.
+
+<p>
+<hr>
+<h2> <a name="batch">Can I run two or more sessions of the software at the same time?</a></h2>
+
+<p>
+The answer is yes, but you have to be careful. The reason why it can be difficult is that
+each session may access the same default files which could cause disaster if you are relying
+on the defaults. One way is to specify 'nodefs' which at least stops the programs accessing
+the default files. You would then need to specify all arguments yourself if the default
+defaults are no good. However, much the best solution is to specify the environment variable
+ULTRACAM_ENV to point at a new location for storing the defaults, as in
+<pre>
+setenv ULTRACAM_ENV defaults
+</pre>
+Then assuming you are operating in different directories you will be OK. I do this for my
+batch jobs, leaving the interactive one in the standard location.
+
+<p>
+<hr>
+<h2> <a name="stats">I don't understand the windows files needed by the stats
+command ...</a></h2>
+
+<p>
+<a href="stats.html">stats</a> gives you statistics of all pixels of a frame
+'visible' through a set of windows defined in a separate file. You should
+imagine placing a flat mask on top of your frame with holes cut out of it
+corresponding to the windows of the windows file. This means that the binning
+factors of the windows frame are <i>irrelevant</i>. Then why are they needed
+at all? This is laziness .. I did not want to define another type of window.
+You should always use binning factors = 1 in the statistics windows file.
+This file is best defined using <a href="setwin.html">setwin</a>.
+
+<p>
+<hr>
+<h2><a name="bad_pixel">If I try using a bad pixel file, every sky pixel gets
+kicked out. What is going on?</a></h2>
+
+<p>
+I am not quite sure yet whether this is a bug or not. The key thing to realise
+is that any pixels in the bad pixel frame with a value above 0.5 counts as
+bad. In other words 0 = good. At least one instance of this problem was because
+all good pixels were being set = 1.
+
+<p>
+<hr>
+<h2><a name="binning">Cannot subtract frames even when coerce=yes; what does llx=0 mean?</a></h2>
+
+<p>
+A couple of people have found that they cannot apply full-frame, unbinned 
+calibration frames to their data. This should not be the case. Unfortunately
+this is the result of a fix for a problem I only spotted in January 2006. Essentially
+it seems that with binned data, the windows do not start at the expected X positions,
+but effectively seem to move out by 1 pixel (at least in xbin=2 binning). If the windows
+are at the edge, then they move out of the range even of full-frame images causing 'sub',
+'msub' etc to fail. The fix is to trim off the pixels at the left and right edges either
+using 'crop', or easier by using the trim option in 'grab', 'rtplot' and 'reduce'.
+
+<p>
+<hr>
+<h2><a name="unsigned">I get an error like "Cannot retrieve an unsigned int from int-type header items"?</a></h2>
+
+If you can the following error, or something like it:
+<pre>
+Subs::Subs_Error exception:
+Cannot retrieve an unsigned int from int-type header items
+</pre>
+you could be suffering from a simple problem caused by an upgrade when I have
+changed the internal data type of one of the parameters. The program then
+encounters
+a problem when reading an old file of defaults. The cure is easy. You simply
+delete the corresponding default file (and potentially the global defaults
+file). e.g. if using <a href="msub.html">msub</a> then delete
+~/.ultracam/msub.def assuming that the default file is in the default location,
+or else $ULTRACAM_ENV/msub.def, and possibly also GLOBAL.def in the same directory.
+
+<p>
+<hr>
+<address>
+Tom Marsh, Warwick
+</address> 
+</body>
+</html>
