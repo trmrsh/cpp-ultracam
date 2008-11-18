@@ -45,6 +45,7 @@ kicked out. What is going on?</a>
 
 <li><a href="#unsigned">I get an error like "Cannot retrieve an unsigned int from int-type header items"?</a>
 
+<li> <a href="#noenclose">No enclosing window in..</a>
 </ol>
 
 <p>
@@ -215,6 +216,30 @@ delete the corresponding default file (and potentially the global defaults
 file). e.g. if using <a href="msub.html">msub</a> then delete
 ~/.ultracam/msub.def assuming that the default file is in the default location,
 or else $ULTRACAM_ENV/msub.def, and possibly also GLOBAL.def in the same directory.
+
+<hr>
+<h2><a name="noenclose">No enclosing window</a>
+
+<p>
+You may sometimes encounter the following error:
+<pre>
+Ultracam::Ultracam_Error:
+Ref window 1
+No enclosing window in void Ultracam::CCD<Ultracam::Windata>::crop(const
+Ultracam::CCD<Ultracam::Windata>& ccd)
+</pre>
+especially in <a href="reduce.html">reduce</a>. This is a sign of conflicting data formats.
+Some programs try to cope with non-identical formats by cropping
+e.g. calibration files to match the data. If they can't do so, then you get
+this error. It could be that the windows to be cropped do not enclose the 
+windows of the data, or that the binning factors are incompatible. A useful way
+to test which file is giving problems is to try to crop a file using the
+program <a href="crop.html">crop</a> as in
+<pre>
+crop test data junk
+</pre>
+which will test whether the file 'test' can be cropped to match the format of
+the file 'data' (producing a new file 'junk' in the process if it can).
 
 <p>
 <hr>
