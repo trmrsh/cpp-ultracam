@@ -61,6 +61,8 @@ class Ultracam(dict):
             return 1
         elif self['application'] == 'ap5_250_window1pair':
             return 1
+        elif self['application'] == 'ap5b_250_window1pair':
+            return 1
         elif self['application'] == 'ap6_250_window2pair':
             return 2
         elif self['application'] == 'ap7_250_window3pair':
