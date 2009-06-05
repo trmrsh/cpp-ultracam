@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/warwick/starlink/humu/x86_64/star/Perl/bin/perl -w
 #
 # !!begin
 # !!title Makes average pictures of runs

@@ -136,7 +136,7 @@ lib_LTLIBRARIES = libultracam.la
 
 libultracam_la_SOURCES = trm_window.cc trm_windata.cc trm_ccd.cc trm_frame.cc trm_target.cc trm_mccd.cc trm_skyline.cc \
 trm_defect.cc shift_and_add.cc WriteMemoryCallback.cc parseXML.cc de_multiplex.cc read_header.cc trm_aperture.cc \
-get_server_frame.cc loadXML.cc trm_fdisk.cc lllccd.cc plot_images.cc blurr_gauss.cc blurr_gauss_deriv.cc findpos.cc \
+get_server_frame.cc loadXML.cc trm_fdisk.cc lllccd.cc plot_images.cc findpos.cc \
 plot_apers.cc fitgaussian.cc trm_ultracam.cc gauss_reject.cc profit_init.cc moffat_reject.cc fitmoffat.cc pos_tweak.cc \
 fit_plot_profile.cc covsrt.cc extract_flux.cc sky_estimate.cc badInput.cc plot_defects.cc plot_setupwins.cc trm_spectrum.cc \
 make_profile.cc trm_specap.cc sky_move.cc sky_fit.cc ext_nor.cc plot_trail.cc plot_spectrum.cc

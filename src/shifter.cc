@@ -366,7 +366,7 @@ int main(int argc, char* argv[]){
 	    sum.set("CCD" + sccd,  new Subs::Hdirectory("Information for CCD " + sccd));
 	}
 
-	// Create timing info, which has to different for each CCD.
+	// Create timing info, which has to be different for each CCD.
 	std::vector<int> nused(data.size(),0);
 	std::vector<int> njunk(data.size(),0);
 	std::vector<int> ntotal(data.size(),0);

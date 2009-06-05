@@ -365,13 +365,13 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	header.set("Instrument.HV_Gain",  new Subs::Hint(serverdata.l3data.hv_gain,    "L3CCD HV gain parameter"));
 	header.set("Instrument.Clear",    new Subs::Hint(serverdata.l3data.en_clr,     "L3CCD clear enabled or not"));
 	if(serverdata.l3data.speed >= 0)
-	    header.set("Instrument.Speed",    new Subs::Hint(serverdata.l3data.speed,      "L3CCD speed setting; -1 = undefined"));
+	    header.set("Instrument.Speed",    new Subs::Hint(serverdata.l3data.speed,      "L3CCD speed setting; 0=slow,1=medium,2=fast"));
 	if(serverdata.l3data.led_flsh >= 0)
-	    header.set("Instrument.Led_Flsh", new Subs::Hint(serverdata.l3data.led_flsh,   "L3CCD led flash setting; -1 = undefined"));
+	    header.set("Instrument.Led_Flsh", new Subs::Hint(serverdata.l3data.led_flsh,   "L3CCD led flash setting"));
 	if(serverdata.l3data.rd_time >= 0)
-	    header.set("Instrument.Rd_Time",  new Subs::Hint(serverdata.l3data.rd_time,    "L3CCD parameter, -1 = undefined"));
+	    header.set("Instrument.Rd_Time",  new Subs::Hint(serverdata.l3data.rd_time,    "L3CCD parameter"));
 	if(serverdata.l3data.rs_time >= 0)
-	    header.set("Instrument.Rs_Time",  new Subs::Hint(serverdata.l3data.rs_time,    "L3CCD parameter, -1 = undefined"));
+	    header.set("Instrument.Rs_Time",  new Subs::Hint(serverdata.l3data.rs_time,    "L3CCD parameter"));
     }
     if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_CLEAR){
 	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "Full frame with a clear each exposure"));
@@ -695,14 +695,14 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		    istr >> serverdata.l3data.rs_time;
 		    if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD RS_TIME parameter");
 		    istr.clear();
-		    found_rd_time = true;
+		    found_rs_time = true;
 
 		}else if(AttToString((DOMElement*)child->item(j), "name") == "SPEED" && serverdata.instrument == "ULTRASPEC"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
 		    istr >> serverdata.l3data.speed;
 		    if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD SPEED parameter");
 		    istr.clear();
-		    found_rd_time = true;
+		    found_speed = true;
 
 		}else if(AttToString((DOMElement*)child->item(j), "name") == "LED_FLSH" && serverdata.instrument == "ULTRASPEC"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
@@ -764,7 +764,6 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			    if(!istr) throw Input_Error("parseXML error: Could not translate lower std::left start X pixel of std::left window");
 			    istr.clear();
 			    xlStart[n] = xlStart_;
-		    
 		    
 			}else if(AttToString((DOMElement*)child->item(j), "name") == xr_start){
 			    istr.str(AttToString((DOMElement*)child->item(j), "value"));
