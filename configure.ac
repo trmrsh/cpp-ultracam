@@ -8,13 +8,22 @@ AM_CONFIG_HEADER(config.h)
 
 dnl automake stuff
 
-AM_INIT_AUTOMAKE([ultracam], [8.1.18])
+AM_INIT_AUTOMAKE([ultracam], [8.1.20])
 
 AC_PROG_MAKE_SET
 
 dnl Extra libraries
 
 PGPLOT_LIBS=`./pgplot_libs`
+
+AC_MSG_CHECKING([for curl-config in path])
+if which curl-config > /dev/null
+then
+	AC_MSG_RESULT([yes])
+else
+	AC_MSG_RESULT([no])
+	AC_MSG_ERROR([curl-config must be in your path])
+fi
 
 CURL_LIBS=`curl-config --libs`
 
@@ -26,6 +35,9 @@ dnl Make C++ the default
 AC_LANG_CPLUSPLUS
 AC_REQUIRE_CPP
 
+dnl keep correct libtool macros in tree
+AC_CONFIG_MACRO_DIR([m4])
+
 dnl Initialise libtool
 AC_PROG_LIBTOOL
 
@@ -33,7 +45,7 @@ dnl library checks
 
 AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR(cannot find the pcre C++ library))
 
-AC_CHECK_LIB([xerces-c], [main], [],    AC_MSG_ERROR(cannot find the xerces-c library))
+AC_CHECK_LIB([xerces-c], [main], [], AC_MSG_ERROR(cannot find the xerces-c library))
 
 AC_CHECK_LIB([curl], [main], [LIBS="$CURL_LIBS $LIBS"], AC_MSG_ERROR(cannot find the curl library), [$CURL_LIBS])
 

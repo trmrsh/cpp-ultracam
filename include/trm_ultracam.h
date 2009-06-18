@@ -840,6 +840,7 @@ namespace Ultracam {
 	  int gain;     /**< Normal gain parameter */
 	  int output;   /**< Which output, normal or avalanche */
 	  int speed;    /**< Which output, normal or avalanche */
+	  std::vector<int> nchop; /**< Number of first-read pixels to trash on side of windows */
       } l3data;
       
       //! Indicates whether we are in a fullframe mode
@@ -903,7 +904,7 @@ namespace Ultracam {
   void de_multiplex_ultracam(char *buffer, Frame& data);
 
   //! De-multiplexes raw ULTRASPEC data
-  void de_multiplex_ultraspec(char *buffer, Frame& data);
+  void de_multiplex_ultraspec(char *buffer, Frame& data, const std::vector<int>& nchop);
 
   //! Interprets time from raw header
   void read_header(char* buffer, const Ultracam::ServerData& serverdata, Ultracam::TimingInfo& timing);
@@ -916,7 +917,7 @@ namespace Ultracam {
 
   //! Reads and parses XML file
   void parseXML(char source, const std::string& XML_URL, Mwindow& mwindow, Subs::Header& header, 
-		Ultracam::ServerData& serverdata, bool trim, int ncol, int nrow);
+		Ultracam::ServerData& serverdata, bool trim, int ncol, int nrow, double twait, double tmax);
 
   //! Name of environment variable which can be set to specify location of default files
   const char ULTRACAM_ENV[]         = "ULTRACAM_ENV";

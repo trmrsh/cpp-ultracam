@@ -249,11 +249,14 @@ window=1, iy=1, ix=0
 \endverbatim
 
 There are two possible read out modes however, and in one of them the read out order is reversed in the X direction, so
-that it starts with nx-1. This function swaps this case so that the images will appear the same on the screen.
+that it starts with nx-1. This function swaps this case so that the images will appear the same on the screen. It also has
+to make sure that a given format is compatible whether normal or avalanche. It turns out that the only way to ensure this
+is to remove any pixels if they are amongst the first 16 that can be read out by either port (overscan pixels). These are 
+thus ignored and never appear at any stage.
 
 */
 
-void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data){
+void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data, const std::vector<int>& nchop){
 
     // Initialise
     const bool TRIM   = data["Trimming.applied"]->get_bool();
@@ -278,9 +281,12 @@ void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data){
 
 	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
 	if(TRIM){
-	    ip += 2*(NX+NCOL)*NROW;
+	    ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
 	    ip += 2*NCOL;
 	}
+	
+	// Skip overscan pixels
+	ip += 2*nchop[nwin];
 
 	for(;;){
 
@@ -311,12 +317,15 @@ void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data){
 		    NX     = data[0][nwin].nx();
 	  
 		    // skip lower rows 
-		    if(TRIM) ip += 2*(NX+NCOL)*NROW;
+		    if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
 	  
 		}
 	
-		// skip columns on left of left window
+		// skip columns on left of window
 		if(TRIM) ip += 2*NCOL;
+
+		// Skip overscan pixels
+		ip += 2*nchop[nwin];
 	    }
 	}
     
@@ -329,10 +338,13 @@ void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data){
 
 	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
 	if(TRIM){
-	    ip += 2*(NX+NCOL)*NROW;
+	    ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
 	    ip += 2*NCOL;
 	}
       
+	// Skip overscan pixels
+	ip += 2*nchop[nwin];
+
 	for(;;){
 	  
 	    // 'abnormal' mode we assume that the first pixel read out is the right-most 
@@ -360,14 +372,17 @@ void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data){
 		    NX     = data[0][nwin].nx();
 	  
 		    // skip lower rows 
-		    if(TRIM) ip += 2*(NX+NCOL)*NROW;
+		    if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
 	  
 		}
 
 		ix = NX-1;
 	
-		// skip columns on left of left window
+		// skip columns on right window
 		if(TRIM) ip += 2*NCOL;
+
+		// Skip overscan pixels
+		ip += 2*nchop[nwin];
 	    }
 	}
     }

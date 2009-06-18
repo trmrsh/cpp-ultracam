@@ -250,7 +250,7 @@ int main(int argc, char* argv[]){
       }
       
       // Parse the XML file
-      Ultracam::parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow);
+      Ultracam::parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
       
       // Initialise standard data frame
       data.format(mwindow, header);

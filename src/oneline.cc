@@ -113,7 +113,7 @@ int main(int argc, char* argv[]){
     Ultracam::Mwindow mwindow;
     Subs::Header header;
     Ultracam::ServerData serverdata;
-    parseXML(source, url, mwindow, header, serverdata, false, 0, 0);
+    parseXML(source, url, mwindow, header, serverdata, false, 0, 0, twait, tmax);
 
     Ultracam::Frame data(mwindow, header);
 

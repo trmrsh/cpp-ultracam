@@ -898,7 +898,7 @@ int main(int argc, char* argv[]){
 	    }
 
 	    // Finally, read the XML file. 
-	    parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow);
+	    parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
 
 	    if(source == 'S'){
 		Reduce::logger.logit("Server file name", url);      

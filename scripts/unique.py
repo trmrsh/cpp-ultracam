@@ -4,10 +4,10 @@
 # !!title    unique
 # !!author   T.R. Marsh
 # !!created  23 June 2007
-# !!revised  23 June 2007
+# !!revised  11 June 2009
 # !!root     unique
 # !!index    unique
-# !!descr    Lists all the unique formats in a directory of ULTRACAM runs
+# !!descr    Lists all the unique formats in a directory of ULTRACAM or ULTRASPEC runs
 # !!class    Scripts
 # !!class    Observing
 # !!css      style.css
@@ -43,93 +43,78 @@
 import sys
 import os
 import re
-import ultracam
+import Ultra
+from optparse import OptionParser
 
-if len(sys.argv) != 2:
-    print 'usage: directory'
+# define and parse options
+usage = "usage: %prog [options]\n\nTests for unique ULTRACAM / ULTRASPEC formats."
+parser = OptionParser(usage)
+parser.add_option("-f", "--fussy", dest="fussy", default=False, action="store_true",\
+                  help="fussy test so that avalanche gain differences will be picked up")
+
+(options, args) = parser.parse_args()
+
+print options
+print args
+
+exit(1)
+
+if len(sys.argv) != 3:
+    print 'usage: fussy directory fussy '
     exit(1)
 
 direct = sys.argv[1]
+if not os.path.isdir(direct):
+    print direct,'is not a directory'
+    exit(1)
+
+if sys.argv[2] == 'y':
+    Ultra.Run.FUSSY = True
+elif sys.argv[2] == 'n':
+    Ultra.Run.FUSSY = False
+else:
+    print 'fussy must either be "y" or "n"; "n" ignores differences of avalanche gain'
+    print 'when testing for compatible formats.'
+    exit(1)
 
 # get a list of runs
-rtest = re.compile('^run[0-9][0-9][0-9]\.xml$')
+run_re = re.compile('^run[0-9][0-9][0-9]\.xml$')
 
-runs = [rn for rn in os.listdir(direct) if rtest.match(rn) != None]
+xmls = [rn for rn in os.listdir(direct) if run_re.match(rn) != None]
 
 # Accumulate a list of unique runs, skipping power ons & offs
 uniq = {}
 
-for run in runs:
-    fname = os.path.join(direct,run)
-    tucam = ultracam.Ultracam(fname)
+for xml in xmls:
+    run = Ultra.Run(os.path.join(direct,xml))
 
-    if tucam.is_not_power_onoff():
+    if run.is_not_power_onoff():
 
         # compare with already stored formats
         new_format = True
-        for rn,ucam in uniq.iteritems():
-            if ultracam.match(ucam, tucam):
+        for rn,rold in uniq.iteritems():
+            if run == rold:
                 new_format = False
 
                 # get rid of biases in favour of more interesting runs and record any matching biases
-                if ucam['target'] == 'Bias' and tucam['target'] != 'Bias':
-                    tucam['bias'] = uniq[rn]['run']
-                    del uniq[rn]
-                    uniq[run[0:run.rfind('.xml')]] = tucam
-                elif tucam['target'] == 'Bias' and ucam['target'] != 'Bias':
-                    ucam['bias'] = run[0:run.rfind('.xml')]
+#                if ucam['target'] == 'Bias' and tucam['target'] != 'Bias':
+#                    tucam['bias'] = uniq[rn]['run']
+#                    del uniq[rn]
+#                    uniq[run[0:run.rfind('.xml')]] = tucam
+#                elif tucam['target'] == 'Bias' and ucam['target'] != 'Bias':
+#                    ucam['bias'] = run[0:run.rfind('.xml')]
 
                 break
         
         if new_format:
-            uniq[run[0:run.rfind('.xml')]] = tucam
+            uniq[xml[0:xml.rfind('.xml')]] = run
 
+print '\nFound',len(uniq),'unique formats in directory = ',direct
 
-# list them in run order. First the biases themselves.
-
-title = '\n Run     Target                Filters     Bin  Gain   Size1   XL1 XR1  YS1     Size2   XL2 XR2  YS2     Size3   XL3 XR3  YS3\n'
-
-print '\n--------------------------------------------------------------------------------------------------------------------------'
-print '\nBiases:\n'
-
-print title
+print '\nFormats are:\n'
 
 for run in sorted(uniq.keys()):
-    if uniq[run]['target'] == 'Bias':
-        print ' ' + run + '  ' + uniq[run].to_string()
+#    if uniq[run]['target'] == 'Bias':
+    print run, uniq[run]
 
 
-# now runs with biases in the specified directory
-print '\n--------------------------------------------------------------------------------------------------------------------------'
-print '\nRuns with probable biases (not necessarily good):\n'
-
-print title
-
-nbias = 0
-
-for run in sorted(uniq.keys()):
-    if 'bias' in uniq[run]:
-        nbias += 1
-        print ' ' + run + '  ' + uniq[run].to_string()
-
-if nbias > 0:
-    print ''
-    
-for run in sorted(uniq.keys()):
-    if 'bias' in uniq[run]:
-        print ' ' + run + '  has a corresponding bias = ' + uniq[run]['bias']
-        
-# now runs without biases in the specified directory which may need some to be taken
-
-print '\n--------------------------------------------------------------------------------------------------------------------------'
-print '\nRuns without biases:\n'
-
-print title
-
-for run in sorted(uniq.keys()):
-    if 'bias' not in uniq[run] and uniq[run]['target'] != 'Bias':
-        print ' ' + run + '  ' + uniq[run].to_string()
-
-print ''
-
-            

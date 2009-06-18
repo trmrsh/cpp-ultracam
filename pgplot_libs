@@ -7,11 +7,15 @@
 # libraries.
 
 
-fordir=`g95 -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
+#fordir=`g95 -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
 
-cppdir=`g++ -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
+#cppdir=`g++ -print-search-dirs 2>&1 | egrep '^install' | sed -e 's/install: *//'`
 
 #echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz -L$cppdir -L$fordir"
 
-echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz"
-
+if which g77 > /dev/null
+then
+  echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz -lg2c"
+else
+  echo "-lcpgplot -lpgplot -L/usr/X11R6/lib -lX11 -lpng -lz -lgfortran"
+fi

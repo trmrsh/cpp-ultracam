@@ -248,7 +248,7 @@ int main(int argc, char* argv[]){
 		throw Ultracam::Input_Error("Should not specify local file as a URL");
 	    }
 
-	    parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow);
+	    parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
 	    data.format(mwindow, header);
 
 	}else{
@@ -461,7 +461,7 @@ int main(int argc, char* argv[]){
 		    while(nfile < file.size()){
 			data.read(file[nfile]);
 			ut_date  = data["UT_date"]->get_time();
-			hnode    = data.find("UT_ok");
+			hnode    = data.find("Frame.reliable");
 			reliable = (hnode->has_data() && hnode->value->get_bool());
 			exposure = data["Exposure"]->get_float();
 			if((hnode = data.find("Instrument.nblue"))->has_data() && hnode->value->get_int() > 1){
