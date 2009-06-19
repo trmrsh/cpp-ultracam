@@ -8,7 +8,7 @@ AM_CONFIG_HEADER(config.h)
 
 dnl automake stuff
 
-AM_INIT_AUTOMAKE([ultracam], [8.1.20])
+AM_INIT_AUTOMAKE([ultracam], [8.1.21])
 
 AC_PROG_MAKE_SET
 

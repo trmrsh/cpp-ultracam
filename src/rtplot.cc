@@ -248,8 +248,6 @@ See also !!ref{plot.html}{plot} for standard plots.
 // Main program
 int main(int argc, char* argv[]){
 	
-	signal(SIGINT, signalproc);
-
     using Ultracam::File_Open_Error;
     using Ultracam::Input_Error;
 
@@ -551,6 +549,8 @@ int main(int argc, char* argv[]){
     
 		// Save defaults now because one often wants to terminate this program early
 		input.save();
+
+		signal(SIGINT, signalproc);
     
 		std::vector<Ultracam::sky_mask> skymask;
 
