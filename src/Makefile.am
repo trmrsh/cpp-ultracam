@@ -12,7 +12,7 @@ progdir = @bindir@/@PACKAGE@
 prog_PROGRAMS  = addfield arith carith crop folder grab hedit hedlis hist combine ncal noise pixel plot reduce \
 rtplot setaper setdefect setfield setwin stats uinfo uinit ucm2fits grab2fits fits2ucm oneline movie wjoin makeflat \
 vshow multiframe window boxavg list badgen shifter times gettime boxmed bcrop addspec gentemp genseries addsky \
-addbad dsub backsub setreg sreduce collapse expand lplot ppos
+addbad dsub backsub setreg sreduce collapse expand lplot ppos diags
 
 addfield_SOURCES   = addfield.cc 
 addsky_SOURCES     = addsky.cc 
@@ -28,6 +28,7 @@ carith_SOURCES     = carith.cc
 collapse_SOURCES   = collapse.cc
 combine_SOURCES    = combine.cc
 crop_SOURCES       = crop.cc
+diags_SOURCES      = diags.cc
 dsub_SOURCES       = dsub.cc
 expand_SOURCES     = expand.cc
 fits2ucm_SOURCES   = fits2ucm.cc
@@ -122,13 +123,13 @@ $(progdir)/mdiv: $(progdir)/multiframe
 $(progdir)/cplot: $(progdir)/plot
 	cd $(progdir); ln -sf plot $@
 
-INCLUDES = -I../include -I../.
+INCLUDES = -I../include -I../. -I../../colly/include -I../../subs/include
 
 # force re-build of reduce if configure.ac changes to allow for
 # version number changes
 reduce_DEPENDENCIES = ../configure.ac
 
-LDADD = libultracam.la
+LDADD = libultracam.la ../../colly/src/libcolly.la ../../subs/src/libsubs.la
 
 ## Library
 
