@@ -4,8 +4,6 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = src doc include scripts
 
-EXTRA_DIST = pgplot_libs
-
 export: dist
 	scp $(PACKAGE)-$(VERSION).tar.gz $(WEB_SERVE):$(WEB_PATH)/software/.
 	ssh $(WEB_SERVE) "cd $(WEB_PATH)/software ; \rm -f $(PACKAGE).tar.gz ; ln -s $(PACKAGE)-$(VERSION).tar.gz $(PACKAGE).tar.gz; \rm -fr $(PACKAGE); mkdir $(PACKAGE)"
