@@ -40,17 +40,6 @@ AC_CHECK_LIB([csla], [slaPm], [], AC_MSG_ERROR(cannot find the sla C library))
 
 AC_CHECK_LIB([cfitsio], [main], [], AC_MSG_ERROR(cannot find the cfitsio library))
 
-dnl AC_MSG_CHECKING([for curl-config in path])
-dnl if which curl-config > /dev/null
-dnl then
-dnl 	AC_MSG_RESULT([yes])
-dnl else
-dnl 	AC_MSG_RESULT([no])
-dnl 	AC_MSG_ERROR([curl-config must be in your path])
-dnl fi
-dnl CURL_LIBS=`curl-config --libs`
-dnl AC_CHECK_LIB([curl], [main], [LIBS="$CURL_LIBS $LIBS"], AC_MSG_ERROR(cannot find the curl library), [$CURL_LIBS])
-
 LIBCURL_CHECK_CONFIG
 
 dnl PGPLOT has its own macro 'cos its a pain
