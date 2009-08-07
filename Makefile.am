@@ -1,5 +1,7 @@
 ## Process this file with automake to generate Makefile.in
 
+ACLOCAL_AMFLAGS = -I m4 
+
 SUBDIRS = src doc include scripts
 
 EXTRA_DIST = pgplot_libs
@@ -45,6 +47,7 @@ $(ALIASES):
 	@echo 'alias crop      $(progdir)/crop'        >> $(ALIASES)
 	@echo 'alias cset      $(progdir)/cset'        >> $(ALIASES)
 	@echo 'alias csub      $(progdir)/csub'        >> $(ALIASES)
+	@echo 'alias diags     $(progdir)/diags'       >> $(ALIASES)
 	@echo 'alias div       $(progdir)/div'         >> $(ALIASES)
 	@echo 'alias dsub      $(progdir)/dsub'        >> $(ALIASES)
 	@echo 'alias expand    $(progdir)/expand'      >> $(ALIASES)

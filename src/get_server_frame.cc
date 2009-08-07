@@ -108,8 +108,8 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 				if(success != 0){
 	  
 					// This error is usually temporary
-					std::cout << error_buffer << std::endl;
-					std::cout << "Will wait one second before trying again" << std::endl;
+					std::cerr << error_buffer << std::endl;
+					std::cerr << "Will wait one second before trying again" << std::endl;
 					Subs::sleep(1.);
 					total += 1.;
 	  
@@ -226,11 +226,11 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 
 		if(total > tmax || global_ctrlc_set){
 			if(total > tmax){
-				std::cout << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
+				std::cerr << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
 			}else{
-				std::cout << "ctrl-C trapped inside get_server_frame" << std::endl;
+				std::cerr << "ctrl-C trapped inside get_server_frame" << std::endl;
 			}
-			std::cout << "Finishing input of server data." << std::endl;
+			std::cerr << "Finishing input of server data." << std::endl;
 			if(source == 'S'){
 				curl_easy_cleanup(curl_handle);
 				delete[] error_buffer;
@@ -262,8 +262,8 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 
 			if(success != 0){
 				// This error is usually temporary
-				std::cout << error_buffer << std::endl;
-				std::cout << "Will wait one second before trying again" << std::endl;
+				std::cerr << error_buffer << std::endl;
+				std::cerr << "# Will wait one second before trying again" << std::endl;
 				Subs::sleep(1.);
 				total += 1.;
 	
@@ -285,8 +285,8 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 											 " wrong data returned = " + err); 
 					}
 					if(tmax > 0.){
-						std::cout << "Suspect file number " << nfile << " is not ready yet." << std::endl;
-						std::cout << "Will wait " << twait << " secs before trying again." << std::endl;
+						std::cerr << "Suspect file number " << nfile << " is not ready yet." << std::endl;
+						std::cerr << "Will wait " << twait << " secs before trying again." << std::endl;
 						Subs::sleep(twait);
 						total   += std::max(0.01,twait);
 	    
@@ -305,15 +305,15 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 					// This should be good data but the fileserver of jan 2008 returns image/data
 					// even when the frame does not exist although it is only sending back a 404 error
 					if(strncmp(buffer.memory, "<h1>ERROR (404) - Not Found</h1>", 32) == 0){
-						if(tmax > 0.){
-							std::cout << "Suspect file number " << nfile << " is not ready yet." << std::endl;
-							std::cout << "Will wait " << twait << " secs before trying again." << std::endl;
-							Subs::sleep(twait);
-							total   += std::max(0.01,twait);
-	    
-							// try again
-							success  = 1;
-						}
+					    if(tmax > 0.){
+						std::cerr << "Suspect file number " << nfile << " is not ready yet." << std::endl;
+						std::cerr << "Will wait " << twait << " secs before trying again." << std::endl;
+						Subs::sleep(twait);
+						total   += std::max(0.01,twait);
+						
+						// try again
+						success  = 1;
+					    }
 					}
 				}
 			}
@@ -367,16 +367,16 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 			}else{
 
 				if(tmax > 0.){
-					std::cout << "Suspect file number " << nfile << " is not ready yet." << std::endl;
-					std::cout << "Will wait " << twait << " secs before trying again." << std::endl;
-					Subs::sleep(twait);
-					total   += std::max(0.01,twait);
-	  
+				    std::cerr << "Suspect file number " << nfile << " is not ready yet." << std::endl;
+				    std::cerr << "Will wait " << twait << " secs before trying again." << std::endl;
+				    Subs::sleep(twait);
+				    total   += std::max(0.01,twait);
+				    
 				}else{
-					// No attempt to try again
-					fin.close();
-					free(buffer.memory);
-					return false;
+				    // No attempt to try again
+				    fin.close();
+				    free(buffer.memory);
+				    return false;
 				}
 			}
 			if(global_ctrlc_set) break;
@@ -385,11 +385,11 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 
 	if(total > tmax || global_ctrlc_set){
 		if(total > tmax){
-			std::cout << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
+			std::cerr << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
 		}else{
-			std::cout << "ctrl-C trapped inside get_server_frame" << std::endl;
+			std::cerr << "ctrl-C trapped inside get_server_frame" << std::endl;
 		}
-		std::cout << "Finishing input of server data." << std::endl;
+		std::cerr << "Finishing input of server data." << std::endl;
 
 		if(source == 'S'){
 			delete[] error_buffer;

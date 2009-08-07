@@ -143,11 +143,11 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     
 		if(total > tmax || global_ctrlc_set){
 			if(total > tmax){
-				std::cout << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
+				std::cerr << "Waited longer than the maximum = " << tmax << " secs." << std::endl;
 			}else{
-				std::cout << "ctrl-C trapped inside parseXML" << std::endl;
+				std::cerr << "ctrl-C trapped inside parseXML" << std::endl;
 			}
-			std::cout << "Finishing attempted input of server data." << std::endl;
+			std::cerr << "Finishing attempted input of server data." << std::endl;
 			throw Input_Error("parseXML error: gave up while trying to access URL = " + URL);
 		}
 
@@ -237,12 +237,12 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 						std::cerr << "\nparseXML warning: found 'user' XML element; will assume 0.1 millisecond time exposure delay steps, valid as of January 2005" << std::endl;
 						uinfo.time_units = 0.0001;
 					}else{ 
-						std::cerr << "parseXML warning: did NOT find 'user' XML element; will assume 1.0 millisecond time exposure delay steps, as valid before January 2005\n" << std::endl;
+						std::cerr << "# parseXML warning: did NOT find 'user' XML element; will assume 1.0 millisecond time exposure delay steps, as valid before January 2005\n" << std::endl;
 						uinfo.time_units = 0.001;
 					}
-					std::cout << "\nparseXML: ULTRACAM file\n" << std::endl;
+					std::cerr << "parseXML: ULTRACAM file\n" << std::endl;
 				}else{
-					std::cout << "\nparseXML: ULTRASPEC file\n" << std::endl;
+					std::cerr << "parseXML: ULTRASPEC file\n" << std::endl;
 					uinfo.time_units = 0.001;
 				}
 	  

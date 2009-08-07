@@ -129,7 +129,7 @@ INCLUDES = -I../include -I../. -I../../colly/include -I../../subs/include
 # version number changes
 reduce_DEPENDENCIES = ../configure.ac
 
-LDADD = libultracam.la ../../colly/src/libcolly.la ../../subs/src/libsubs.la
+LDADD = libultracam.la ../../colly/src/libcolly.la ../../subs/src/libsubs.la @PGPLOT_LIBS@
 
 ## Library
 
