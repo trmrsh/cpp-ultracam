@@ -123,13 +123,13 @@ $(progdir)/mdiv: $(progdir)/multiframe
 $(progdir)/cplot: $(progdir)/plot
 	cd $(progdir); ln -sf plot $@
 
-INCLUDES = -I../include -I../. -I../../colly/include -I../../subs/include @LIBCURL_CPPFLAGS@
+INCLUDES = -I../include -I../. @LIBCURL_CPPFLAGS@
 
 # force re-build of reduce if configure.ac changes to allow for
 # version number changes
 reduce_DEPENDENCIES = ../configure.ac
 
-LDADD = libultracam.la ../../colly/src/libcolly.la ../../subs/src/libsubs.la @PGPLOT_LIBS@ @LIBCURL@
+LDADD = libultracam.la @LIBCURL@
 
 ## Library
 

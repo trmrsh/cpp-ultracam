@@ -17,7 +17,7 @@ AC_DEFUN([TRM_LIB_PGPLOT],
 
   save_libs="$LIBS"
 
-  AC_MSG_CHECKING([pgplot linking])
+  AC_MSG_CHECKING([pgplot linking assuming simplest set of libraries])
 
   LIBS="$usual_libs"
 
@@ -57,11 +57,12 @@ AC_DEFUN([TRM_LIB_PGPLOT],
   if test $pgplot_found = yes; then
      HAVE_PGPLOT=1
      AC_SUBST([PGPLOT_LIBS])
+     LIBS="$LIBS $save_libs"
   else
      AC_MSG_ERROR([could not find or work out libraries for PGPLOT])
+     LIBS="$save_libs"
   fi
 
-  LIBS="$save_libs"
   unset save_libs
   unset usual_libs
   unset pgplot_found

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([ultracam], [8.1.21])
+AC_INIT([ultracam], [8.1.22])
 
 AC_CONFIG_SRCDIR([src/reduce.cc])
 
@@ -22,6 +22,16 @@ AC_REQUIRE_CPP
 dnl libtool
 AC_CONFIG_MACRO_DIR([m4])
 AC_PROG_LIBTOOL
+
+dnl check for other trm software
+
+AC_CHECK_HEADERS([trm_subs.h trm_position.h trm_constants.h trm_array1d.h],[],AC_MSG_ERROR([cannot find 'subs' headers]))
+
+AC_CHECK_LIB([subs], [main], [], AC_MSG_ERROR([cannot find 'subs' library]))
+
+AC_CHECK_HEADERS([trm_colly.h],[],AC_MSG_ERROR([cannot find 'colly' header]))
+
+AC_CHECK_LIB([colly], [main], [], AC_MSG_ERROR([cannot find 'colly' library]))
 
 dnl Third-party software checks
 

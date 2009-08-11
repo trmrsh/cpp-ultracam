@@ -1,9 +1,7 @@
 
-This is the directory containing the ULTRACAM pipeline reduction software
-useful for looking at the data while observing and helping with setting up
-and also post-run data reduction.
+'ultracam' is a set of software for the reduction of ULTRACAM and ULTRASPEC
+data. It is often referred to as the 'ultracam pipeline'.
 
-Read the file ../INSTALL for installation instructions; installation now 
-proceeds from the directory above this one in order to relate packages together.
+Installation order: subs --> colly --> ultracam
 
-TRM 20/09/2002
+See www.astro.warwick.ac.uk/people/marsh/software for further info.
