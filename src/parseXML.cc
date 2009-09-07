@@ -1129,7 +1129,6 @@ void parse_user(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& s
 	DOMNodeList *child = node->getChildNodes();
 	uinfo.user_info = true;
 	for(unsigned int i=0; i<child->getLength(); i++){
-
 		if(same(child->item(i)->getNodeName(), "target")){
 			uinfo.target = getTextValue(child->item(i));
 		}else if(same(child->item(i)->getNodeName(), "filters")){
