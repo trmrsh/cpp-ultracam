@@ -50,21 +50,23 @@ using namespace xercesc;
 // Structures for storing the data of interest
 
 struct Uinfo{
-	std::string observatory;              // observatory name
-	std::string telescope;                // telescope name
-	int expose_time;                      // exposure time
-	float time_units;                     // seconds per expose_time
-	std::string gain_speed;               // gain speed setting
-	int number_of_exposures;              // number of exposures
-	int nccd;                             // number of CCDs
-	int xbin, ybin;                       // binning factors (same for all CCDs)
-	std::vector<Ultracam::Wind> wind;     // windows (same for all CCDs)
-	bool user_info;                       // There is user XML info available (May 2005 and onwards)
-	std::string target;                   // Target name, if user_info
-	std::string filters;                  // filters, if user_info
-	std::string id;                       // ID, if user_info
-	std::string pi;                       // PI, if user_info
-	std::string observers;                // Observers, if user_info
+    std::string observatory;              // observatory name
+    std::string telescope;                // telescope name
+    int expose_time;                      // exposure time
+    float time_units;                     // seconds per expose_time
+    std::string gain_speed;               // gain speed setting
+    int number_of_exposures;              // number of exposures
+    int nccd;                             // number of CCDs
+    int xbin, ybin;                       // binning factors (same for all CCDs)
+    std::vector<Ultracam::Wind> wind;     // windows (same for all CCDs)
+    bool user_info;                       // There is user XML info available (May 2005 and onwards)
+    std::string target;                   // Target name, if user_info
+    std::string grating;                  // Grating, if ultraspec
+    std::string filters;                  // filters, if user_info
+    std::string slit_angle;               // Slit angle, if ultraspec
+    std::string id;                       // ID, if user_info
+    std::string pi;                       // PI, if user_info
+    std::string observers;                // Observers, if user_info
 };
 
 
@@ -444,12 +446,16 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
 	// User information
 	if(uinfo.user_info){
-		header.set("User", new Subs::Hdirectory("Data entered by the user at the telescope"));
-		header.set("User.target",    new Subs::Hstring(uinfo.target, "Target name"));
-		header.set("User.filters",   new Subs::Hstring(uinfo.filters, "Filters used"));
-		header.set("User.id",        new Subs::Hstring(uinfo.id, "Program ID"));
-		header.set("User.pi",        new Subs::Hstring(uinfo.pi, "Program PI"));
-		header.set("User.observers", new Subs::Hstring(uinfo.pi, "Observers"));
+	    header.set("User", new Subs::Hdirectory("Data entered by the user at the telescope"));
+	    header.set("User.target",    new Subs::Hstring(uinfo.target, "Target name"));
+	    header.set("User.filters",   new Subs::Hstring(uinfo.filters, "Filters used"));
+	    header.set("User.id",        new Subs::Hstring(uinfo.id, "Program ID"));
+	    header.set("User.pi",        new Subs::Hstring(uinfo.pi, "Program PI"));
+	    header.set("User.observers", new Subs::Hstring(uinfo.observers, "Observers"));
+	    if (serverdata.instrument == "ULTRASPEC") {
+		header.set("User.grating",   new Subs::Hstring(uinfo.grating, "Grating"));
+		header.set("User.angle",     new Subs::Hstring(uinfo.slit_angle, "Slit angle"));
+	    }
 	}
 
 	// Add a little bit of history
@@ -1134,6 +1140,10 @@ void parse_user(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& s
 			uinfo.pi = getTextValue(child->item(i));
 		}else if(same(child->item(i)->getNodeName(), "Observers")){
 			uinfo.observers = getTextValue(child->item(i));
+		}else if(same(child->item(i)->getNodeName(), "grating")){
+			uinfo.grating = getTextValue(child->item(i));
+		}else if(same(child->item(i)->getNodeName(), "slit_angle")){
+			uinfo.slit_angle = getTextValue(child->item(i));
 		}
 	}
 }
