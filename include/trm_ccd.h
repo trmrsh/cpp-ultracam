@@ -438,7 +438,7 @@ namespace Ultracam {
 	};
 	
 	//! Statistics function
-	Stats statistics(const CCD<Window>& statwin, float sigma, bool compute_median=true) const;
+	Stats statistics(const CCD<Window>& statwin, float sigma, bool compute_median, bool careful) const;
 	
 	//! Function to return raw data over a special region.
 	void buffer(const CCD<Window>& ccdwin, Subs::Array1D<internal_data>& buff) const;

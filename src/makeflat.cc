@@ -407,7 +407,7 @@ int main(int argc, char* argv[]){
 
 	for(size_t nc=0; nc<out.size(); nc++){
 	    // Normalise the frame
-	    stats = out[nc].statistics(region[nc],100.,false);
+	    stats = out[nc].statistics(region[nc],100.,false,false);
 	    out[nc] /= stats.raw_mean;
 	}
 

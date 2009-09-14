@@ -655,79 +655,27 @@ void Ultracam::Image::write(std::ofstream& fout, Ultracam::Windata::Out_type oty
  * \return A Ultracam::Image::Stats object is returned holding the statistical information computed.
  * \exception Ultracam::Ultracam_Error exceptions may be thrown if a data buffer is not allocated.
  */
-Ultracam::Image::Stats Ultracam::Image::statistics(const Ultracam::CCD<Ultracam::Window>& statwin, float sigma, bool compute_median) const {    
-  
+Ultracam::Image::Stats Ultracam::Image::statistics(const Ultracam::CCD<Ultracam::Window>& statwin, float sigma, bool compute_median, bool careful) const
+{
   Subs::Array1D<internal_data> buff;
   this->buffer(statwin, buff);
 
+  double rawmean,rawrms,mean,rms;
+  int nrej;
+
+  // use subs::sigma_reject for statistics data
+  Subs::sigma_reject(buff.ptr(),buff.size(),sigma,careful,rawmean,rawrms,mean,rms,nrej);
   Stats stats;
+  stats.max = buff.max();
+  stats.min = buff.min();
+  stats.raw_mean = rawmean;
+  stats.raw_rms = rawrms;
   stats.npoints = buff.size();
-
-  if(buff.size()){
-
-    // Allocate & initialise mask buffer
-    
-    Subs::Buffer1D<bool> mask(buff.size());
-    mask = true;
-    
-    // Finally some real work    
-    double raw_mean = buff.mean();
-    float maxdat = buff.max(), mindat = buff.min();
-    stats.raw_mean  = raw_mean;
-    stats.max       = maxdat;
-    stats.min       = mindat;
-    
-    double raw_rms = 0.;
-    for(int i=0; i<buff.size(); i++)
-      raw_rms += Subs::sqr(buff[i]-raw_mean);
-    
-    if(buff.size() > 1){
-      raw_rms = sqrt(raw_rms/(buff.size()-1));
-      stats.raw_rms   = raw_rms;
-      double clipped_mean = raw_mean, clipped_rms = raw_rms;
-      
-      size_t nrej = 1, nok = 2, ntrej = 0;
-      while(nrej && nok > 1){
-	nrej = 0;
-	
-	// Rejection loop
-	float thresh = sigma*clipped_rms;
-	for(int i=0; i<buff.size(); i++){
-	  if(mask[i] && fabs(buff[i]-clipped_mean) > thresh){
-	    mask[i] = false;
-	    nrej++;
-	  }
-	}
-	ntrej += nrej;
-	
-	clipped_mean = 0.;
-	nok = 0;
-	for(int i=0; i<buff.size(); i++){
-	  if(mask[i]){
-	    clipped_mean += buff[i];
-	    nok++;
-	  }
-	}
-	if(!nok) break;
-	
-	clipped_mean /= nok;
-	
-	clipped_rms = 0.;
-	for(int i=0; i<buff.size(); i++)
-	  if(mask[i]) clipped_rms += Subs::sqr(buff[i]-clipped_mean);
-	
-	if(nok > 1) clipped_rms = sqrt(clipped_rms/(nok-1));
-      }
-      
-      stats.clipped_mean = clipped_mean;
-      stats.clipped_rms  = clipped_rms;
-      stats.nrejected    = ntrej;
-    }
-    
-    if(compute_median)
-      stats.median = buff.median();
-  }
-    
+  stats.clipped_mean = mean;
+  stats.clipped_rms = rms;
+  stats.nrejected = nrej;
+  if(compute_median)
+	  stats.median = buff.median();
   return stats;
 }
 
