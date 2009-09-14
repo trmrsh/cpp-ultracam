@@ -138,6 +138,9 @@ int main(int argc, char* argv[]){
 	input.sign_in("skip",      Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
 	input.sign_in("bias",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("biasframe", Subs::Input::GLOBAL, Subs::Input::PROMPT);
+	input.sign_in("region",	   Subs::Input::GLOBAL, Subs::Input::PROMPT);
+	input.sign_in("biasregion",Subs::Input::GLOBAL, Subs::Input::PROMPT);
+	input.sign_in("sigma",	   Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("threshold", Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("photon",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("naccum",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
@@ -202,10 +205,17 @@ int main(int argc, char* argv[]){
 	Subs::Header::Hnode *hnode = data.find("Instrument.instrument");
 	bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC"); 
 
-	bool bias, thresh = false;
-	float photon;
-	input.get_value("bias", bias, true, "do you want to subtract a bias frame from the grabbed data?");
+	bool bias, thresh, region = false;
+	float photon, sigmareject;
+	std::string biasregion;
 	Ultracam::Frame bias_frame;
+	// bias region ?
+	input.get_value("region", region, true, "do you want to use a bias region?");
+	if(region){
+		input.get_value("biasregion", biasregion, "region", "name of bias region window file");
+		input.get_value("sigma", sigmareject, 3.f, FLT_MIN, FLT_MAX, "sigma threshold for rejection in bias region");
+	}
+	input.get_value("bias", bias, true, "do you want to subtract a bias frame from the grabbed data?");
 	if(bias){
 	    std::string sbias;
 	    input.get_value("biasframe", sbias, "bias", "name of bias frame");
@@ -215,7 +225,7 @@ int main(int argc, char* argv[]){
 	    // We need to record this in the frame for potential dark subtraction
 	    float bias_expose = bias_frame["Exposure"]->get_float();
 	    data.set("Bias_exposure", new Subs::Hfloat(bias_expose, "Exposure time of bias subtracted from this frame"));
-	
+
 	    if(ultraspec){ 
 		input.get_value("threshold", thresh, true, "do you want to threshold to get 0 or 1 photons/pix?");
 		if(thresh)
@@ -266,7 +276,26 @@ int main(int argc, char* argv[]){
 
 	    // Subtract a bias frame
 	    if(bias) data -= bias_frame;
-      
+
+		// apply bias region here
+		if (region)
+		{
+			// read in ultracam compatible window file for bias region (use setwin to generate)
+			Ultracam::Mwindow biaswin;
+			Ultracam::Image::Stats stats;
+			biaswin.rasc(biasregion);
+			// check number of ccds match
+      		if(data.size() != mwindow.size())
+	    		throw Ultracam::Input_Error("Data frame and window files have differing numbers of CCDs");
+			// generate statistics
+			for(size_t nccd=0; nccd<data.size(); nccd++){
+				stats = data[nccd].statistics(biaswin[nccd],sigmareject,false,true);
+				std::cout << "Clipped mean: " << stats.clipped_mean << ", clipped rms: " << stats.clipped_rms << std::endl;
+				// subtract clipped mean from each ccd
+				data[nccd] -= stats.clipped_mean;
+			}
+	    }
+
 	    // Apply threshold
 	    if(thresh) data.step(photon);
 
