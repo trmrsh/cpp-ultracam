@@ -90,7 +90,7 @@ int main(int argc, char* argv[]){
     Ultracam::Image::Stats stats;
 
     for(size_t nccd=0; nccd<data.size(); nccd++){
-      stats = data[nccd].statistics(mwindow[nccd],sigma,median);
+      stats = data[nccd].statistics(mwindow[nccd],sigma,median,false);
       std::cout << "\nCCD number " << nccd+1 << ":\n" << std::endl;
       std::cout << "Total number of pixels    = " << stats.npoints << std::endl;
       input.add_to_global("stats_npoints", stats.npoints);
