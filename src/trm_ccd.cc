@@ -652,6 +652,8 @@ void Ultracam::Image::write(std::ofstream& fout, Ultracam::Windata::Out_type oty
  * \param statwin the region to compute the statitics over
  * \param sigma   RMS threshold for the reject loop
  * \param compute_median switch off to save a bit of time if you are not interested in the median value.
+ * \param careful true/false for whether to clip the data by single pixel rejection, worst first, or by multiple rejection. The latter
+ * is faster, but more likely to lead to incorrect rejections.
  * \return A Ultracam::Image::Stats object is returned holding the statistical information computed.
  * \exception Ultracam::Ultracam_Error exceptions may be thrown if a data buffer is not allocated.
  */
