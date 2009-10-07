@@ -4,7 +4,7 @@
 !!title    grab
 !!author   T.R. Marsh
 !!created  06 May 2002
-!!revised  13 Nov 2007
+!!revised  07 Oct 2009
 !!root     grab
 !!index    grab
 !!descr    grabs server or local .dat files, writing them as .ucm files
@@ -36,7 +36,7 @@ exposure time of the bias frame in the result which is needed for bias subtracti
 !!head2 Invocation
 
 grab [source] (url)/(file) ndigit first (last) trim [(ncol nrow) twait tmax] skip
-bias (biasframe) (threshold (photon) naccum) 
+bias (biasframe) bregion (biasregion brsigma) (threshold (photon) naccum) 
 
 !!head2 Arguments
 
@@ -82,6 +82,14 @@ the different bias levels of the 6 readouts. The exposure time of the bias will 
 of the output frames as it is needed for later dark subtraction.}
 
 !!arg{biasframe}{If bias, then you need to specify the name of the bias frame.}
+
+!!arg{bregion}{true/false depending on whether you want to subtract a 
+constant determined from a pre-defined region of the frame (e.g.
+under- or over-scan) to account for drifting bias levels.}
+
+!!arg{biasregion}{the name of a windows file defining the region (e.g. as created with !!ref{setwin.html}{setwin})}
+
+!!arg{brsigma}{the rejection threshold in terms of RMS for kicking out cosmic rays.}
 
 !!arg{threshold}{If you are applying a bias to ULTRASPEC L3CCD data, you have the option of 
 converting to photon counts (0 or 1 whether above or below a certain threshold).}
@@ -138,9 +146,9 @@ int main(int argc, char* argv[]){
 	input.sign_in("skip",      Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
 	input.sign_in("bias",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("biasframe", Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("region",	   Subs::Input::GLOBAL, Subs::Input::PROMPT);
+	input.sign_in("bregion",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("biasregion",Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("sigma",	   Subs::Input::GLOBAL, Subs::Input::PROMPT);
+	input.sign_in("brsigma",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("threshold", Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("photon",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
 	input.sign_in("naccum",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
@@ -205,15 +213,24 @@ int main(int argc, char* argv[]){
 	Subs::Header::Hnode *hnode = data.find("Instrument.instrument");
 	bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC"); 
 
-	bool bias, thresh, region = false;
+	bool bias, thresh = false, bregion = false;
 	float photon, sigmareject;
-	std::string biasregion;
+	std::string sbiasregion;
 	Ultracam::Frame bias_frame;
+	Ultracam::Mwindow biasregion;
+
 	// bias region ?
-	input.get_value("region", region, true, "do you want to use a bias region?");
-	if(region){
-		input.get_value("biasregion", biasregion, "region", "name of bias region window file");
-		input.get_value("sigma", sigmareject, 3.f, FLT_MIN, FLT_MAX, "sigma threshold for rejection in bias region");
+	input.get_value("bregion", bregion, true, "do you want to use a bias region?");
+	if(bregion){
+	    input.get_value("biasregion", sbiasregion, "region", "name of bias region window file");
+	    // read in ultracam compatible window file for bias region (use setwin to generate)
+	    biasregion.rasc(sbiasregion);
+
+	    // check number of ccds match
+	    if(data.size() != biasregion.size())
+		throw Ultracam::Input_Error("Data frame and bias region window files have differing numbers of CCDs");
+
+	    input.get_value("brsigma", sigmareject, 3.f, FLT_MIN, FLT_MAX, "sigma threshold for rejection in bias region");
 	}
 	input.get_value("bias", bias, true, "do you want to subtract a bias frame from the grabbed data?");
 	if(bias){
@@ -277,23 +294,14 @@ int main(int argc, char* argv[]){
 	    // Subtract a bias frame
 	    if(bias) data -= bias_frame;
 
-		// apply bias region here
-		if (region)
-		{
-			// read in ultracam compatible window file for bias region (use setwin to generate)
-			Ultracam::Mwindow biaswin;
-			Ultracam::Image::Stats stats;
-			biaswin.rasc(biasregion);
-			// check number of ccds match
-      		if(data.size() != mwindow.size())
-	    		throw Ultracam::Input_Error("Data frame and window files have differing numbers of CCDs");
-			// generate statistics
-			for(size_t nccd=0; nccd<data.size(); nccd++){
-				stats = data[nccd].statistics(biaswin[nccd],sigmareject,false,true);
-				std::cout << "Clipped mean: " << stats.clipped_mean << ", clipped rms: " << stats.clipped_rms << std::endl;
-				// subtract clipped mean from each ccd
-				data[nccd] -= stats.clipped_mean;
-			}
+	    // apply bias region here
+	    if (bregion){
+		for(size_t nccd=0; nccd<data.size(); nccd++){
+		    Ultracam::Image::Stats stats = data[nccd].statistics(biasregion[nccd],sigmareject,false,true);
+		    std::cout << "Bias region clipped mean +/- rms = " << stats.clipped_mean << "+/-" << stats.clipped_rms << std::endl;
+		    // subtract clipped mean from each ccd
+		    data[nccd] -= stats.clipped_mean;
+		}
 	    }
 
 	    // Apply threshold
@@ -326,7 +334,7 @@ int main(int argc, char* argv[]){
 		    std::cout << std::endl;
 		}
 
-		if(bias || naccum > 1){
+		if(bias || bregion || naccum > 1){
 		    data.write(server_file + "_" + Subs::str(int(nfile), ndigit));
 		}else{
 		    // Write it out in RAW format to save space.
