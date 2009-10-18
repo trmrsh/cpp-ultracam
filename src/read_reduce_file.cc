@@ -362,8 +362,6 @@ void Ultracam::read_reduce_file(const std::string& file, const std::string& logf
 	throw Input_Error("extraction_control: star scale factor must be > 0.");
       if(star_min > star_max) 
 	throw Input_Error("extraction_control: star minimum radius must be <= maximum radius.");
-      if(inner_sky_scale < star_scale) 
-	throw Input_Error("extraction_control: inner sky scale factor must be >= star scale factor");
       if(outer_sky_scale < inner_sky_scale) 
 	throw Input_Error("extraction_control: outer sky scale factor must be >= inner sky scale factor");
       if(inner_sky_min < 0.) 
