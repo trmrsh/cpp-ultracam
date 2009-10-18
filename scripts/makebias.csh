@@ -25,13 +25,14 @@
 #
 # !!head2 Invocation
 #
-# makebias run output
+# makebias run first output 
 #
 # !!head2 Arguments
 #
 # !!table
 #
 # !!arg{run}{The name of the run}
+# !!arg{first}{first frame to use. Normally 1, but > 1 for drift mode runs}
 # !!arg{output}{the name of the output file}
 # 
 # !!table
@@ -43,23 +44,27 @@ if($?ULTRACAM == 0) then
   exit 1
 endif
 
-if($#argv != 2) then
-  echo "usage: makebias run output"
+if($#argv != 3) then
+  echo "usage: makebias run first output"
   exit
 endif
 
 set run    = $argv[1]
-set output = $argv[2]
+set first  = $argv[2]
+set output = $argv[3]
+set root   = $run:t
+
+# delete files
+rm ${root}_[0-90-90-90-90-9].ucm
 
 # grab the frames
-$ULTRACAM/grab $run ndigit=5 first=1 last=0 trim=no bias=no
+$ULTRACAM/grab $run ndigit=5 first=$first last=0 trim=no bias=no
 
-set root = $run:t
+
 
 echo "root = $root"
 
-# delete the first and last files 
-rm `ls ${root}_[0-90-90-90-90-9]*ucm | head -n 1`
+# delete the last files 
 rm `ls ${root}_[0-90-90-90-90-9]*ucm | tail -n 1`
 
 # make a file list
