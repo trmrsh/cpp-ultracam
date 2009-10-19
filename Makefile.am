@@ -113,6 +113,7 @@ $(ALIASES):
 	@echo 'alias ucat      $(progdir)/ucat.csh'                >> $(ALIASES)
 	@echo "alias unique    'python $(progdir)/unique.py'"      >> $(ALIASES)
 	@echo 'alias uls       $(progdir)/uls.csh'                 >> $(ALIASES)
+	@echo "alias ulog2fits 'python $(progdir)/ulog2fits.py'"   >> $(ALIASES)
 	@echo 'alias ult2asc   $(progdir)/ult2asc.pl'              >> $(ALIASES)
 	@echo "alias updateaper 'perl $(progdir)/updateaper.pl'"   >> $(ALIASES)
 	@echo "setenv ULTRACAM $(progdir)"                         >> $(ALIASES)
