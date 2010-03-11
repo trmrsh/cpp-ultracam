@@ -121,7 +121,7 @@ for d in dirs:
         f = open(logfile)
         for line in f:
             if line.startswith('run'):
-                key     = os.path.join(d,line[0:6])
+                key = os.path.join(d,line[0:6])
                 if key in form:
                     form[key]['Comment'] = line[6:].strip()
         f.close()
@@ -160,14 +160,18 @@ for (tkey,template) in match.iteritems():
 
 # now a second pass to pick up suitable biases for flats and darks
 # because the biases picked up in the first pass had to match the read speed
-# of the test data while other calibrations did not.
+# of the test data while other calibrations did not. At this point we check
+# that the .dat and .xml actually exist
 final = {}
 for (tkey,template) in all.iteritems():
     for (key,ucam) in form.iteritems():
-        if key == tkey:
-            final[key] = ucam
-        elif template.is_not_bias() and template.is_calib() and ucam.is_bias() and template.is_subset_of(ucam):
-            final[key] = ucam
+        if os.path.exists(key + '.xml') and os.path.exists(key + '.dat'):
+            if key == tkey:
+                final[key] = ucam
+            elif template.is_not_bias() and template.is_calib() and ucam.is_bias() and template.is_subset_of(ucam):
+                final[key] = ucam
+
+
 
 
 # Create export directory names and then create the directories
@@ -185,7 +189,7 @@ for key in sorted(final.keys()):
         os.link(key + '.xml', newfile + '.xml')
     if not os.path.isfile(newfile + '.dat'):
         os.link(key + '.dat', newfile + '.dat')
-
+    
 # Write out a log file
 f = open(os.path.join(expdir, 'index.html'), 'w')
 
