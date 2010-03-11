@@ -30,13 +30,30 @@ struct Blue_save {
 
 void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata, Ultracam::TimingInfo& timing){
 
+
+    // In Feb 2010, format changed. Spot by testing for the version number, issue a warning
+    int format;
+    if(serverdata.version == -1 || serverdata.version == 70514){
+	format = 1;
+    }else if(serverdata.version == 100222){
+	format = 2;
+    }else{
+	std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
+	std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
+	std::cerr << "Will assume post Feb 2010 format" << std::endl;
+	format = 2;
+    }
+    format = 2;
+    std::cerr << "temporary forcing of format = " << format << std::endl;
+
     const bool LITTLE = Subs::is_little_endian();
     
     union IntRead{
 	char c[4];
-	int  i;
-	unsigned short int usi;
-	short int si;
+	int32_t i;
+	uint32_t ui;
+	uint16_t usi;
+	int16_t si;
     } intread;
   
     // Frame number. First one = 1
@@ -50,58 +67,63 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	intread.c[2] = buffer[6];
 	intread.c[3] = buffer[7];
     }else{
-	intread.c[0] = buffer[7];
-	intread.c[1] = buffer[6];
-	intread.c[2] = buffer[5];
 	intread.c[3] = buffer[4];
+	intread.c[2] = buffer[5];
+	intread.c[1] = buffer[6];
+	intread.c[0] = buffer[7];
     }
-    
-    int frame_number = intread.i;
-    
+    int frame_number = int(intread.ui);
+    std::cerr << "frame number = " << frame_number << std::endl;
+
+    // New offset came in in Feb 2010
+    int nb = format == 1 ? 9 : 12;
+
     // Number of seconds
     if(LITTLE){
-	intread.c[0] = buffer[9];
-	intread.c[1] = buffer[10];
-	intread.c[2] = buffer[11];
-	intread.c[3] = buffer[12];
+	intread.c[0] = buffer[nb++];
+	intread.c[1] = buffer[nb++];
+	intread.c[2] = buffer[nb++];
+	intread.c[3] = buffer[nb++];
     }else{
-	intread.c[0] = buffer[12];
-	intread.c[1] = buffer[11];
-	intread.c[2] = buffer[10];
-	intread.c[3] = buffer[9];
+	intread.c[3] = buffer[nb++];
+	intread.c[2] = buffer[nb++];
+	intread.c[1] = buffer[nb++];
+	intread.c[0] = buffer[nb++];
     }
-    
-    int nsec = intread.i;
+    unsigned int nsec = intread.ui;
+    std::cerr << "number of sec = " << nsec << std::endl;
     
     // number of nanoseconds
     if(LITTLE){
-	intread.c[0] = buffer[13];
-	intread.c[1] = buffer[14];
-	intread.c[2] = buffer[15];
-	intread.c[3] = buffer[16];
+	intread.c[0] = buffer[nb++];
+	intread.c[1] = buffer[nb++];
+	intread.c[2] = buffer[nb++];
+	intread.c[3] = buffer[nb++];
     }else{
-	intread.c[0] = buffer[16];
-	intread.c[1] = buffer[15];
-	intread.c[2] = buffer[14];
-	intread.c[3] = buffer[13];
-    }
-    
-    int nnanosec = intread.i;
-    
+	intread.c[3] = buffer[nb++];
+	intread.c[2] = buffer[nb++];
+	intread.c[1] = buffer[nb++];
+	intread.c[0] = buffer[nb++];
+    }    
+    unsigned int nnanosec = format == 1 ? intread.i : 100*intread.i;
+    std::cerr << "number of nannosec = " << nnanosec << std::endl;
+
     // number of satellites. -1 indicates no GPS, and thus times generated from
     // when software loaded into kernel. Useful for relative times still.
     if(LITTLE){
 	intread.c[0] = buffer[21];
 	intread.c[1] = buffer[22];
     }else{
-	intread.c[0] = buffer[22];
 	intread.c[1] = buffer[21];
+	intread.c[0] = buffer[22];
     }
 
     int nsatellite = int(intread.si);
+    std::cerr << "nsatellite = " << nsatellite << std::endl;
 
     // is the u-band junk data?
-    bool bad_blue = (serverdata.nblue > 1) && ((buffer[0] & 1<<3) == 1<<3); 
+    // Changed from 3rd to 4th bit in Feb 2010 (Dave Atkinson)
+    bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3) == 1<<3) || (format == 2 && (buffer[0] & 1<<4) == 1<<4)); 
 
     // Flag so that some things are only done once
     static bool first = true;
@@ -175,27 +197,41 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
       
 	    // Starting with the second night of the September 2002 run, we have date
 	    // information. We try to spot rubbish dates by their silly year      
-	    unsigned char day_of_month  = buffer[17];
-	    unsigned char month_of_year = buffer[18];
 
-	    if(LITTLE){
-		intread.c[0] = buffer[19];
-		intread.c[1] = buffer[20];
+	    unsigned char day_of_month, month_of_year;
+	    unsigned short int year;
+
+	    if(format == 1){
+		day_of_month  = buffer[17];
+		month_of_year = buffer[18];
+
+		if(LITTLE){
+		    intread.c[0] = buffer[19];
+		    intread.c[1] = buffer[20];
+		}else{
+		    intread.c[0] = buffer[20];
+		    intread.c[1] = buffer[19];
+		}
+		year = intread.usi;
+
+	    }else if(format == 2){
+		day_of_month  = 1;
+		month_of_year = 1;
+		year          = 1970;
 	    }else{
-		intread.c[0] = buffer[20];
-		intread.c[1] = buffer[19];
+		std::cerr << "WARNING: could not recognize format = " << format << " when trying to establish date in read_header" << std::endl;
 	    }
-	    unsigned short int year = intread.usi;
       
 	    // hack for partial fix with day and month ok but not year
-	    if(month_of_year == 9 && year == 263) year = 2002;
+	    if(format == 1 && month_of_year == 9 && year == 263) year = 2002;
       
-	    if(year < 2002){
+	    if(format == 1 && year < 2002){
 		gps_timestamp.set(8,Subs::Date::Sep,2002,0,0,0.);
 		gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+
 	    }else{
 	
-		if(month_of_year == 9 && year == 2002){
+		if(format == 1 && month_of_year == 9 && year == 2002){
 	  
 		    // Yet another special case!! day numbers seem problematic in the
 		    // September run, but seem to be correct to within 1 day. So just try 
@@ -231,7 +267,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    // Now just add in the fraction of the week
 		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 	
-		}else{ 
+		}else if(format == 1){ 
  
 		    // nsec represents the number of seconds since the start of the week, but
 		    // the date is the date of the relevant day therefore we set the date to be the date measured 
@@ -243,6 +279,16 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    // We have the  right date, now just add in the fraction of the day
 		    gps_timestamp.add_second(double(nsec % Constants::IDAY) + double(nnanosec)/1.e9);
 
+		}else if(format == 2){
+
+		    // This format started in Feb 2010 before the NTT run with a new GPS thingy. 
+		    // nsec in this case represents the number of seconds from the start of 
+		    // "unix time", 1 Jan 1970
+		    gps_timestamp.set(day_of_month,month_of_year,year,0,0,0.);
+		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
+
+		}else{
+		    std::cerr << "WARNING: could not recognize format = " << format << " when trying to establish GPS time in read_header" << std::endl;
 		}
 
 		// Set the vertical clock time. Have to account for the change of
