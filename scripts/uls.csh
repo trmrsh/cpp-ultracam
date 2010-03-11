@@ -33,9 +33,9 @@
 # !!end
 
 if($#argv < 1) then
-  curl --silent ${ULTRACAM_DEFAULT_URL}\?action=dir | sed -e 's/<[^<]*>//g' | grep run
+  curl --silent ${ULTRACAM_DEFAULT_URL}\?action=dir | sed -e 's/<[^<]*>//g' | grep run | sort
 else
-  curl --silent ${ULTRACAM_DEFAULT_URL}$argv[1]\?action=dir | sed -e 's/<[^<]*>//g' | grep run
+  curl --silent ${ULTRACAM_DEFAULT_URL}$argv[1]\?action=dir | sed -e 's/<[^<]*>//g' | grep run | sort
 endif
 
 exit;
