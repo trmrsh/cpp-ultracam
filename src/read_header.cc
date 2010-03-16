@@ -43,8 +43,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	std::cerr << "Will assume post Feb 2010 format" << std::endl;
 	format = 2;
     }
-    format = 2;
-    std::cerr << "temporary forcing of format = " << format << std::endl;
+    std::cerr << "Assuming format code = " << format << std::endl;
 
     const bool LITTLE = Subs::is_little_endian();
     
@@ -149,7 +148,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     const Subs::Time clock_board_change(1,Subs::Date::Aug,2003); 
     const Subs::Time clock_board_fixed(1,Subs::Date::Jan,2005); 
 
-    if(nsatellite == -1){
+    if(format == 1 && nsatellite == -1){
 
 	gps_timestamp.set(1,Subs::Date::Jan,2000,0,0,0.);
 	gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);

@@ -448,7 +448,7 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
     // Like to know if this ever occurs
     if((buffer.memory[0] & 1<<2) == 1<<2)
 	std::cerr << "WARNING: second status bit representing a 'pon error' was set. Let Tom Marsh know if you ever see this." << std::endl;
-      
+
     if(demultiplex){
 	if(serverdata.instrument == "ULTRACAM"){
 	    Ultracam::de_multiplex_ultracam(buffer.memory+headerskip, data);

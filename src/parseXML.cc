@@ -310,6 +310,11 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	ncol = 0;
     }
 
+    if(serverdata.headerwords == 16){
+	std::cerr << "WARNING: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
+	serverdata.version = 100222;
+    }
+
     if(serverdata.instrument == "ULTRACAM" && serverdata.version < 0){
 	if(serverdata.readout_mode != Ultracam::ServerData::FULLFRAME_OVERSCAN){
 	    std::cerr << "WARNING: outermost pixels will be removed to account for pixel shift bug (should only happen before 2007)" << std::endl;
@@ -592,8 +597,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			      name.find("appl3_fullframe_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_CLEAR;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && name.find("ap5b") != std::string::npos ||
-			     name.find("appl5_window1pair_app") != std::string::npos){ // CHECK
+		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("ap5b") != std::string::npos ||
+								     name.find("appl5_window1pair_app") != std::string::npos)){ // CHECK
 			serverdata.readout_mode = Ultracam::ServerData::WINDOWS_CLEAR;
 
 		    }else if(serverdata.instrument == "ULTRACAM" && 
@@ -607,21 +612,19 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			      name.find("appl7_window3pair_cfg") != std::string::npos)){  // May 2002
 			serverdata.readout_mode = Ultracam::ServerData::WINDOWS;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && 
-			     name.find("drift") != std::string::npos ||
-			     name.find("appl8_driftscan_cfg") != std::string::npos){
+		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("drift") != std::string::npos ||
+								     name.find("appl8_driftscan_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::DRIFT;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && 
-			     name.find("frameover") != std::string::npos ||
-			     name.find("appl4_frameover_cfg") != std::string::npos){
+		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("frameover") != std::string::npos ||
+								     name.find("appl4_frameover_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_OVERSCAN;
 
 		    }else if(serverdata.instrument == "ULTRASPEC" && name.find("ccd201_winbin_con") != std::string::npos){
 			serverdata.readout_mode = Ultracam::ServerData::L3CCD_WINDOWS;
 
 		    }else{
-			throw Input_Error("parseXML error: unrecognised application & readout mode = " + name);
+			throw Input_Error("parseXML error: unrecognised application & readout mode = [" + name + "]");
 		    }
 		    found_readout_mode = true;
 		}
@@ -657,7 +660,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 	}else if(same(child->item(j)->getNodeName(), "parameter_status")){
       
 	    if(child->item(j)->getNodeType() == DOMNode::ELEMENT_NODE){
-	
+
 		if(AttToString((DOMElement*)child->item(j), "name") == "EXPOSE_TIME" && serverdata.instrument == "ULTRACAM"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
 		    istr >> uinfo.expose_time;
