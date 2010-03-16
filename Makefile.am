@@ -10,6 +10,7 @@ export: dist
 	scp -r doc/html $(WEB_SERVE):$(WEB_PATH)/software/$(PACKAGE)/.
 	ssh $(WEB_SERVE) "cd $(WEB_PATH)/software; sed -e 's%<\!-- ultracam version --><td>.*</td>%<\!-- ultracam version --><td>$(VERSION)</td>%' index.html > junk.html; mv junk.html index.html"
 	ssh $(WEB_SERVE) "cd $(WEB_PATH)/software; sed -e 's%<\!-- ultracam date --><td>.*</td>%<\!-- ultracam date --><td>$(DATE)</td>%' index.html > junk.html; mv junk.html index.html"
+	rm $(PACKAGE)-$(VERSION).tar.gz
 
 ALIASES = Ultracam
 
