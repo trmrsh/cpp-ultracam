@@ -70,6 +70,8 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
     // Overscan mode is a special case. Separate it because of rarity and difficulty
     bool normal = (data["Instrument.Readout_Mode_Flag"]->get_int() != ServerData::FULLFRAME_OVERSCAN);
 
+    std::cerr << "normal = " << normal << std::endl;
+
     if(normal){
 
 	register int NX = data[0][nwin1].nx();
@@ -136,26 +138,28 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
 
     }else{
 
-	// Overscan mode is a bit of a bugger. 24 column on left of left window and right
+	// Overscan mode is a bit of a bugger. 24 columns on left of left window and right
 	// of right window, plus 4 on right of left window and left of right window
 	// plus another 8 rows at the top. Very specific implementation here to split
 	// between 6 windows with the two parts of the overscan combined into single strips
 	// which appear on the right of the main windows and an extra part at the top. This
-	// way the mapping of real pixel to image pixel is preserved so object positions stay
+	// way the mapping of real pixels to image pixel is preserved so object positions stay
 	// the same.
     
 	register int ix;
+	const int  XBIN      = data[0][0].xbin();
+	const int  YBIN      = data[0][0].ybin();
 
-	for(iy=0; iy<1032; iy++){
-	    for(ix=0; ix<540; ix++){
+	for(iy=0; iy<1032/YBIN; iy++){
+	    for(ix=0; ix<540/XBIN; ix++){
 		for(nccd=0; nccd<NCCD; nccd++){
-		    if(ix < 24){
+		    if(ix < 24/XBIN){
 	    
 			// left and right overscan windows
 			if(LITTLE){
 			    data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)(buffer+ip));	 
 			    ip += 2;
-			    data[nccd][3][iy][27-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+			    data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 			    ip += 2;
 			}else{
 			    cbuff[1] = buffer[ip++];
@@ -163,42 +167,42 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
 			    data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)cbuff);
 			    cbuff[1] = buffer[ip++];
 			    cbuff[0] = buffer[ip++];
-			    data[nccd][3][iy][27-ix] = internal_data(*(Subs::UINT2*)cbuff);
+			    data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
 			}
 
-		    }else if(ix < 536){
+		    }else if(ix < 536/XBIN){
 	    
-			if(iy < 1024){
+			if(iy < 1024/YBIN){
 			    // left and right data windows
 			    if(LITTLE){
-				data[nccd][0][iy][ix-24]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+				data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 				ip += 2;
-				data[nccd][1][iy][535-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+				data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 				ip += 2;
 			    }else{
 				cbuff[1] = buffer[ip++];
 				cbuff[0] = buffer[ip++];
-				data[nccd][0][iy][ix-24]  = internal_data(*(Subs::UINT2*)cbuff);
+				data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
 				cbuff[1] = buffer[ip++];
 				cbuff[0] = buffer[ip++];
-				data[nccd][1][iy][535-ix] = internal_data(*(Subs::UINT2*)cbuff); 
+				data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff); 
 			    }
 
 			}else{
 
 			    // top left and right overscan windows
 			    if(LITTLE){
-				data[nccd][4][iy-1024][ix-24]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+				data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 				ip += 2;
-				data[nccd][5][iy-1024][535-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+				data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 				ip += 2;
 			    }else{
 				cbuff[1] = buffer[ip++];
 				cbuff[0] = buffer[ip++];
-				data[nccd][4][iy-1024][ix-24]  = internal_data(*(Subs::UINT2*)cbuff);
+				data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
 				cbuff[1] = buffer[ip++];
 				cbuff[0] = buffer[ip++];
-				data[nccd][5][iy-1024][535-ix] = internal_data(*(Subs::UINT2*)cbuff);  
+				data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);  
 			    }
 			}
 	    
@@ -206,20 +210,20 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
 
 			// left and right overscan windows again
 			if(LITTLE){
-			    data[nccd][2][iy][ix-512] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+			    data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 			    ip += 2;
-			    data[nccd][3][iy][539-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
+			    data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
 			    ip += 2;
 			}else{
 			    cbuff[1] = buffer[ip++];
 			    cbuff[0] = buffer[ip++];
-			    data[nccd][2][iy][ix-512] = internal_data(*(Subs::UINT2*)cbuff);
+			    data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)cbuff);
 			    cbuff[1] = buffer[ip++];
 			    cbuff[0] = buffer[ip++];
-			    data[nccd][3][iy][539-ix] = internal_data(*(Subs::UINT2*)cbuff);  
+			    data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);  
 			}
 		    }
-		}
+		}	
 	    }
 	}
     }
