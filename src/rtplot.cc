@@ -566,7 +566,7 @@ int main(int argc, char* argv[]){
 		std::vector<Ultracam::Ppars> pdefs;
 		bool reliable, found_ut, found_exp, found_gps, found_nsat;
 		Subs::Time ut_date, gps_time, ttime(16,Subs::Date::May,2002);
-		int nsatellite = 0;
+		int nsatellite = 0, format = 0;
 		float exposure = 0;
 
 		std::cout << std::endl;
@@ -714,13 +714,20 @@ int main(int argc, char* argv[]){
 			}else{
 				std::cout << "UNKNOWN";
 			}
-			std::cout << ", sats = ";
-			if(found_nsat){
-				std::cout << nsatellite;
-			}else{
-				std::cout << "UNKNOWN";
-			}
 
+			hnode = data.find("Frame.format");
+			if(hnode->has_data())
+			    format = hnode->value->get_int();
+
+			if(format == 1){
+			    std::cout << ", sats = ";
+			    if(found_nsat){
+				std::cout << nsatellite;
+			    }else{
+				std::cout << "UNKNOWN";
+			    }
+			}
+			    
 			nstack++;
 
 			if(nstack < naccum){

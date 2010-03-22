@@ -830,6 +830,12 @@ namespace Ultracam {
       //! Period of good blue frames (1 ==> all ok, 2 ==> skip every other one)
       int nblue;
 
+      //! Application name
+      std::string application;
+
+      //! Units of exposure time
+      float time_units;
+
       //! Sub-class for L3CCD
       struct L3data {
 	  int led_flsh; /**< LED setting */
@@ -875,6 +881,9 @@ namespace Ultracam {
       //! Flag to indicate whether the timing info is reliable
       bool reliable;
 
+      //! Reason why time is considered unreliable
+      std::string reason;
+
       //! Flag to indicate whether the timing info for the blue frame is reliable
       bool reliable_blue;
       
@@ -884,8 +893,14 @@ namespace Ultracam {
       //! Raw GPS time stamp
       Subs::Time gps_time;
       
-      //! Number of satellites available for the GPS time stamp
+      //! Format of timing data 1 = < Mar 2010, 2 = Mar 2010 --
+      int format;
+
+      //! Number of satellites (only format = 1)
       int nsatellite;
+
+      //! Time stamp status (since March 2010)
+      unsigned short int tstamp_status;
       
       //! The vertical row transfer time used
       float vclock_frame;

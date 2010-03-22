@@ -70,8 +70,6 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
     // Overscan mode is a special case. Separate it because of rarity and difficulty
     bool normal = (data["Instrument.Readout_Mode_Flag"]->get_int() != ServerData::FULLFRAME_OVERSCAN);
 
-    std::cerr << "normal = " << normal << std::endl;
-
     if(normal){
 
 	register int NX = data[0][nwin1].nx();

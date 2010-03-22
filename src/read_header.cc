@@ -7,6 +7,41 @@
 #include "trm_ultracam.h"
 #include "trm_constants.h"
 
+// Following are bit masks associated with the Meinberg GPS
+
+/* Bit masks used with both PCPS_TIME_STATUS and PCPS_TIME_STATUS_X */
+#define PCPS_FREER     0x01  /* DCF77 clock running on xtal, GPS receiver has not verified its position */
+#define PCPS_DL_ENB    0x02  /* daylight saving enabled */
+#define PCPS_SYNCD     0x04  /* clock has sync'ed at least once after pwr up */
+#define PCPS_DL_ANN    0x08  /* a change in daylight saving is announced */
+#define PCPS_UTC       0x10  /* a special UTC firmware is installed */
+#define PCPS_LS_ANN    0x20  /* leap second announced, (requires firmware rev. REV_PCPS_LS_ANN_...) */
+#define PCPS_IFTM      0x40  /* the current time was set via PC, (requires firmware rev. REV_PCPS_IFTM_...) */
+#define PCPS_INVT      0x80  /* invalid time because battery was disconn'd */
+
+
+/* Bit masks used only with PCPS_TIME_STATUS_X */
+
+#define PCPS_LS_ENB      0x0100  /* current second is leap second */
+#define PCPS_ANT_FAIL    0x0200  /* antenna failure */
+
+/* The next two bits are used only if the structure */
+/* PCPS_HR_TIME contains a user capture event */
+#define PCPS_UCAP_OVERRUN      0x2000  /* events interval too short */
+#define PCPS_UCAP_BUFFER_FULL  0x4000  /* events read too slow */
+
+/*
+ * Immediately after a clock has been accessed, subsequent accesses
+ * are blocked for up to 1.5 msec to give the clock's microprocessor
+ * some time to decode the incoming time signal.
+ * The flag below is set if a program tries to read the PCPS_HR_TIME
+ * during this interval. In this case the read function returns the
+ * proper time stamp which is taken if the command byte is written,
+ * however, the read function returns with delay.
+ * This flag is not supported by all clocks.
+ */
+#define PCPS_IO_BLOCKED        0x8000
+
 // little structure to save data relevant to the blue co-add option
 struct Blue_save { 
     Blue_save(const Subs::Time& time, float expose, bool reliable){
@@ -43,10 +78,12 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	std::cerr << "Will assume post Feb 2010 format" << std::endl;
 	format = 2;
     }
-    std::cerr << "Assuming format code = " << format << std::endl;
 
+    // The raw data files are written on a little-endian (linux) machine. Bytes
+    // must be swapped if reading on big-endian machines such as Macs
     const bool LITTLE = Subs::is_little_endian();
     
+    // Union used for byte swapping
     union IntRead{
 	char c[4];
 	int32_t i;
@@ -54,12 +91,148 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	uint16_t usi;
 	int16_t si;
     } intread;
-  
+
+    // Read format-specific info
+    bool reliable = true;  // is time reliable?
+    std::string reason = "";
+    int nsatellite = 0;
+    unsigned int nsec = 0, nnanosec = 0, tstamp = 0;
+    if(format == 1){
+
+	// Number of seconds
+	if(LITTLE){
+	    intread.c[0] = buffer[9];
+	    intread.c[1] = buffer[10];
+	    intread.c[2] = buffer[11];
+	    intread.c[3] = buffer[12];
+	}else{
+	    intread.c[3] = buffer[9];
+	    intread.c[2] = buffer[10];
+	    intread.c[1] = buffer[11];
+	    intread.c[0] = buffer[12];
+	}
+	nsec = intread.ui;
+    
+	// number of nanoseconds
+	if(LITTLE){
+	    intread.c[0] = buffer[13];
+	    intread.c[1] = buffer[14];
+	    intread.c[2] = buffer[15];
+	    intread.c[3] = buffer[16];
+	}else{
+	    intread.c[3] = buffer[13];
+	    intread.c[2] = buffer[14];
+	    intread.c[1] = buffer[15];
+	    intread.c[0] = buffer[16];
+	}    
+	nnanosec = intread.i;
+	nnanosec = format == 1 ? intread.i : 100*intread.i;
+
+
+        // number of satellites. -1 indicates no GPS, and thus times generated from
+	// when software loaded into kernel. Useful for relative times still.
+	if(LITTLE){
+	    intread.c[0] = buffer[21];
+	    intread.c[1] = buffer[22];
+	}else{
+	    intread.c[1] = buffer[21];
+	    intread.c[0] = buffer[22];
+	}
+	nsatellite = int(intread.si);
+	if(nsatellite <= 2){
+	    reason = "too few = " + Subs::str(nsatellite) +  " satellites";
+	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    reliable = false;
+	}
+
+    }else if(format == 2){
+
+	if(LITTLE){
+	    intread.c[0] = buffer[8];
+	    intread.c[1] = buffer[9];
+	    intread.c[2] = buffer[10];
+	    intread.c[3] = buffer[11];
+	}else{
+	    intread.c[3] = buffer[8];
+	    intread.c[2] = buffer[9];
+	    intread.c[1] = buffer[10];
+	    intread.c[0] = buffer[11];
+	}
+
+	if(intread.ui*serverdata.time_units != serverdata.expose_time)
+	    std::cerr << "WARNING: XML expose time does not match time in timing header " 
+		      << intread.ui*serverdata.time_units << " vs " << serverdata.expose_time << std::endl;
+	
+	// Number of seconds
+	if(LITTLE){
+	    intread.c[0] = buffer[12];
+	    intread.c[1] = buffer[13];
+	    intread.c[2] = buffer[14];
+	    intread.c[3] = buffer[15];
+	}else{
+	    intread.c[3] = buffer[12];
+	    intread.c[2] = buffer[13];
+	    intread.c[1] = buffer[14];
+	    intread.c[0] = buffer[15];
+	}
+	nsec = intread.ui;
+    
+	// number of nanoseconds
+	if(LITTLE){
+	    intread.c[0] = buffer[16];
+	    intread.c[1] = buffer[17];
+	    intread.c[2] = buffer[18];
+	    intread.c[3] = buffer[19];
+	}else{
+	    intread.c[3] = buffer[16];
+	    intread.c[2] = buffer[17];
+	    intread.c[1] = buffer[18];
+	    intread.c[0] = buffer[19];
+	}    
+	nnanosec = 100*intread.i;
+
+	if(LITTLE){
+	    intread.c[0] = buffer[24];
+	    intread.c[1] = buffer[25];
+	}else{
+	    intread.c[1] = buffer[24];
+	    intread.c[0] = buffer[25];
+	}
+	tstamp = intread.usi;
+
+	// Report timing information. Report a single problem.
+	if(reliable && !(tstamp & PCPS_ANT_FAIL)){
+	    reason = "GPS antenna failure";
+	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    reliable = false;
+	}
+	if(reliable && !(tstamp & PCPS_INVT)){
+	    reason = "GPS battery disconnected";
+	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;	
+	    reliable = false;
+	}
+	if(reliable && !(tstamp & PCPS_SYNCD)){
+	    reason = "GPS clock not yet synced since power up";
+	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    reliable = false;
+	}
+	if(reliable && !(tstamp & PCPS_FREER)){
+	    reason = "GPS receiver has not verified its position"; 
+	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    reliable = false;
+	}
+
+	/*
+	if(tstamp & PCPS_DL_ENB)   std::cerr << "Daylight saving enabled" << std::endl;
+	if(tstamp & PCPS_DL_ANN)   std::cerr << "Change in daylight saving announced" << std::endl;
+	if(tstamp & PCPS_UTC)      std::cerr << "Special UTC firmware installed" << std::endl;
+	if(tstamp & PCPS_LS_ANN)   std::cerr << "Leap second announced" << std::endl;
+	if(tstamp & PCPS_IFTM)     std::cerr << "Current time set via PC" << std::endl;
+	if(tstamp & PCPS_LS_ENB)   std::cerr << "Current second is a leap second" << std::endl;
+	*/
+    }
+
     // Frame number. First one = 1
-    
-    // The raw data files are written on a little-endian (linux) machine. Bytes
-    // must be swapped if reading on big-endian machines such as Macs
-    
     if(LITTLE){
 	intread.c[0] = buffer[4];
 	intread.c[1] = buffer[5];
@@ -72,57 +245,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	intread.c[0] = buffer[7];
     }
     int frame_number = int(intread.ui);
-    std::cerr << "frame number = " << frame_number << std::endl;
-
-    // New offset came in in Feb 2010
-    int nb = format == 1 ? 9 : 12;
-
-    // Number of seconds
-    if(LITTLE){
-	intread.c[0] = buffer[nb++];
-	intread.c[1] = buffer[nb++];
-	intread.c[2] = buffer[nb++];
-	intread.c[3] = buffer[nb++];
-    }else{
-	intread.c[3] = buffer[nb++];
-	intread.c[2] = buffer[nb++];
-	intread.c[1] = buffer[nb++];
-	intread.c[0] = buffer[nb++];
-    }
-    unsigned int nsec = intread.ui;
-    std::cerr << "number of sec = " << nsec << std::endl;
-    
-    // number of nanoseconds
-    if(LITTLE){
-	intread.c[0] = buffer[nb++];
-	intread.c[1] = buffer[nb++];
-	intread.c[2] = buffer[nb++];
-	intread.c[3] = buffer[nb++];
-    }else{
-	intread.c[3] = buffer[nb++];
-	intread.c[2] = buffer[nb++];
-	intread.c[1] = buffer[nb++];
-	intread.c[0] = buffer[nb++];
-    }    
-    unsigned int nnanosec = format == 1 ? intread.i : 100*intread.i;
-    std::cerr << "number of nannosec = " << nnanosec << std::endl;
-
-    // number of satellites. -1 indicates no GPS, and thus times generated from
-    // when software loaded into kernel. Useful for relative times still.
-    if(LITTLE){
-	intread.c[0] = buffer[21];
-	intread.c[1] = buffer[22];
-    }else{
-	intread.c[1] = buffer[21];
-	intread.c[0] = buffer[22];
-    }
-
-    int nsatellite = int(intread.si);
-    std::cerr << "nsatellite = " << nsatellite << std::endl;
 
     // is the u-band junk data?
     // Changed from 3rd to 4th bit in Feb 2010 (Dave Atkinson)
-    bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3) == 1<<3) || (format == 2 && (buffer[0] & 1<<4) == 1<<4)); 
+    bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3)) || (format == 2 && (buffer[0] & 1<<4))); 
 
     // Flag so that some things are only done once
     static bool first = true;
@@ -137,7 +263,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     static double vclock_frame = 0;  // Number of seconds taken to shift one row.
     Subs::Time ut_date;   // this will be the time at the centre of the exposure
     static int old_frame_number = -1000;     // frame number stored in previous call
-    bool reliable = false;              // is time reliable?
     float exposure_time = 0.f;          // length of exposure
 
     // Clock board was changed in July 2003 and this resulted in the wrong sense of bit
@@ -154,11 +279,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
 	if(first){
-
 	    std::cerr << "WARNING: no satellites, so the date unknown. In this case the timing settings cannot" << std::endl;
 	    std::cerr << "be determined. Values for > July 2003 will be used by default. If this is not right" << std::endl;
 	    std::cerr << "and timing matters for these data, please contact Vik Dhillon or Tom Marsh." << std::endl;
-
 	}
 
 	if(serverdata.v_ft_clk > 127){
@@ -171,7 +294,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	// For several modes we need to store information from earlier frames to get correct times.
 	// We also need to do this to correct May 2002 times.
-	if(serverdata.which_run == Ultracam::ServerData::MAY_2002){
+	if(serverdata.which_run == Ultracam::ServerData::MAY_2002 && format == 1){
       
 	    // The first ULTRACAM run in May 2002 did not have date info. Offset from start of week
 	    // which was 0 UT on 12 May 2002
@@ -197,8 +320,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    // Starting with the second night of the September 2002 run, we have date
 	    // information. We try to spot rubbish dates by their silly year      
 
-	    unsigned char day_of_month, month_of_year;
-	    unsigned short int year;
+	    unsigned char day_of_month = 0, month_of_year = 0;
+	    unsigned short int year = 0;
 
 	    if(format == 1){
 		day_of_month  = buffer[17];
@@ -315,7 +438,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // of the week from the seconds and the date. If they do not match, we add a day to 
     // the time. Extra % 7 added 14/05/2005 to cope with changes made before May 2005 VLT run
 
-    if((gps_timestamp.int_day_of_week() + 1) % 7 == ((nsec / Constants::IDAY) % 7)){
+    if((gps_timestamp.int_day_of_week() + 1) % 7 == int((nsec / Constants::IDAY) % 7)){
 	std::cerr << "WARNING: Midnight bug detected and corrected *****." << std::endl;
 	gps_timestamp.add_day(1);
     }
@@ -413,7 +536,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    ut_date = gps_times[0];
 	    ut_date.add_second(serverdata.expose_time/2.);
 	    exposure_time = serverdata.expose_time;
-	    reliable = true;
 
 	}else{
 
@@ -465,7 +587,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		// Case where we have not got a previous timestamp
 		ut_date = gps_times[0];
 		ut_date.add_second(-frame_transfer-readout_time-serverdata.expose_time/2.);
-		reliable = false;
+		if(reliable){
+		    reason = "cannot establish an accurate time without previous GPS timestamp";
+		    std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+		    reliable = false;
+		}
 
 	    }else{
 
@@ -473,7 +599,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		// more reliable.
 		ut_date = gps_times[1];
 		ut_date.add_second(clear_time + serverdata.expose_time/2.);
-		reliable = true;
 
 	    }
 	    exposure_time = serverdata.expose_time;
@@ -565,7 +690,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		// This used to add the frame_transfer, but I think it should subtract it
 		ut_date.add_second(-frame_transfer-serverdata.expose_time/2.);
 		exposure_time = serverdata.expose_time;
-		reliable = true;
 	
 	    }else{
 	
@@ -576,7 +700,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    ut_date = gps_times[1];
 		    ut_date.add_second(texp/2.);
 		    exposure_time = texp;
-		    reliable = true;
 	  
 		}else{
 	  
@@ -589,7 +712,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    ut_date.add_second(-frame_transfer-texp/2.);
 
 		    exposure_time    = texp;
-		    reliable = false;
+		    if(reliable){
+			reason = "cannot establish an accurate time without previous GPS timestamp";
+			std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+			reliable = false;
+		    }
 		}
 	    }
 
@@ -606,7 +733,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date = gps_times[0];
 		ut_date.add_second(-frame_transfer-readout_time);
 		exposure_time = serverdata.expose_time;
-		reliable = false;
+		if(reliable){
+		    reason = "cannot establish an accurate time for first frame in this mode";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+		    reliable = false;
+		}
 	
 	    }else{
 
@@ -618,7 +749,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    ut_date = gps_times[1];
 		    ut_date.add_second(serverdata.expose_time-texp/2.);
 		    exposure_time = texp;
-		    reliable = true;
 
 		}else if(gps_times.size() == 2){
 
@@ -628,8 +758,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    ut_date = gps_times[1];
 		    ut_date.add_second(serverdata.expose_time-texp/2.);
 		    exposure_time = texp;
-		    reliable = false;
-	  
+		    if(reliable){
+			reason = "cannot establish an accurate time without at least 2 prior timestamps";
+			std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+			reliable = false;
+		    }
 	  
 		}else{
 	  
@@ -638,8 +771,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    ut_date = gps_times[0];
 		    ut_date.add_second(-texp-frame_transfer+serverdata.expose_time-texp/2.);
 		    exposure_time = texp;
-		    reliable = false;
-
+		    if(reliable){
+			reason = "cannot establish an accurate time without at least a prior timestamp";
+			std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+			reliable = false;
+		    }
 		}
 	    }
 	}
@@ -716,15 +852,17 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date = gps_times[nwins];
 		ut_date.add_second(texp/2.);
 		exposure_time = texp;
-		reliable = true;
 
 	    }else{
 
 		// Set to silly value for easy checking
 		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
 		exposure_time    = serverdata.expose_time;
-		reliable = false;
-	
+		if(reliable){
+		    reason = "too few stored timestamps";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    reliable = false;
+		}
 	    }
 
 	}else{
@@ -737,7 +875,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date = gps_times[nwins];
 		ut_date.add_second(serverdata.expose_time-texp/2.);
 		exposure_time = texp;
-		reliable = true;
 	
 	    }else if(int(gps_times.size()) == nwins+1){
 
@@ -745,15 +882,22 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date = gps_times[nwins];
 		ut_date.add_second(serverdata.expose_time-texp/2.);
 		exposure_time = texp;
-		reliable = false;
+		if(reliable){
+		    reason = "too few stored timestamps";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+		    reliable = false;
+		}
 
 	    }else{
 	  
 		// Set to silly value for easy checking
 		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
 		exposure_time    = serverdata.expose_time;
-		reliable = false;
-
+		if(reliable){
+		    reason = "too few stored timestamps";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    reliable = false;
+		}
 	    }
 	}
 
@@ -775,22 +919,23 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	    ut_date.add_second(-serverdata.expose_time/2.);
 	    exposure_time = serverdata.expose_time;
-	    reliable = true;
 
 	}else if(gps_times.size() > 1){
 
 	    double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
 	    ut_date.add_second(-texp/2.);
 	    exposure_time = texp;
-	    reliable = true;
 
 	}else{
 
 	    // Could be improved with an estimate of the read time
 	    ut_date.add_second(-serverdata.expose_time/2.);
 	    exposure_time = serverdata.expose_time;
-	    reliable = false;
-
+	    if(reliable){
+		reason = "too few stored timestamps";
+		std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		reliable = false;
+	    }
 	}
     }
   
@@ -799,12 +944,20 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     old_gps_timestamp    = gps_timestamp;
 
     // Return some data
-    timing.ut_date           = ut_date;
-    timing.exposure_time     = exposure_time;
-    timing.reliable          = reliable && nsatellite > 2;
-    timing.frame_number      = frame_number;
-    timing.gps_time          = gps_timestamp;
-    timing.nsatellite        = nsatellite;
+    timing.ut_date          = ut_date;
+    timing.exposure_time    = exposure_time;
+    timing.frame_number     = frame_number;
+    timing.gps_time         = gps_timestamp;
+    timing.format           = format;
+    if(format == 1){
+	timing.reliable     = reliable && nsatellite > 2;
+	timing.nsatellite   = nsatellite;
+    }else if(format == 2){
+	timing.reliable      = reliable &&
+	    (tstamp & PCPS_SYNCD) && !(tstamp & PCPS_INVT) && !(tstamp & PCPS_ANT_FAIL) && !(tstamp & PCPS_FREER);      
+	timing.tstamp_status = tstamp;
+    }
+    timing.reason            = reason;
     timing.vclock_frame      = vclock_frame;
     timing.blue_is_bad       = bad_blue;
 

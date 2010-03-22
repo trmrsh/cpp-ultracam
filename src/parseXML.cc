@@ -311,17 +311,25 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     }
 
     if(serverdata.headerwords == 16){
-	std::cerr << "WARNING: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
+	std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
 	serverdata.version = 100222;
+
+	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is now hard-wired into the code. In DSP
+        //  this is set to 0x8C0000, but I store simply as an unsigned char with value 140
+	if(serverdata.application == "appl7_window3pair_cfg"){
+	    std::cerr << "parseXML warning: 6-windows mode post-Mar 2010 identified; v_ft_clk byte (needed for precise times) will be set = 140" << std::endl;
+	    serverdata.v_ft_clk  = 140;
+	    serverdata.which_run = Ultracam::ServerData::OTHERS;
+	}
     }
 
     if(serverdata.instrument == "ULTRACAM" && serverdata.version < 0){
 	if(serverdata.readout_mode != Ultracam::ServerData::FULLFRAME_OVERSCAN){
-	    std::cerr << "WARNING: outermost pixels will be removed to account for pixel shift bug (should only happen before 2007)" << std::endl;
+	    std::cerr << "parseXML warning: outermost pixels will be removed to account for pixel shift bug (should only happen before 2007)" << std::endl;
 	}else{
-	    std::cerr << "WARNING: the outermost pixels should be removed to account for pixel shift bug," << std::endl;
-	    std::cerr << "WARNING: but this has not been worked out for overscan mode and nothing will be done." << std::endl;
-	    std::cerr << "WARNING: If this is important, contact Tom Marsh." << std::endl;
+	    std::cerr << "parseXML warning: the outermost pixels should be removed to account for pixel shift bug," << std::endl;
+	    std::cerr << "parseXML warning: but this has not been worked out for overscan mode and nothing will be done." << std::endl;
+	    std::cerr << "parseXML warning: If this is important, contact Tom Marsh." << std::endl;
 	}
     }
 
@@ -468,6 +476,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     header.set("History.Comment1", new Subs::Hstring("Orginally generated from run: " + XML_URL));
     
     // Set the exposure time info.
+    serverdata.time_units  = uinfo.time_units;
     serverdata.expose_time = uinfo.expose_time*uinfo.time_units;
     serverdata.ybin        = uinfo.ybin;
     serverdata.xbin        = uinfo.xbin;
@@ -583,7 +592,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 	    if(child->item(j)->getNodeType() == DOMNode::ELEMENT_NODE){	
 		if(AttToString((DOMElement*)child->item(j), "id") == "SDSU Exec"){
 		    std::string name = AttToString((DOMElement*)child->item(j), "name");
-					
+		    serverdata.application = name;
+		    
 		    // 250 settings from updates of July 2003
 		    // ap5b is a two window mode with a clear that allows faster accurately exposed
 		    // frames. Change made 19/08/2004

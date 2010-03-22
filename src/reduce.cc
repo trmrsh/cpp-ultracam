@@ -1042,13 +1042,12 @@ int main(int argc, char* argv[]){
 	Reduce::logger.ofstr() << hashb << newl;
 	Reduce::logger.ofstr() << hashb << std::string("For each CCD of each frame reduced, the following information is printed:") << newl;
 	Reduce::logger.ofstr() << hashb << newl;
-	Reduce::logger.ofstr() << hashb << std::string("name/number mjd flag nsat expose ccd fwhm beta [naper x y xm ym exm eym counts sigma sky nsky nrej worst error_flag]*num_aper") << newl;
+	Reduce::logger.ofstr() << hashb << std::string("name/number mjd flag expose ccd fwhm beta [naper x y xm ym exm eym counts sigma sky nsky nrej worst error_flag]*num_aper") << newl;
 	Reduce::logger.ofstr() << hashb << newl;
 	Reduce::logger.ofstr() << hashb << std::string("where 'name/number' is either the file name for ucm file list data or the frame number for data from the .dat files,") << newl;
 	Reduce::logger.ofstr() << hashb << std::string("'mjd' is the Modified Julian Date (UTC) at the centre of the exposure. MJD = JD-2400000.5, no correction for light travel") << newl;
 	Reduce::logger.ofstr() << hashb << std::string("etc is made on the basis that the key thing is have a well-understood & correct time. 'flag' is an indication of whether") << newl;
-	Reduce::logger.ofstr() << hashb << std::string("the time is thought to be reliable or not (1=OK,0=NOK). 'nsat' is the number of satellites associated with the timestamp") << newl;
-	Reduce::logger.ofstr() << hashb << std::string("(not quite the same as the data in the case of drift mode). 'expose' is the exposure time in seconds. 'ccd' is the ccd number") << newl;
+	Reduce::logger.ofstr() << hashb << std::string("the time is thought to be reliable or not (1=OK,0=NOK). 'expose' is the exposure time in seconds. 'ccd' is the ccd number") << newl;
 	Reduce::logger.ofstr() << hashb << std::string("(1=red,2=green,3=uv). 'fwhm' is the fitted FWHM, =0 if no fit made. 'beta' is the fitted Moffat exponent, 0 if no Moffat fit is made.") << newl;
 	Reduce::logger.ofstr() << hashb << std::string("'naper' = aperture number, ('x','y') = aperture position actually used, ('xm', 'ym') = the measured aperture position (0,0) for") << newl;
 	Reduce::logger.ofstr() << hashb << std::string("invalid and/or linked apertures, ('exm', 'eym') = the 1-sigma uncertainty in the measured aperture position (-1,-1) for invalid") << newl;
@@ -1086,7 +1085,6 @@ int main(int argc, char* argv[]){
 	Subs::Time ut_date, ut_date_blue, ttime(1,Subs::Date::Jan,1999); // the time and a check time
 	float expose; // exposure time
 	float expose_blue; // blue exposure time
-	int nsatellite = 0; // number of satellites
 	bool first_file, has_a_time; // are we on the first data file? do we have a time?
 	std::vector<Reduce::Meanshape> shape; // Vector of shape parameters for each CCD. 
 	std::vector<std::vector<Ultracam::Fxy> > errors; // Vectors of position uncertainties for all apertures
@@ -1151,9 +1149,8 @@ int main(int argc, char* argv[]){
 			ut_date       = data["UT_date"]->get_time();
 			reliable      = data["Frame.reliable"]->get_bool();
 			ut_date_blue  = serverdata.nblue > 1 ? data["UT_date_blue"]->get_time() : ut_date;
-			reliable_blue = serverdata.nblue > 1 ? data["Frame.reliable_blue"]->get_bool() : reliable;
-			nsatellite = data["Frame.satellites"]->get_int();
-	    
+			reliable_blue = serverdata.nblue > 1 ? data["Frame.reliable_blue"]->get_bool() : reliable;	
+    
 			if(serverdata.is_junk(nfile)){
 			    std::cerr << "Skipping file " << nfile << " which has junk data" << newl;
 			    nfile++;
@@ -1203,8 +1200,6 @@ int main(int argc, char* argv[]){
 	  
 		    hnode = data.find("Frame.reliable");
 		    reliable = (hnode->has_data() && hnode->value->get_bool());
-		    hnode = data.find("Frame.satellites");
-		    nsatellite = hnode->has_data() ? hnode->value->get_int() : 0;
 	  
 		    if(has_a_time){
 
@@ -1713,18 +1708,18 @@ int main(int argc, char* argv[]){
 				    // Format using 'sprintf' for reliability.
 				    if(nccd != 2){
 					if(reliable)
-					    sprintf(sprint_out, "%8i %16.10f 1 %1i %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date.mjd(), int(nsatellite), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%8i %16.10f 1 %9.6f %1i %7.3f %7.3f", 
+						    int(nfile), ut_date.mjd(), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 					else
-					    sprintf(sprint_out, "%8i %16.10f 0 %1i %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date.mjd(), int(nsatellite), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%8i %16.10f 0 %9.6f %1i %7.3f %7.3f", 
+						    int(nfile), ut_date.mjd(), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 				    }else{
 					if(reliable)
-					    sprintf(sprint_out, "%8i %16.10f 1 %1i %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date_blue.mjd(), int(nsatellite), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%8i %16.10f 1 %9.6f %1i %7.3f %7.3f", 
+						    int(nfile), ut_date_blue.mjd(), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 					else
-					    sprintf(sprint_out, "%8i %16.10f 0 %1i %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date_blue.mjd(), int(nsatellite), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%8i %16.10f 0 %9.6f %1i %7.3f %7.3f", 
+						    int(nfile), ut_date_blue.mjd(), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 				    }
 
 				    Reduce::logger.ofstr() << sprint_out;
@@ -1745,18 +1740,18 @@ int main(int argc, char* argv[]){
 		  
 				    if(nccd != 2){
 					if(reliable)
-					    sprintf(sprint_out, "%15s %16.10f 1 %1i %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, int(nsatellite), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%15s %16.10f 1 %8.5f %1i %7.3f %7.3f", 
+						    file[nfile].c_str(), ptime, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 					else
-					    sprintf(sprint_out, "%15s %16.10f 0 %1i %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, int(nsatellite), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%15s %16.10f 0 %8.5f %1i %7.3f %7.3f", 
+						    file[nfile].c_str(), ptime, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 				    }else{
 					if(reliable_blue)
-					    sprintf(sprint_out, "%15s %16.10f 1 %1i %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, int(nsatellite), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%15s %16.10f 1 %8.5f %1i %7.3f %7.3f", 
+						    file[nfile].c_str(), ptime, expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 					else
-					    sprintf(sprint_out, "%15s %16.10f 0 %1i %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, int(nsatellite), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					    sprintf(sprint_out, "%15s %16.10f 0 %8.5f %1i %7.3f %7.3f", 
+						    file[nfile].c_str(), ptime, expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 				    }
 		  
 				    Reduce::logger.ofstr() << sprint_out;

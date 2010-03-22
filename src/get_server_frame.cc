@@ -433,9 +433,15 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
 
     data.set("Frame",              new Subs::Hdirectory("Other frame specific information"));
     data.set("Frame.reliable",     new Subs::Hbool(timing.reliable,              "UT_date reliable?"));
+    data.set("Frame.reason",       new Subs::Hstring(timing.reason,              "Reason why UT_date is unreliable (if it is)"));
     data.set("Frame.GPS_time",     new Subs::Htime(timing.gps_time,              "Raw GPS time stamp associated with this frame"));
     data.set("Frame.frame_number", new Subs::Hint(timing.frame_number,           "Frame number"));
-    data.set("Frame.satellites",   new Subs::Hint(timing.nsatellite,             "Number of satellites used for GPS time stamp"));
+    data.set("Frame.format",       new Subs::Hint(timing.format, "GPS format (1 < Mar 2010, 2 > Mar 2010)"));
+    if(timing.format == 1){
+	data.set("Frame.satellites",   new Subs::Hint(timing.nsatellite,             "Number of satellites used for GPS time stamp"));
+    }else if(timing.format == 2){
+	data.set("Frame.tstamp_status",   new Subs::Huint(timing.tstamp_status, "Time stamp status word"));
+    }
     data.set("Frame.vclock_frame", new Subs::Hfloat(timing.vclock_frame,         "The row transfer time used, seconds"));
     data.set("Frame.as_documented",new Subs::Hbool(timing.fix_as_documented,     "Timestamps as documented (else Dec 2004 bug fix)?"));
     data.set("Frame.bad_blue",     new Subs::Hbool(timing.blue_is_bad,           "Blue-side data is junk for this frame"));
