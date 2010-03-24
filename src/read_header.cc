@@ -68,7 +68,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
     // In Feb 2010, format changed. Spot by testing for the version number, issue a warning
     int format;
-    if(serverdata.version == -1 || serverdata.version == 70514){
+    if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
 	format = 1;
     }else if(serverdata.version == 100222){
 	format = 2;
@@ -201,12 +201,12 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	tstamp = intread.usi;
 
 	// Report timing information. Report a single problem.
-	if(reliable && !(tstamp & PCPS_ANT_FAIL)){
+	if(reliable && (tstamp & PCPS_ANT_FAIL)){
 	    reason = "GPS antenna failure";
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
-	if(reliable && !(tstamp & PCPS_INVT)){
+	if(reliable && (tstamp & PCPS_INVT)){
 	    reason = "GPS battery disconnected";
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;	
 	    reliable = false;
@@ -216,7 +216,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
-	if(reliable && !(tstamp & PCPS_FREER)){
+	if(reliable && (tstamp & PCPS_FREER)){
 	    reason = "GPS receiver has not verified its position"; 
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
