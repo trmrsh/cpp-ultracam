@@ -428,12 +428,12 @@ bool timing(char* buffer, bool may2002, int format, unsigned char& day_of_month,
 	// Report timing information. Report a single problem.
 	reliable = true;
 	std::string reason = "";
-	if(reliable && !(tstamp & PCPS_ANT_FAIL)){
+	if(reliable && (tstamp & PCPS_ANT_FAIL)){
 	    reason = "GPS antenna failure";
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
-	if(reliable && !(tstamp & PCPS_INVT)){
+	if(reliable && (tstamp & PCPS_INVT)){
 	    reason = "GPS battery disconnected";
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;	
 	    reliable = false;
@@ -443,7 +443,7 @@ bool timing(char* buffer, bool may2002, int format, unsigned char& day_of_month,
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
-	if(reliable && !(tstamp & PCPS_FREER)){
+	if(reliable && (tstamp & PCPS_FREER)){
 	    reason = "GPS receiver has not verified its position"; 
 	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
 	    reliable = false;
