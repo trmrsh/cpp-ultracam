@@ -1025,7 +1025,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		}else{
 		    wind.llx = std::max(1, 1074 - xStart_it->second - xSize_it->second*uinfo.xbin);
 		}
-		serverdata.l3data.nchop.push_back(std::max(0,17-xStart_it->second));
+		serverdata.l3data.nchop.push_back(nchop);
 
 		wind.lly = yStart_it->second;
 		wind.ny  = ySize_it->second;
