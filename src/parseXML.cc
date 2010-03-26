@@ -58,6 +58,7 @@ struct Uinfo{
     int number_of_exposures;              // number of exposures
     int nccd;                             // number of CCDs
     int xbin, ybin;                       // binning factors (same for all CCDs)
+    int revision;                         // ATC revision number
     std::vector<Ultracam::Wind> wind;     // windows (same for all CCDs)
     bool user_info;                       // There is user XML info available (May 2005 and onwards)
     std::string target;                   // Target name, if user_info
@@ -311,7 +312,13 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     }
 
     if(serverdata.headerwords == 16){
-	std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
+	if(uinfo.user_info && uinfo.revision != 100222){
+	    std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222 was expected" << std::endl;
+	    std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error" << std::endl;
+	}
+	if(!uinfo.user_info && serverdata.version != 100222)
+	    std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
+	    
 	serverdata.version = 100222;
 
 	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is now hard-wired into the code. In DSP
@@ -321,6 +328,12 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	    serverdata.v_ft_clk  = 140;
 	    serverdata.which_run = Ultracam::ServerData::OTHERS;
 	}
+    }else if(uinfo.user_info){
+	if(serverdata.version != -1 && uinfo.revision != serverdata.version){
+	    std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " does not match preset revision = " << serverdata.version << std::endl;
+	    std::cerr << "parseXML warning: the user revision number will be preferred but this could indicate a problem" << std::endl;
+	}
+	serverdata.version = uinfo.revision;
     }
 
     if(serverdata.instrument == "ULTRACAM" && serverdata.version < 0){
@@ -396,13 +409,27 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     // Set header items
     header.clear();
 
-    // Site information
-    header.set("Site",             new Subs::Hdirectory("Observing site information"));
-    header.set("Site.Observatory", new Subs::Hstring(uinfo.observatory, "Name of the observing site"));
-    header.set("Site.Telescope",   new Subs::Hstring(uinfo.telescope,   "Name of the telescope"));
+    // User information
+    if(uinfo.user_info){
+	header.set("User",         new Subs::Hdirectory("Data entered by the user at the telescope"));
+	header.set("User", new Subs::Hdirectory("Data entered by the user at the telescope"));
+	header.set("User.target",    new Subs::Hstring(uinfo.target, "Target name"));
+	header.set("User.filters",   new Subs::Hstring(uinfo.filters, "Filters used"));
+	header.set("User.id",        new Subs::Hstring(uinfo.id, "Program ID"));
+	header.set("User.pi",        new Subs::Hstring(uinfo.pi, "Program PI"));
+	header.set("User.observers", new Subs::Hstring(uinfo.observers, "Observers"));
+	if (serverdata.instrument == "ULTRASPEC") {
+	    header.set("User.grating",   new Subs::Hstring(uinfo.grating, "Grating"));
+	    header.set("User.angle",     new Subs::Hstring(uinfo.slit_angle, "Slit angle"));
+	}
+    }
+
+    // Add a little bit of history
+    header.set("History",          new Subs::Hdirectory("History of this file"));
+    header.set("History.Comment1", new Subs::Hstring("Orginally generated from run: " + XML_URL));
 
     // Instrument information
-    header.set("Instrument",            new Subs::Hdirectory("Instrument information"));
+    header.set("Instrument",       new Subs::Hdirectory("Instrument information"));
     header.set("Instrument.instrument", new Subs::Hstring(serverdata.instrument, "Instrument"));
     header.set("Instrument.version",    new Subs::Hint(serverdata.version, "Software version; -1 = undefined"));
     if(serverdata.instrument == "ULTRACAM"){
@@ -449,31 +476,20 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	throw Input_Error("parseXML error: no readout mode identified.");
     }
 
+
     // Trimming information
-    header.set("Trimming", new Subs::Hdirectory("Trimming information"));
+    header.set("Trimming",         new Subs::Hdirectory("Trimming information"));
     header.set("Trimming.applied", new Subs::Hbool(ok_to_trim, "Was trimming carried out or not?"));
     if(ok_to_trim){
 	header.set("Trimming.ncols", new Subs::Hint(ncol, "Number of columns near readouts removed"));
 	header.set("Trimming.nrows", new Subs::Hint(nrow, "Number of rows at bottom of windows removed"));
     }
 
-    // User information
-    if(uinfo.user_info){
-	header.set("User", new Subs::Hdirectory("Data entered by the user at the telescope"));
-	header.set("User.target",    new Subs::Hstring(uinfo.target, "Target name"));
-	header.set("User.filters",   new Subs::Hstring(uinfo.filters, "Filters used"));
-	header.set("User.id",        new Subs::Hstring(uinfo.id, "Program ID"));
-	header.set("User.pi",        new Subs::Hstring(uinfo.pi, "Program PI"));
-	header.set("User.observers", new Subs::Hstring(uinfo.observers, "Observers"));
-	if (serverdata.instrument == "ULTRASPEC") {
-	    header.set("User.grating",   new Subs::Hstring(uinfo.grating, "Grating"));
-	    header.set("User.angle",     new Subs::Hstring(uinfo.slit_angle, "Slit angle"));
-	}
-    }
+    // Site information
+    header.set("Site",             new Subs::Hdirectory("Observing site information"));
+    header.set("Site.Observatory", new Subs::Hstring(uinfo.observatory, "Name of the observing site"));
+    header.set("Site.Telescope",   new Subs::Hstring(uinfo.telescope,   "Name of the telescope"));
 
-    // Add a little bit of history
-    header.set("History", new Subs::Hdirectory("History of this file"));
-    header.set("History.Comment1", new Subs::Hstring("Orginally generated from run: " + XML_URL));
     
     // Set the exposure time info.
     serverdata.time_units  = uinfo.time_units;
@@ -483,6 +499,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     serverdata.window      = uinfo.wind;
     serverdata.gain_speed  = uinfo.gain_speed;
 
+    return;
 }
 
 
@@ -1150,7 +1167,12 @@ void parse_user(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& s
     using Ultracam::Input_Error;
 
     DOMNodeList *child = node->getChildNodes();
+
+    std::string buff;
+    std::istringstream istr(buff);
+
     uinfo.user_info = true;
+    uinfo.revision = -1;
     for(unsigned int i=0; i<child->getLength(); i++){
 	if(same(child->item(i)->getNodeName(), "target")){
 	    uinfo.target = getTextValue(child->item(i));
@@ -1166,6 +1188,11 @@ void parse_user(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& s
 	    uinfo.grating = getTextValue(child->item(i));
 	}else if(same(child->item(i)->getNodeName(), "slit_angle")){
 	    uinfo.slit_angle = getTextValue(child->item(i));
+	}else if(same(child->item(i)->getNodeName(), "revision")){
+	    istr.str(AttToString((DOMElement*)child->item(i), "value"));
+	    istr >> uinfo.revision;
+	    if(!istr) throw Input_Error("parseXML error: Could not translate user revision number");
+	    istr.clear();
 	}
     }
 }
