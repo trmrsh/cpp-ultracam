@@ -237,15 +237,15 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
 		if(serverdata.instrument == "ULTRACAM"){
 		    if(found_user){
-			std::cerr << "\nparseXML warning: found 'user' XML element; will assume 0.1 millisecond time exposure delay steps, valid as of January 2005" << std::endl;
+			std::cerr << "parseXML warning: found 'user' XML element; will assume 0.1 millisecond time exposure delay steps, valid as of January 2005" << std::endl;
 			uinfo.time_units = 0.0001;
 		    }else{ 
-			std::cerr << "# parseXML warning: did NOT find 'user' XML element; will assume 1.0 millisecond time exposure delay steps, as valid before January 2005\n" << std::endl;
+			std::cerr << "# parseXML warning: did NOT find 'user' XML element; will assume 1.0 millisecond time exposure delay steps, as valid before January 2005" << std::endl;
 			uinfo.time_units = 0.001;
 		    }
-		    std::cerr << "parseXML: ULTRACAM file\n" << std::endl;
+		    std::cerr << "parseXML: ULTRACAM file" << std::endl;
 		}else{
-		    std::cerr << "parseXML: ULTRASPEC file\n" << std::endl;
+		    std::cerr << "parseXML: ULTRASPEC file" << std::endl;
 		    uinfo.time_units = 0.001;
 		}
 	  
@@ -313,8 +313,12 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
     if(serverdata.headerwords == 16){
 	if(uinfo.user_info && uinfo.revision != 100222){
-	    std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222 was expected" << std::endl;
-	    std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error" << std::endl;
+	    if(uinfo.revision == -1){
+		std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
+	    }else{
+		std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222 was expected" << std::endl;
+		std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error" << std::endl;
+	    }
 	}
 	if(!uinfo.user_info && serverdata.version != 100222)
 	    std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
