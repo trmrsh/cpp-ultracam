@@ -1193,7 +1193,7 @@ void parse_user(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& s
 	}else if(same(child->item(i)->getNodeName(), "slit_angle")){
 	    uinfo.slit_angle = getTextValue(child->item(i));
 	}else if(same(child->item(i)->getNodeName(), "revision")){
-	    istr.str(AttToString((DOMElement*)child->item(i), "value"));
+	    istr.str(getTextValue(child->item(i)));
 	    istr >> uinfo.revision;
 	    if(!istr) throw Input_Error("parseXML error: Could not translate user revision number");
 	    istr.clear();
