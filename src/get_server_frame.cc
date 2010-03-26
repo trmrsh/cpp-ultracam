@@ -440,7 +440,7 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
     if(timing.format == 1){
 	data.set("Frame.satellites",   new Subs::Hint(timing.nsatellite,             "Number of satellites used for GPS time stamp"));
     }else if(timing.format == 2){
-	data.set("Frame.tstamp_status",   new Subs::Huint(timing.tstamp_status, "Time stamp status word"));
+	data.set("Frame.tstamp_status", new Subs::Husint(timing.tstamp_status, "Time stamp status word"));
     }
     data.set("Frame.vclock_frame", new Subs::Hfloat(timing.vclock_frame,         "The row transfer time used, seconds"));
     data.set("Frame.as_documented",new Subs::Hbool(timing.fix_as_documented,     "Timestamps as documented (else Dec 2004 bug fix)?"));
