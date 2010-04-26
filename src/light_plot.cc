@@ -773,17 +773,17 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 
 //! Determines whether a given error code is ok for plotting
 bool code_ok_to_plot(Reduce::ERROR_CODES ecode){
-    return (
-	ecode == Reduce::OK || 
-	ecode == Reduce::COSMIC_RAY_DETECTED_IN_TARGET_APERTURE ||
-	ecode == Reduce::SKY_OVERLAPS_EDGE_OF_WINDOW ||
-	ecode == Reduce::SKY_OVERLAPS_AND_COSMIC_RAY_DETECTED ||
-	ecode == Reduce::SKY_NEGATIVE ||
-	ecode == Reduce::NO_SKY ||
-	ecode == Reduce::EXTRA_APERTURES_IGNORED ||
-	ecode == Reduce::PEPPERED ||
-	ecode == Reduce::SATURATION
-	);
+    return ((
+	     ecode == Reduce::OK || 
+	     ecode == Reduce::COSMIC_RAY_DETECTED_IN_TARGET_APERTURE ||
+	     ecode == Reduce::SKY_OVERLAPS_EDGE_OF_WINDOW ||
+	     ecode == Reduce::SKY_OVERLAPS_AND_COSMIC_RAY_DETECTED ||
+	     ecode == Reduce::SKY_NEGATIVE ||
+	     ecode == Reduce::NO_SKY ||
+	     ecode == Reduce::EXTRA_APERTURES_IGNORED ||
+	     ecode == Reduce::PEPPERED ||
+	     ecode == Reduce::SATURATION) &&
+	    ecode != Reduce::BLUE_IS_JUNK);
 }
 
 //! Determines symbol code to plot. 
