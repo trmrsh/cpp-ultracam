@@ -136,9 +136,11 @@ for line in fin:
         if line.startswith('# name/number mjd flag nsat'):
             # old-style log files with number of satellites
             format = 1
+            print 'This is a pre-March 2010 reduce log file.'
         if line.startswith('# name/number mjd flag expose'):
             # post March 2010 log files
             format = 2
+            print 'This is a post-March 2010 reduce log file.'
             
     elif not line.isspace():
 
@@ -153,12 +155,15 @@ for line in fin:
 # check that extra CCDs are not found after all were thought to have
 # been found
                     
-        if (len(svar) - 8 ) % 14 > 0:
+        if (format == 1 and (len(svar) - 8 ) % 14 > 0) or (format == 2 and (len(svar) - 7 ) % 14 > 0):
             print 'ulog2fits: incorrect number of entries in line ' + str(nline) + ' of ' + ulog
             fin.close()
             exit(1)
 
-        nc  = int(svar[5])
+        if format == 1:
+            nc  = int(svar[5])
+        elif format == 2:
+            nc  = int(svar[4])
 
         if nc in cols:
             found_all_ccds = True
@@ -178,7 +183,11 @@ for line in fin:
             cols[nc].append(pyfits.Column(name='Expose', unit='sec', format='E'))
             cols[nc].append(pyfits.Column(name='FWHM', unit='pix', format='E'))
             cols[nc].append(pyfits.Column(name='beta', format='E'))
-            nap  = (len(svar) - 8 ) / 14
+            if format == 1:
+                nap  = (len(svar) - 8 ) / 14
+            elif format == 2:
+                nap  = (len(svar) - 7 ) / 14
+
             for ap in range(nap):
                 snap = str(ap+1)
                 cols[nc].append(pyfits.Column(name='X ' + snap, unit='pix', format='E'))
@@ -198,7 +207,7 @@ for line in fin:
             # Define the lists
             tmjd[nc]    = []
             ttflag[nc]  = []
-            tnsat[nc]   = []
+            if format == 1: tnsat[nc]   = []
             texpose[nc] = []
             tfwhm[nc]   = []
             tbeta[nc]   = []
@@ -307,7 +316,7 @@ for line in fin:
             # zero the temporary arrays
             tmjd[nc]    = []
             ttflag[nc]  = []
-            tnsat[nc]   = []
+            if format == 1: tnsat[nc]   = []
             texpose[nc] = []
             tfwhm[nc]   = []
             tbeta[nc]   = []
@@ -411,7 +420,7 @@ for nc in nccd:
     # save memory
     del mjd[nc]
     del tflag[nc]
-    del nsat[nc]
+    if format == 1: del nsat[nc]
     del expose[nc]
     del fwhm[nc]
     del beta[nc]
