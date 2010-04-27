@@ -120,6 +120,9 @@ nhead  = 0
 nunit  = 0
 nlhead = 0
 print
+
+format = None
+
 for line in fin:
     nline += 1
     if nline % NREP == 0 and tlines:
@@ -130,7 +133,19 @@ for line in fin:
         header.add_comment(line[1:].rstrip())
         nhead  += len(line)
         nlhead += 1
+        if line.startswith('# name/number mjd flag nsat'):
+            # old-style log files with number of satellites
+            format = 1
+        if line.startswith('# name/number mjd flag expose'):
+            # post March 2010 log files
+            format = 2
+            
     elif not line.isspace():
+
+        if format is None:
+            print 'Could not identify the format of the log file.'
+            exit(1)
+
         svar = line.split()
 
 # we accumulate apertures numbers for each new CCD encounter, but
@@ -159,7 +174,7 @@ for line in fin:
             cols[nc] = []
             cols[nc].append(pyfits.Column(name='MJD', unit='day', format='D'))
             cols[nc].append(pyfits.Column(name='Flag', format='L'))
-            cols[nc].append(pyfits.Column(name='Nsat', format='I'))
+            if format == 1: cols[nc].append(pyfits.Column(name='Nsat', format='I'))
             cols[nc].append(pyfits.Column(name='Expose', unit='sec', format='E'))
             cols[nc].append(pyfits.Column(name='FWHM', unit='pix', format='E'))
             cols[nc].append(pyfits.Column(name='beta', format='E'))
@@ -204,25 +219,45 @@ for line in fin:
 
         # squirrel the data away
 
-        tmjd[nc].append(float(svar[1]))
-        ttflag[nc].append(bool(int(svar[2])))
-        tnsat[nc].append(int(svar[3]))
-        texpose[nc].append(float(svar[4]))
-        tfwhm[nc].append(float(svar[6]))
-        tbeta[nc].append(float(svar[7]))
-        tx[nc].append(npy.cast['float32'](svar[9::14]))
-        ty[nc].append(npy.cast['float32'](svar[10::14]))
-        txm[nc].append(npy.cast['float32'](svar[11::14]))
-        tym[nc].append(npy.cast['float32'](svar[12::14]))
-        texm[nc].append(npy.cast['float32'](svar[13::14]))
-        teym[nc].append(npy.cast['float32'](svar[14::14]))
-        tcounts[nc].append(npy.cast['float32'](svar[15::14]))
-        tsigma[nc].append(npy.cast['float32'](svar[16::14]))
-        tsky[nc].append(npy.cast['float32'](svar[17::14]))
-        tnsky[nc].append(npy.cast['int32'](svar[18::14]))
-        tnrej[nc].append(npy.cast['int32'](svar[19::14]))
-        tworst[nc].append(npy.cast['int32'](svar[20::14]))
-        teflag[nc].append(npy.cast['int32'](svar[21::14]))
+        if format == 1:
+            tmjd[nc].append(float(svar[1]))
+            ttflag[nc].append(bool(int(svar[2])))
+            tnsat[nc].append(int(svar[3]))
+            texpose[nc].append(float(svar[4]))
+            tfwhm[nc].append(float(svar[6]))
+            tbeta[nc].append(float(svar[7]))
+            tx[nc].append(npy.cast['float32'](svar[9::14]))
+            ty[nc].append(npy.cast['float32'](svar[10::14]))
+            txm[nc].append(npy.cast['float32'](svar[11::14]))
+            tym[nc].append(npy.cast['float32'](svar[12::14]))
+            texm[nc].append(npy.cast['float32'](svar[13::14]))
+            teym[nc].append(npy.cast['float32'](svar[14::14]))
+            tcounts[nc].append(npy.cast['float32'](svar[15::14]))
+            tsigma[nc].append(npy.cast['float32'](svar[16::14]))
+            tsky[nc].append(npy.cast['float32'](svar[17::14]))
+            tnsky[nc].append(npy.cast['int32'](svar[18::14]))
+            tnrej[nc].append(npy.cast['int32'](svar[19::14]))
+            tworst[nc].append(npy.cast['int32'](svar[20::14]))
+            teflag[nc].append(npy.cast['int32'](svar[21::14]))
+        elif format == 2:
+            tmjd[nc].append(float(svar[1]))
+            ttflag[nc].append(bool(int(svar[2])))
+            texpose[nc].append(float(svar[3]))
+            tfwhm[nc].append(float(svar[5]))
+            tbeta[nc].append(float(svar[6]))
+            tx[nc].append(npy.cast['float32'](svar[8::14]))
+            ty[nc].append(npy.cast['float32'](svar[9::14]))
+            txm[nc].append(npy.cast['float32'](svar[10::14]))
+            tym[nc].append(npy.cast['float32'](svar[11::14]))
+            texm[nc].append(npy.cast['float32'](svar[12::14]))
+            teym[nc].append(npy.cast['float32'](svar[13::14]))
+            tcounts[nc].append(npy.cast['float32'](svar[14::14]))
+            tsigma[nc].append(npy.cast['float32'](svar[15::14]))
+            tsky[nc].append(npy.cast['float32'](svar[16::14]))
+            tnsky[nc].append(npy.cast['int32'](svar[17::14]))
+            tnrej[nc].append(npy.cast['int32'](svar[18::14]))
+            tworst[nc].append(npy.cast['int32'](svar[19::14]))
+            teflag[nc].append(npy.cast['int32'](svar[20::14]))
 
         # in an endevour to reduce memory usage, convert data to numpy arrays
         # every so often
@@ -230,7 +265,7 @@ for line in fin:
             if nchunk[nc] == 0:
                 mjd[nc]    = npy.array(tmjd[nc])
                 tflag[nc]  = npy.array(ttflag[nc])
-                nsat[nc]   = npy.array(tnsat[nc], dtype='int16')
+                if format == 1: nsat[nc]   = npy.array(tnsat[nc], dtype='int16')
                 expose[nc] = npy.array(texpose[nc], dtype='float32')
                 fwhm[nc]   = npy.array(tfwhm[nc], dtype='float32')
                 beta[nc]   = npy.array(tbeta[nc], dtype='float32')
@@ -251,7 +286,7 @@ for line in fin:
             else:
                 mjd[nc]    = npy.append(mjd[nc], tmjd[nc])
                 tflag[nc]  = npy.append(tflag[nc], ttflag[nc])
-                nsat[nc]   = npy.append(nsat[nc], npy.array(tnsat[nc], dtype='int16'))
+                if format == 1: nsat[nc]   = npy.append(nsat[nc], npy.array(tnsat[nc], dtype='int16'))
                 expose[nc] = npy.append(expose[nc], npy.array(texpose[nc], dtype='float32'))
                 fwhm[nc]   = npy.append(fwhm[nc], npy.array(tfwhm[nc], dtype='float32'))
                 beta[nc]   = npy.append(beta[nc], npy.array(tbeta[nc], dtype='float32'))
@@ -306,7 +341,7 @@ for nc in nccd:
         if nchunk[nc] == 0:
             mjd[nc]    = npy.array(tmjd[nc])
             tflag[nc]  = npy.array(ttflag[nc])
-            nsat[nc]   = npy.array(tnsat[nc], dtype='int16')
+            if format == 1: nsat[nc]   = npy.array(tnsat[nc], dtype='int16')
             expose[nc] = npy.array(texpose[nc], dtype='float32')
             fwhm[nc]   = npy.array(tfwhm[nc], dtype='float32')
             beta[nc]   = npy.array(tbeta[nc], dtype='float32')
@@ -326,7 +361,7 @@ for nc in nccd:
         else:
             mjd[nc]    = npy.append(mjd[nc], tmjd[nc])
             tflag[nc]  = npy.append(tflag[nc], ttflag[nc])
-            nsat[nc]   = npy.append(nsat[nc], npy.array(tnsat[nc], dtype='int16'))
+            if format == 1: nsat[nc]   = npy.append(nsat[nc], npy.array(tnsat[nc], dtype='int16'))
             expose[nc] = npy.append(expose[nc], npy.array(texpose[nc], dtype='float32'))
             fwhm[nc]   = npy.append(fwhm[nc], npy.array(tfwhm[nc], dtype='float32'))
             beta[nc]   = npy.append(beta[nc], npy.array(tbeta[nc], dtype='float32'))
@@ -354,7 +389,7 @@ for nc in nccd:
     tbhdu.header.update('EXTNAME', 'CCD ' + str(nc))
     tbhdu.data.field('MJD')[:]    = mjd[nc]
     tbhdu.data.field('Flag')[:]   = tflag[nc]
-    tbhdu.data.field('Nsat')[:]   = nsat[nc]
+    if format == 1: tbhdu.data.field('Nsat')[:]   = nsat[nc]
     tbhdu.data.field('Expose')[:] = expose[nc]
     tbhdu.data.field('FWHM')[:]   = fwhm[nc]
     tbhdu.data.field('beta')[:]   = beta[nc]
@@ -392,7 +427,7 @@ for nc in nccd:
     del worst[nc]
     del eflag[nc]
 
-# finally write out the fits file
+# finally write out the fits file!
 hdulist = pyfits.HDUList(hdus)
 hdulist.writeto(ufits, clobber=clobber)
 print '\nFinished.'
