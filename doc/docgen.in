@@ -58,8 +58,8 @@ foreach $file ('addbad.cc', 'addfield.cc', 'addsky.cc', 'addspec.cc', 'arith.cc'
 
 # shell, Perl, python scripts
 
-foreach $file ('addaframe.csh', 'breakup.csh', 'copymask.pl', 'dummy.pl', 'extract_times.csh', 'fmatch.py', 'l3gain.pl',
-	       'loggen.csh', 'makebias.csh', 'missbias.py', 'mulaframe.csh', 'newreduce.pl', 'setup.pl', 
+foreach $file ('addaframe.csh', 'averun.csh', 'breakup.csh', 'copymask.pl', 'dummy.pl', 'extract_times.csh', 'fmatch.py', 
+	       'l3gain.pl', 'loggen.csh', 'makebias.csh', 'missbias.py', 'mulaframe.csh', 'newreduce.pl', 'setup.pl', 
 	       'shiftaper.pl', 'splitr.pl', 'sumframes.csh', 'transform.pl', 'ucat.csh', 'uls.csh', 'ult2asc.pl', 
 	       'unique.py', 'updateaper.pl'){
     document("../scripts/$file",$html,"html","html","#");
