@@ -450,8 +450,7 @@ int main(int argc, char* argv[]){
 		bool setup;
 		input.get_value("setup", setup, false, "do you want to plot setup windows?");
 		std::string setwin;
-		if(setup)
-			input.get_value("setwin", setwin, "setwin", "name of setup windows file");
+		if(setup) input.get_value("setwin", setwin, "setwin", "name of setup windows file");
     
 		bool bias, thresh = false;
 		float photon;
