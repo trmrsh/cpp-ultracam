@@ -4,7 +4,6 @@
 !!title   reduce
 !!author  T.R. Marsh
 !!created 24 Feb 2002
-!!revised 13 Nov 2007
 !!root    reduce
 !!index   reduce
 !!descr   reduces time-series CCD photometry
