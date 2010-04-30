@@ -1,5 +1,4 @@
 #!/usr/bin/env csh
-#
 # !!begin
 # !!title    averun
 # !!author   T.R. Marsh
@@ -38,17 +37,20 @@ endif
 
 ultracam > /dev/null
 
-set run = $1
-set n1  = $2
-set n2  = $3
+set run  = $1:t
+set head = $1:h
+set n1   = $2
+set n2   = $3
 
 if( $n2 < $n1 ) then
   echo "Last frame must at least be equal to the first frame"
   exit 1
 endif
 
-grab $run first=$n1 last=$n2 \\
+grab ${head}/${run} first=$n1 last=$n2 \\
+
 \ls ${run}_*.ucm >! ${run}.lis
+
 combine ${run}.lis method=c sigma=4 careful=yes adjust=i output=$run
 
 echo " "

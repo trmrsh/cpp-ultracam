@@ -93,6 +93,7 @@ $(ALIASES):
 	@echo 'alias window    $(progdir)/window'      >> $(ALIASES)
 	@echo 'alias wjoin     $(progdir)/wjoin'       >> $(ALIASES)
 	@echo 'alias addaframe $(progdir)/addaframe.csh'           >> $(ALIASES)
+	@echo 'alias averun    $(progdir)/averun.csh'              >> $(ALIASES)
 	@echo 'alias breakup   $(progdir)/breakup.csh'             >> $(ALIASES)
 	@echo 'alias check_for_bad_data $(progdir)/check_for_bad_data.csh' >> $(ALIASES)
 	@echo "alias copymask  'perl $(progdir)/copymask.pl'"      >> $(ALIASES)
