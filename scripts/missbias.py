@@ -4,7 +4,7 @@
 # !!title    missbias
 # !!author   T.R. Marsh
 # !!created  23 June 2007
-# !!revised  23 June 2007
+# !!revised  29 April 2010
 # !!root     missbias
 # !!index    missbias
 # !!descr    Lists all runs missing corresponding biases
@@ -39,109 +39,96 @@
 #
 # !!end
 
-import sys
 import os
 import re
-import ultracam
+import Ultra
+from optparse import OptionParser
 
-if len(sys.argv) < 2:
-    print 'usage: dir1 dir2 ..'
-    exit(1)
+# define and parse options
+usage = """
+usage: %prog [options] -- looks for ULTRACAM / ULTRASPEC runs without biases
 
-# remove first argument
-sys.argv.pop(0)
+Arguments:
 
-# check arguments
-for direct in sys.argv:
-    if not os.path.isdir(direct):
-        print 'Directory = ' + direct + ' does not exist, is not accessible or is not a directory'
-        exit(1)
-        
-# how to identify right files
+dir1 dir2 -- series of directories to look through.
 
-rtest = re.compile('^run[0-9][0-9][0-9]\.xml$')
+"""
 
-ucams = {}
+parser = OptionParser(usage)
+parser.add_option("-f", "--fussy", dest="fussy", default=False, action="store_true",\
+                  help="fussy test so that avalanche gain differences will be picked up")
+parser.add_option("-i", "--ignore", dest="ignore", default=False, action="store_true",\
+                  help="ignore runs marked 'data caution' when listing runs without biases.")
 
-# Accumulate a list of unique formats skipping power ons and offs
+(options, args) = parser.parse_args()
 
-for direct in sys.argv:
+dirs = [d for d in args if os.path.isdir(d)]
 
-    runs = [rn for rn in os.listdir(direct) if rtest.match(rn) != None]
+Ultra.Run.Fussy = options.fussy
+ignore = options.ignore
 
-    for run in runs:
-        fname = os.path.join(direct,run)
-        tucam = ultracam.Ultracam(fname)
+run_re = re.compile('^run[0-9][0-9][0-9]\.xml$')
 
-        if tucam.is_not_power_onoff():
+# Accumulate a list of unique biases and non-biases, skipping power ons & offs
+nonbias = {}
+bias    = {}
 
-            key = fname[0:fname.rfind('.xml')]
+for dir in dirs:
+    xmls = [rn for rn in os.listdir(dir) if run_re.match(rn) != None]
 
-            # compare with already stored formats
-            new_format = True
-            for rn,ucam in ucams.iteritems():
+    for xml in xmls:
+        run = Ultra.Run(os.path.join(dir,xml))
 
-                if ultracam.match(ucam, tucam):
-                    new_format = False
+        if run.is_not_power_onoff():
 
-                    # get rid of biases in favour of more interesting runs and record any matching biases
-                    if ucam.is_bias() and tucam.is_not_bias():
-                        tucam['bias'] = ucams[rn]['run']
-                        del ucams[rn]
-                        ucams[key] = tucam
-                    elif ucam.is_not_bias() and tucam.is_bias():
-                        ucam['bias'] = key
-                    
-                    break
-
-            if new_format:
-                ucams[key] = tucam
-
-    # also runs on 'data' sub-directories
-    datadir = os.path.join(direct, 'data')
-    if os.path.isdir(datadir):
-
-        runs = [rn for rn in os.listdir(datadir) if rtest.match(rn) != None]
-
-        for run in runs:
-            fname = os.path.join(datadir,run)
-            tucam = ultracam.Ultracam(fname)
-
-            if tucam.is_not_power_onoff():
-
-                key = fname[0:fname.rfind('.xml')]
-
+            if run.is_bias():
                 # compare with already stored formats
                 new_format = True
-                for rn,ucam in ucams.iteritems():
-                    
-                    if ultracam.match(ucam, tucam):
+                for rn, rold in bias.iteritems():
+                    if run == rold:
                         new_format = False
-
-                        # get rid of biases in favour of more interesting runs and record any matching biases
-                        if ucam.is_bias() and tucam.is_not_bias():
-                            tucam['bias'] = ucams[rn]['run']
-                            del ucams[rn]
-                            ucams[key] = tucam
-                        elif ucam.is_not_bias() and tucam.is_bias():
-                            ucam['bias'] = key
-                    
                         break
-
+            
                 if new_format:
-                    ucams[key] = tucam
+                    bias[os.path.join(dir,xml[0:xml.rfind('.xml')])] = run
+
+            else:
+                # compare with already stored formats
+                new_format = True
+                for rn, rold in nonbias.iteritems():
+                    if run == rold:
+                        new_format = False
+                        break
+            
+                if new_format:
+                    nonbias[os.path.join(dir,xml[0:xml.rfind('.xml')])] = run
+
+remove = []
+for rn, run in nonbias.iteritems():
+    match = False
+    for rnb, runb in bias.iteritems():
+        if run == runb:
+            match = True
+            break
+    if match: remove.append(rn)
+
+# Remove ones that seem to have biases:
+for run in remove:
+    del nonbias[run]
 
 
 # List any that apparently are without biases
 
-print '\nRuns without apparent biases:\n'
+print '\nRuns without apparent biases are as follows:\n'
 
-print '\nRun                Target                Filters     Bin  Gain   Size1   XL1 XR1  YS1     Size2   XL2 XR2  YS2     Size3   XL3 XR3  YS3\n'
+for run in sorted(nonbias.keys()):
+    if not ignore or nonbias[run].flag != 'data caution':
+        print '%-20s %s' % (run,nonbias[run])
 
-for run in sorted(ucams.keys()):
-    if 'bias' not in ucams[run] and ucams[run].is_not_bias():
-        print run.ljust(15) + '  ' + ucams[run].to_string()
+if not ignore:
+    print '\nRuns marked "data caution" are probably acquisition runs which don\'t need biases; use -i to ignore these'
+else:
+    print
 
-print ''
-
-            
+print 'This script does not check how good the biases are or whether the runs that it considers to be biases truly are,'
+print 'so take care.'

@@ -2,7 +2,7 @@
 
 """
 Support routines for Python analysis of ULtracam & Ultraspec
-files. Mainly for database wotk.
+files. Mainly for database work.
 """
 
 import os
@@ -126,7 +126,7 @@ class Run(object):
     it contains ALL the information for a given run.
 
     Static data Run.FUSSY controls the meaning of the equality operator '=='.
-    If FUSSY = True then absolutely everyformat parameter must match. FUSSY = False
+    If FUSSY = True then absolutely every format parameter must match. FUSSY = False
     then it will ignore differences in the avalanche gain of ULTRASPEC.
     """
 
@@ -152,11 +152,12 @@ class Run(object):
         run        -- date of run YYYY-MM
         number     -- integer run number
         target     -- target name
-        instrument -- ULTRACAM or ULTRASPEC
+        flag       -- data type flag
+        instrument -- UCM or USP
         poweron    -- is this a power on
         poweroff   -- is this a power off
         x_bin      -- X binning factor
-        y_bin      -- Y binnin factor
+        y_bin      -- Y binning factor
         nwindow    -- number of windows
         mode       -- application type (2-windows etc)
         date       -- date at start of run
@@ -216,6 +217,7 @@ class Run(object):
 
         self.poweron   = None
         self.poweroff  = None
+        self.flag      = None
         self.x_bin     = None
         self.y_bin     = None
         self.nwindow   = None
@@ -244,9 +246,9 @@ class Run(object):
 
             if self.instrument is not None:
                 if self.instrument.find('Ultracam') > -1:
-                    self.instrument = 'ULTRACAM'
+                    self.instrument = 'UCM'
                 elif self.instrument.find('Ultraspec') > -1:
-                    self.instrument = 'ULTRASPEC'
+                    self.instrument = 'USP'
                 else:
                     print 'File =',self.fname,'failed to identify instrument'
 
@@ -261,7 +263,7 @@ class Run(object):
                     print 'File =',self.fname,'failed to identify telescope'
             
             # identify power ons & offs
-            self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1)
+            self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
             self.poweroff = (self.application.find('poweroff') > -1)
 
             if self.poweron:
@@ -275,6 +277,8 @@ class Run(object):
                 if user is not None:
                     if self.target is None and 'target' in user:
                         self.target = user['target']
+                    if 'flags' in user:
+                        self.flag = user['flags']
 
                 # Try to ID target with one of known position
                 if self.target is not None and targets is not None:
@@ -289,42 +293,43 @@ class Run(object):
 
 
                 # Translate applications into meaningful mode names
-                if self.application == 'ap8_250_driftscan' or self.application == 'ap8_driftscan' or self.application == 'ap_drift_bin2':
+                app = self.application
+                if app == 'ap8_250_driftscan' or app == 'ap8_driftscan' or app == 'ap_drift_bin2':
                     self.mode    = 'DRIFT'
                     self.nwindow = 2
-                elif self.application == 'ap5_250_window1pair' or self.application == 'ap5b_250_window1pair' or \
-                        self.application == 'ap5_window1pair' or self.application == 'ap_win2_bin8' or \
-                        self.application == 'ap_win2_bin2':
+                elif app == 'ap5_250_window1pair' or app == 'ap5b_250_window1pair' or \
+                        app == 'ap5_window1pair' or app == 'ap_win2_bin8' or app == 'ap_win2_bin2' or \
+                        app == 'appl5_window1pair_cfg' or app == 'appl5b_window1pair_cfg':
                     self.mode    = '1-PAIR'
                     self.nwindow = 2
-                elif self.application == 'ap6_250_window2pair' or self.application == 'ap6_window2pair' or \
-                        self.application == 'ap_win4_bin1' or self.application == 'ap_win4_bin8':
+                elif app == 'ap6_250_window2pair' or app == 'ap6_window2pair' or \
+                        app == 'ap_win4_bin1' or app == 'ap_win4_bin8' or app == 'appl6_window2pair_cfg':
                     self.mode    = '2-PAIR'
                     self.nwindow = 4
-                elif self.application == 'ap7_250_window3pair' or self.application == 'ap7_window3pair':
+                elif app == 'ap7_250_window3pair' or app == 'ap7_window3pair' or app == 'appl7_window3pair_cfg':
                     self.mode    = '3-PAIR'
                     self.nwindow = 6
-                elif self.application == 'ap3_250_fullframe' or self.application == 'ap3_fullframe':
+                elif app == 'ap3_250_fullframe' or app == 'ap3_fullframe':
                     self.mode    = 'FFCLR'
                     self.nwindow = 2
-                elif self.application == 'ap3_250_fullframe':
+                elif app == 'ap3_250_fullframe' or app == 'appl3_fullframe_cfg':
                     self.mode    = 'FFCLR'
                     self.nwindow = 2
-                elif self.application == 'ap9_250_fullframe_mindead' or self.application == 'ap9_fullframe_mindead':
+                elif app == 'ap9_250_fullframe_mindead' or app == 'ap9_fullframe_mindead' or app == 'appl9_fullframe_mindead_cfg':
                     self.mode    = 'FFNCLR'
                     self.nwindow = 2
-                elif self.application == 'ccd201_winbin_con':
+                elif app == 'ccd201_winbin_con':
                     if int(param['X2_SIZE']) == 0:
                         self.mode    = '1-USPEC'
                         self.nwindow = 1
                     else:
                         self.mode    = '2-USPEC'
                         self.nwindow = 2
-                elif self.application == 'ap4_frameover':
+                elif app == 'ap4_frameover':
                     self.mode    = 'FFOVER'
                     self.nwindow = 2
                 else:
-                    print 'File =',self.fname,'failed to identify application = ',self.application
+                    print 'File =',self.fname,'failed to identify application = ',app
 
                 if times is not None:
                     self.date    = times.date[self.number] if self.number in times.date else None
@@ -336,31 +341,40 @@ class Run(object):
                     self.sample  = times.sample[self.number] if self.number in times.sample else None
                     self.sample  = self.sample if self.sample != 'UNDEF' else None
 
-                if self.instrument == 'ULTRACAM':
+                if self.instrument == 'UCM':
 
                     self.speed   = param['GAIN_SPEED'] if 'GAIN_SPEED' in param else None
 
-                    self.xleft[0]  = param['X1L_START'] if 'X1L_START' in param else None
-                    self.xright[0] = param['X1R_START'] if 'X1R_START' in param else None
-                    self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
-                    self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
-                    self.ny[0]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
+                    if self.mode == 'FFCLR' or self.mode == 'FFNCLR':
+                        self.ystart[0] = '1'
+                        self.xleft[0]  = '1'
+                        self.xright[0] = '513'
+                        self.nx[0]     = '512'
+                        self.ny[0]     = '1024'
 
-                    if self.nwindow > 2:
-                        self.xleft[1]  = param['X2L_START'] if 'X2L_START' in param else None
-                        self.xright[1] = param['X2R_START'] if 'X2R_START' in param else None
-                        self.ystart[1] = param['Y2_START'] if 'Y2_START' in param else None
-                        self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
-                        self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
+                    else:
 
-                    if self.nwindow > 4:
-                        self.xleft[1]  = param['X3L_START'] if 'X3L_START' in param else None
-                        self.xright[1] = param['X3R_START'] if 'X3R_START' in param else None
-                        self.ystart[1] = param['Y3_START'] if 'Y3_START' in param else None
-                        self.nx[1]     = param['X3_SIZE'] if 'X3_SIZE' in param else None
-                        self.ny[1]     = param['Y3_SIZE'] if 'Y3_SIZE' in param else None
+                        self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
+                        self.xleft[0]  = param['X1L_START'] if 'X1L_START' in param else None
+                        self.xright[0] = param['X1R_START'] if 'X1R_START' in param else None
+                        self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
+                        self.ny[0]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
 
-                elif self.instrument == 'ULTRASPEC':
+                        if self.nwindow > 2:
+                            self.ystart[1] = param['Y2_START'] if 'Y2_START' in param else None
+                            self.xleft[1]  = param['X2L_START'] if 'X2L_START' in param else None
+                            self.xright[1] = param['X2R_START'] if 'X2R_START' in param else None
+                            self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
+                            self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
+
+                        if self.nwindow > 4:
+                            self.ystart[2] = param['Y3_START'] if 'Y3_START' in param else None
+                            self.xleft[2]  = param['X3L_START'] if 'X3L_START' in param else None
+                            self.xright[2] = param['X3R_START'] if 'X3R_START' in param else None
+                            self.nx[2]     = param['X3_SIZE'] if 'X3_SIZE' in param else None
+                            self.ny[2]     = param['Y3_SIZE'] if 'Y3_SIZE' in param else None
+
+                elif self.instrument == 'USP':
 
                     self.speed    = ('F' if param['SPEED'] == '0' else \
                                          ('M' if param['SPEED'] == '1' else 'S')) if 'SPEED' in param else None
@@ -467,12 +481,12 @@ class Run(object):
             th('Date<br>Start of night') + th('UT<br>start') + th('UT<br>end') + th('Dwell<br>sec.') + \
             th('Sample<br>sec.') + th('Frame<br>no.') + th('Mode')
 
-        if self.instrument == 'ULTRACAM':
+        if self.instrument == 'UCM':
             st += th('Gain<br>speed')
             st += th('X1') + th('Y1') + th('NX1') + th('NY1')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
-        elif self.instrument == 'ULTRASPEC':
+        elif self.instrument == 'USP':
             st += th('Speed')
             st += th('Clear')
             st += th("O'put")
@@ -502,12 +516,12 @@ class Run(object):
         st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
         st += td(self.mode)
-        if self.instrument == 'ULTRACAM':
+        if self.instrument == 'UCM':
             if self.speed is not None:
                 st += td(hex(int(self.speed)))
             else:
                 st += td(self.speed)
-        elif self.instrument == 'ULTRASPEC':
+        elif self.instrument == 'USP':
             st += td(self.speed)
             st += td(self.en_clr)
             st += td(self.output)
@@ -533,19 +547,20 @@ class Run(object):
                 ((self.y_bin is None and other.y_bin is None) or self.y_bin == other.y_bin) and \
                 ((self.nwindow is None and other.nwindow is None) or self.nwindow == other.nwindow) and \
                 ((self.speed is None and other.speed is None) or self.speed == other.speed) and \
-                ((self.en_clr is None and other.en_clr) or self.en_clr == other.en_clr) and \
+                ((self.en_clr is None and other.en_clr is None) or self.en_clr == other.en_clr) and \
                 (not Run.FUSSY or (self.hv_gain is None and other.hv_gain is None) or self.hv_gain == other.hv_gain) and \
                 ((self.output is None and other.output is None) or self.output == other.output)
 
+            
             if ok:
-                if self.instrument == 'ULTRACAM' and self.nwindow is not None:
+                if self.instrument == 'UCM' and self.nwindow is not None:
                     for i in range(self.nwindow // 2):
                         if self.xleft[i] != other.xleft[i] or self.xright[i] != other.xright[i] or \
                                 self.ystart[i] != other.ystart[i] or self.nx[i] != other.nx[i] or \
                                 self.ny[i] != other.ny[i]:
                             ok  = False
                             break
-                elif self.instrument == 'ULTRASPEC' and self.nwindow is not None:
+                elif self.instrument == 'USP' and self.nwindow is not None:
                     for i in range(self.nwindow):
                         if self.xstart[i] != other.xstart[i] or \
                                 self.ystart[i] != other.ystart[i] or self.nx[i] != other.nx[i] or \
@@ -568,11 +583,18 @@ class Run(object):
         return NotImplemented
 
     def __str__(self):
-        st = '%-20s %-9s %1d %1s %1s %7s' % (self.target,self.instrument,self.nwindow,self.x_bin,self.y_bin,self.mode)
-        if self.instrument == 'ULTRASPEC':
+        st = '%-25s %3s %1d %1s %1s %7s' % (self.target,self.instrument,self.nwindow,self.x_bin,self.y_bin,self.mode)
+        if self.instrument == 'USP':
             st += ' %s %s %s %s' % (self.speed,self.en_clr,self.hv_gain,self.output)
             for i in range(2):
                 st += ' %4s %4s %4s %4s' % (self.xstart[i],self.ystart[i],self.nx[i],self.ny[i])
+        elif self.instrument == 'UCM':
+            st += ' %s' % (hex(int(self.speed))[2:],)
+            for i in range(self.nwindow/2):
+                st += ' %4s %3s %4s %3s %4s' % (self.ystart[i],self.xleft[i],self.xright[i],self.nx[i],self.ny[i])
+            for i in range(3-self.nwindow/2):
+                st += ' %4s %3s %4s %3s %4s' % (' ',' ',' ',' ',' ')
+            if self.flag is not None: st += ' ' + self.flag
         return st
 
     def is_not_power_onoff(self):
@@ -581,6 +603,12 @@ class Run(object):
         doubt it returns False.
         """
         return (self.poweron is not None and self.poweroff is not None and not self.poweron and not self.poweroff)
+
+    def is_bias(self):
+        """
+        Returns True if the run is thought to be a bias
+        """
+        return (self.target == "Bias")
 
 
 def td(data, type='cen'):
