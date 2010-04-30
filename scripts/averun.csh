@@ -42,7 +42,16 @@ if( $# != 3 ) then
 endif
 
 set run  = $1:t
-set head = $1:h
+
+# test whether file includes a path because :h modifier does
+# not work properly.
+echo $1 | grep -q '/'
+if ( $status ) then
+    set head = ""
+else
+    set head = $1:h
+endif
+
 set n1   = $2
 set n2   = $3
 
