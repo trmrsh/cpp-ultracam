@@ -252,11 +252,13 @@ void Ultracam::plot_setupwins(const std::string& setwin, int numccd, float x1, f
 		
 		// final checks for overlap between windows	
 		for(size_t iww=0; iww<iw; iww++){
-		    if(wins[iw].ystart < wins[iww].ystart+wins[iww].ny && wins[iw].ystart+wins[iw].ny > wins[iww].ystart){
+		    if((wins[iw].xstart < wins[iww].xstart+wins[iww].nx && wins[iw].xstart+wins[iw].nx > wins[iww].xstart) &&
+		       (wins[iw].ystart < wins[iww].ystart+wins[iww].ny && wins[iw].ystart+wins[iw].ny > wins[iww].ystart)){
 			error = true;
-			std::cerr << "plot_setupwins: setup window " << iw + 1 << " overlaps window " << iww + 1 << " in the Y direction" << std::endl;
+			std::cerr << "plot_setupwins: setup window " << iw + 1 << " overlaps window " << iww + 1 << std::endl;
 		    }
 		}
+
 	    }
       
 	    if(error) std::cerr << BEEP << std::flush;
