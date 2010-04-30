@@ -40,14 +40,11 @@
  
 setenv ULTRACAM_ENV .crash_default
 
-ultracam8.1.12 >& /dev/null
-
-#which ultracam >& /dev/null
-#if ( $status ) then
-#   echo "Could not find command ultracam; please define it to point at the latest version of the pipeline"
-#   echo "and re-run this script, e.g. alias ultracam ultracam8.1.12"
-#   exit(1)
-#endif
+if($?ULTRACAM == 0) then
+  echo "ULTRACAM environment variable is not set"
+  echo "This must point to the location of the ultracam executables for addaframe to work"
+  exit 1
+endif
 
 # how many seconds to wait between checks. This determines how swiftly a
 # problem will be picked up.
@@ -62,7 +59,7 @@ while (1)
     echo "Checking "$run" for problems"
 
     # need to change source to 's' once this is working
-    set file = `grab source=s url=$run first=0 trim=no tmax=0 bias=no \\ | grep 'Written' | sed -e 's/Written //' -e 's/,.*//'`
+    set file = `$ULTRACAM/grab source=s url=$run first=0 trim=no tmax=0 bias=no \\ | grep 'Written' | sed -e 's/Written //' -e 's/,.*//'`
     echo "Grabbed "$file"; now computing medians"
 
     stats data=$file window=ALL sigma=3 | grep Median > zzz_median_values

@@ -30,12 +30,16 @@
 #
 # !!end
 
+if($?ULTRACAM == 0) then
+  echo "ULTRACAM environment variable is not set"
+  echo "This must point to the location of the ultracam executables for addaframe to work"
+  exit 1
+endif
+
 if( $# != 3 ) then
   echo "usage: run first last"
   exit 1
 endif
-
-ultracam > /dev/null
 
 set run  = $1:t
 set head = $1:h
@@ -47,11 +51,11 @@ if( $n2 < $n1 ) then
   exit 1
 endif
 
-grab ${head}/${run} first=$n1 last=$n2 \\
+$ULTRACAM/grab ${head}/${run} first=$n1 last=$n2 \\
 
 \ls ${run}_*.ucm >! ${run}.lis
 
-combine ${run}.lis method=c sigma=4 careful=yes adjust=i output=$run
+$ULTRACAM/combine ${run}.lis method=c sigma=4 careful=yes adjust=i output=$run
 
 echo " "
 echo "Result stored in file = ${run}.ucm"

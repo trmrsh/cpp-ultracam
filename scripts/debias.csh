@@ -32,6 +32,12 @@
 #
 # !!end
 
+if($?ULTRACAM == 0) then
+  echo "ULTRACAM environment variable is not set"
+  echo "This must point to the location of the ultracam executables for addaframe to work"
+  exit 
+endif 
+
 if($#argv < 3) then
   echo "usage: debias region sigma file1 file2 ..."
   exit
@@ -43,14 +49,12 @@ set region = $argv[1]
 set sigma  = $argv[2]
 shift argv; shift argv
 
-ultracam > /dev/null
-
 foreach file ($*)
   if($file:e != "ucm") then
       echo "Skipped $file as it does not end with .ucm"
   else
-      stats $file:r $region $sigma
-      csub  $file:r @stats_clipped_mean $file:r
+      $ULTRACAM/stats $file:r $region $sigma
+      $ULTRACAM/csub  $file:r @stats_clipped_mean $file:r
       echo "Debiassed file = $file"
   endif
 end
