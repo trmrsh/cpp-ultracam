@@ -839,5 +839,5 @@ bool ok_to_plot_trans(TRIT tri, const std::vector<std::vector<Reduce::Point> >& 
  */
 bool ok_to_plot_fwhm(FWIT fwi, const std::vector<std::vector<Reduce::Point> >& all_ccds){     
     return (fwi->nccd < all_ccds.size() && all_ccds[fwi->nccd].size() > 0 &&
-	    all_ccds[fwi->nccd][0].fwhm > 0);
+	    all_ccds[fwi->nccd][0].fwhm > 0 && code_ok_to_plot(all_ccds[fwi->nccd][fwi->targ].code));
 }
