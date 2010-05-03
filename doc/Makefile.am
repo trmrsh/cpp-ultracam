@@ -1,8 +1,11 @@
 ## Process this file with automake to generate Makefile.in
 ##
 
-EXTRA_DIST = aper.gif docgen.in document.pl Changes.html Doxyfile.in FAQ.html GettingStarted.html reduce.red aper.gif \
+EXTRA_DIST = aper.gif docgen.in document.pl Changes.html FAQ.html GettingStarted.html reduce.red aper.gif \
 Errors.html Timing.html UserInput.html rxj2130.gif style.css ultracam_guide.pdf sreduce.sre
+
+#	sed -e 's%ZzZzZ%html/api%' Doxyfile.in > Doxyfile
+#	doxygen Doxyfile || :
 
 install-data-local: 
 	$(INSTALL) -d html
@@ -20,8 +23,6 @@ install-data-local:
 	cp ultracam_guide.pdf html/.
 	cp rxj2130.gif    html/.
 	cp aper.gif       html/.
-	sed -e 's%ZzZzZ%html/api%' Doxyfile.in > Doxyfile
-	doxygen Doxyfile || :
 	chmod 0755 html
 	@for file in `find html | sed -e 's% %\\\%'`; do \
 	nfile=`echo $$file | sed -e 's%\\\%\\ %'`; \
