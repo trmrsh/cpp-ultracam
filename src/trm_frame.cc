@@ -254,11 +254,12 @@ void Ultracam::Frame::max(const Ultracam::internal_data& low){
  * \param obj the template frame to crop down to.
  */
 void Ultracam::Frame::crop(const Ultracam::Frame& obj){
-  if(size() == obj.size()){
+  if(this->size() == obj.size()){
     for(size_t ic=0; ic<size(); ic++)
       (*this)[ic].crop(obj[ic]);
   }else{
-    throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Frame&)");
+      throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Frame&): " 
+			   + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
   }
 }
 
@@ -268,12 +269,13 @@ void Ultracam::Frame::crop(const Ultracam::Frame& obj){
  * total CCD size and binning match.
  */
 void Ultracam::Frame::crop(const Ultracam::Mwindow& obj){
-  if(size() == obj.size()){
-    for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic].crop(obj[ic]);
-  }else{
-    throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Mwindow&)");
-  }
+    if(this->size() == obj.size()){
+	for(size_t ic=0; ic<size(); ic++)
+	    (*this)[ic].crop(obj[ic]);
+    }else{
+	throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Mwindow&): "
+			     + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
+    }
 }
 
 /** This changes a frame to be the overlap between it a Ultracam::Mwindow multi-window object. 
@@ -282,12 +284,13 @@ void Ultracam::Frame::crop(const Ultracam::Mwindow& obj){
  * \param obj the Ultracam::Mwindow multi-windows
  */
 void Ultracam::Frame::window(const Ultracam::Mwindow& obj){
-  if(size() == obj.size()){
-    for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic].window(obj[ic]);
-  }else{
-    throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::window(const Ultracam::Mwindow&)");
-  }
+    if(this->size() == obj.size()){
+	for(size_t ic=0; ic<size(); ic++)
+	    (*this)[ic].window(obj[ic]);
+    }else{
+	throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::window(const Ultracam::Mwindow&): "
+			     + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
+    }
 }
 
 /**
