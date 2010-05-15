@@ -455,6 +455,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	if(serverdata.l3data.rs_time >= 0)
 	    header.set("Instrument.Rs_Time",  new Subs::Hint(serverdata.l3data.rs_time,    "L3CCD parameter"));
     }
+    header.set("Instrument.exp_delay", new Subs::Hfloat(uinfo.expose_time*uinfo.time_units, "Exposure delay (seconds)"));
+
     if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_CLEAR){
 	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "Full frame with a clear each exposure"));
 
