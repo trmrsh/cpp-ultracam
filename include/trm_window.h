@@ -32,9 +32,9 @@ namespace Ultracam {
     // Some limits to guard against stupid values
     
     //! Maximum unbinned X dimension of any CCD
-    static const int  MAX_NXTOT = 4096; 
+    static const int  MAX_NXTOT = 10000; 
     //! Maximum unbinned Y dimension of any CCD
-    static const int  MAX_NYTOT = 4096;
+    static const int  MAX_NYTOT = 10000;
     //! Maximum binning factor in X
     static const int MAX_XBIN  = 100;
     //! Maximum binning factor in Y
