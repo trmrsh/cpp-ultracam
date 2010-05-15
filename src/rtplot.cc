@@ -457,16 +457,20 @@ int main(int argc, char* argv[]){
 		input.get_value("bias", bias, true, "do you want to subtract a bias frame before plotting?");
 		Ultracam::Frame bias_frame;
 		if(bias){
-			std::string sbias;
-			input.get_value("biasframe", sbias, "bias", "name of bias frame");
-			bias_frame.read(sbias);
+		    std::string sbias;
+		    input.get_value("biasframe", sbias, "bias", "name of bias frame");
+		    bias_frame.read(sbias);
+		    if(source == 'S' || source == 'L'){
 			bias_frame.crop(mwindow);
-	
-			if(ultraspec){ 
-				input.get_value("threshold", thresh, true, "do you want to threshold to get 0 or 1 photons/pix?");
-				if(thresh)
-					input.get_value("photon", photon, 50.f, FLT_MIN, FLT_MAX, "threshold level to count as 1 photon");
-			}
+		    }else{
+			bias_frame.crop(data);
+		    }
+		    
+		    if(ultraspec){ 
+			input.get_value("threshold", thresh, true, "do you want to threshold to get 0 or 1 photons/pix?");
+			if(thresh)
+			    input.get_value("photon", photon, 50.f, FLT_MIN, FLT_MAX, "threshold level to count as 1 photon");
+		    }
 		}
     
 		int naccum = 1;
