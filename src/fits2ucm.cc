@@ -19,7 +19,7 @@ CCD and converts it/them to Ultracam format files. Different FITS
 formats may well require updates to this routine to adjust for
 different header names.  At the moment it supports the JKT, WHT Aux
 Port, Faulkes telescope (full frame only until I get hold of example
-windowed data), TNG DOLORES, FORS1, SAAO high-speed CCD, NOT ALFOSC and ATC
+windowed data), TNG DOLORES, FORS1, SAAO high-speed CCD, NOT ALFOSC, ATC and SOFI
 formats. The generality of some of these is open to question as they
 are based upon limited example data sets. In some cases I was also not sure which
 time was most reliable (NOT data), so if this is important to you, you may want
@@ -41,10 +41,12 @@ it is assumed to be a single fits file.}
 !!arg{format}{Format of the FITS data. Choices at the moment are:
 !!emph{JKT} for the 1m JKT on La Palma, !!emph{AUX} for the WHT's AUX Port, !!emph{Faulkes} for FITS
 data from the Faulkes telescope, !!emph{Dolores} for the TNG's Dolores, !!emph{FORS1} for VLT FORS1 data,
-!!emph{SAAO} for the UCT camera at SAAO
+!!emph{SAAO} for the UCT camera at SAAO, !!emph{ACAM} for the WHT's ACAM replacement for AUX.
 (Case insensitive). The SAAO data I have does not binning factors so I identify these from the
 window dimensions; this may well fall down if you do not have matching data. !!epmh{NOT} for NOT ALFOSC
-data. !!emph{ATC} for the ULTRASPEC multi-image FITS files from Derek Ives. !!{RISE} for Don Pollacco's camera for the LT.}
+data. !!emph{ATC} for the ULTRASPEC multi-image FITS files from Derek Ives. !!{RISE} for Don Pollacco's camera for the LT. 
+!!emph{ACAM} for the WHT's ACAM replacement for AUX.
+!!emph{SOFI} for split data from SOFI as produced by Steven Parsons.}
 !!arg{intout}{true for 2-byte integer output, false for floats. If you specify the integer format, ensure that
 you are not losing precision by so doing.}
 !!table
@@ -81,20 +83,23 @@ int main(int argc, char* argv[]){
 	std::string fname;
 	input.get_value("data", fname, "run001", "data file or list of data files");
 	std::string format;
-	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, Dolores, FORS1, SAAO, NOT, ATC, RISE)");
+	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, Dolores, FORS1, SAAO, NOT, ATC, RISE, ACAM)");
 	format = Subs::toupper(format);
-	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && 
-	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE")
+	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
+	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE" && format != "ACAM" && \
+	   format != "SOFI")
 	    throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
-					"1) JKT for the 1m JKT on La Palma\n"
-					"2) AUX for the 4.2m WHT's Aux Port camera\n"
-					"3) Faulkes for the Faulkes telescopes\n"
-					"4) Dolores for the 3.6m TNG's Dolores\n"
-					"5) FORS1 for VLT FORS1\n"
-					"6) SAAO for UCT camera data from SAAO\n"
-					"7) NOT for NOT ALFOSC data\n"
-					"8) ATC for Derek Ives' multi-image FITS \n"
-					"9) RISE for the 2m Liverpool Telescope");
+					" 1) JKT for the 1m JKT on La Palma\n"
+					" 2) AUX for the 4.2m WHT's Aux Port camera\n"
+					" 3) Faulkes for the Faulkes telescopes\n"
+					" 4) Dolores for the 3.6m TNG's Dolores\n"
+					" 5) FORS1 for VLT FORS1\n"
+					" 6) SAAO for UCT camera data from SAAO\n"
+					" 7) NOT for NOT ALFOSC data\n"
+					" 8) ATC for Derek Ives' multi-image FITS \n"
+					" 9) RISE for the 2m Liverpool Telescope\n"
+					"10) ACAM for the 4.2m's ACAM\n"
+					"11) SOFI for the IR data from SOFI/NTT");
 	bool intout;
 	input.get_value("intout", intout, false, "2-byte integer output (else float)?");
 
@@ -116,7 +121,7 @@ int main(int argc, char* argv[]){
 	std::string fits;
 
 	char card[FLEN_CARD], errmsg[FLEN_ERRMSG];
-	int xbin, ybin;
+	int xbin, ybin, llx, lly;
 
 	for(size_t nfile=0; nfile<flist.size(); nfile++){
 
@@ -708,6 +713,100 @@ int main(int argc, char* argv[]){
 		    }
 		    data.set("Filename", new Subs::Hstring(std::string(cbuff), "Original NOT/ALFOSC file name"));
 
+		}else if(format == "ACAM"){
+	  
+		    char cbuff[256];
+	  
+		    // Read binning factors, time etc.
+		    fits_read_key(fptr,TINT,"CCDXBIN",&xbin,NULL,&status);
+		    fits_read_key(fptr,TINT,"CCDYBIN",&ybin,NULL,&status);
+		    fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status);
+		    if(status){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("AUX 01: " + fits + ": " + errmsg);
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+	  
+		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("12: " + fits + ": " + errmsg);
+		    }
+		    int day, month, year;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
+		    istr.clear();
+	  
+		    if(fits_read_key(fptr,TSTRING,"UTSTART",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("13: " + fits + ": " + errmsg);
+		    }
+		    int hour, minute;
+		    double second;
+		    istr.str(cbuff);
+		    istr >> hour >> c >> minute >> c >> second;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("Failed to translate time = ") + std::string(cbuff));
+		    istr.clear();
+	  
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPOSED",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("14: " + fits + ": " + errmsg);
+		    }
+		    Subs::Time ut_date(day, month, year, hour, minute, second);
+		    ut_date.add_second(exposure/2.);
+	  
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		}else if(format == "SOFI"){
+	  
+		    char cbuff[256];
+	  
+		    // No binning with SOFI
+		    xbin = ybin = 1;
+
+		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SOFI 01: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+			
+		    double mjd;
+		    fits_read_key(fptr,TDOUBLE,"MJD-OBS",&mjd,NULL,&status);
+		    float exposure;
+		    fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status);
+		    if(status){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("SOFI 02: " + fits + ": " + errmsg);
+		    }
+		    
+		    Subs::Time ut_date(mjd);
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));
+			
+		    // Read binning factors, time etc.
+		    fits_read_key(fptr,TINT,"STARTX",&llx,NULL,&status);
+		    fits_read_key(fptr,TINT,"STARTY",&lly,NULL,&status);
+		    if(status){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("SOFI 03: " + fits + ": " + errmsg);
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+	  
 		}
 	
 		int nhdu;
@@ -773,7 +872,7 @@ int main(int argc, char* argv[]){
 			fpixel[1]++;
 		    }
 
-		}else if(format == "JKT" || format == "AUX"){
+		}else if(format == "JKT" || format == "AUX" || format == "ACAM"){
 	  
 		    // Go through looking for image hdus with NAXIS = 2 and non-zero dimensions
 		    // Assume each represents a separate window
@@ -821,6 +920,8 @@ int main(int argc, char* argv[]){
 						data[0].push_back(Ultracam::Windata(llx,lly,dims[0],dims[1],xbin,ybin,2088,2120));
 					    }else if(format == "AUX"){
 						data[0].push_back(Ultracam::Windata(llx,lly,dims[0],dims[1],xbin,ybin,1110,1050));
+					    }else if(format == "ACAM"){
+						data[0].push_back(Ultracam::Windata(llx,lly,dims[0],dims[1],xbin,ybin,2148,4200));
 					    }
 		      
 					    // Start reading from lower left
@@ -1088,7 +1189,42 @@ int main(int argc, char* argv[]){
 			    throw Ultracam::Ultracam_Error("146: " + fits + ": row " + Subs::str(j+1) + ". "  + errmsg);
 			}
 			fpixel[1]++;
-		    }  
+		    }
+
+  		}else if(format == "SOFI"){
+
+		    if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("147: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+
+		    if(hdutype == IMAGE_HDU){
+			if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error(std::string("148: ") + fits + std::string(": ") + std::string(errmsg));
+			}
+			data[0].push_back(Ultracam::Windata(llx,lly,dims[0],dims[1],xbin,ybin,1024,1024));
+		    }else{
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("149: " + fits + ": HDU is not an image.");
+		    }
+
+		    // Start reading from lower left
+		    fpixel[0] = fpixel[1] = 1;
+	  
+		    // Read the data in, row by row 
+		    for(long j=0; j<dims[1]; j++){
+			fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+			if(status){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status); 
+			    throw Ultracam::Ultracam_Error("150: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+			}
+			fpixel[1]++;
+		    }
+
 		}
 
 		// Write out the ultracam file
