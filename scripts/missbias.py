@@ -62,6 +62,10 @@ parser.add_option("-i", "--ignore", dest="ignore", default=False, action="store_
 
 (options, args) = parser.parse_args()
 
+if len(args) == 0:
+    print 'You must supply some directories with run###.xml files'
+    exit(1)
+
 dirs = [d for d in args if os.path.isdir(d)]
 
 Ultra.Run.Fussy = options.fussy
@@ -98,6 +102,8 @@ for dir in dirs:
                 for rn, rold in nonbias.iteritems():
                     if run == rold:
                         new_format = False
+                        if rold.flag == 'data caution' and run.flag != 'data caution':
+                            nonbias[rn] = run
                         break
             
                 if new_format:

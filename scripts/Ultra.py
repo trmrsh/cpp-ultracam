@@ -343,7 +343,7 @@ class Run(object):
 
                 if self.instrument == 'UCM':
 
-                    self.speed   = param['GAIN_SPEED'] if 'GAIN_SPEED' in param else None
+                    self.speed   = hex(int(param['GAIN_SPEED']))[2:] if 'GAIN_SPEED' in param else None
 
                     if self.mode == 'FFCLR' or self.mode == 'FFNCLR':
                         self.ystart[0] = '1'
@@ -516,13 +516,8 @@ class Run(object):
         st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
         st += td(self.mode)
-        if self.instrument == 'UCM':
-            if self.speed is not None:
-                st += td(hex(int(self.speed)))
-            else:
-                st += td(self.speed)
-        elif self.instrument == 'USP':
-            st += td(self.speed)
+        st += td(self.speed)
+        if self.instrument == 'USP':
             st += td(self.en_clr)
             st += td(self.output)
             st += td(self.hv_gain)
@@ -589,7 +584,7 @@ class Run(object):
             for i in range(2):
                 st += ' %4s %4s %4s %4s' % (self.xstart[i],self.ystart[i],self.nx[i],self.ny[i])
         elif self.instrument == 'UCM':
-            st += ' %s' % (hex(int(self.speed))[2:],)
+            st += ' %s' % (self.speed,)
             for i in range(self.nwindow/2):
                 st += ' %4s %3s %4s %3s %4s' % (self.ystart[i],self.xleft[i],self.xright[i],self.nx[i],self.ny[i])
             for i in range(3-self.nwindow/2):
