@@ -94,10 +94,11 @@ int main(int argc, char* argv[]){
     
     int n = 1;
     std::string line;
-    off_t framesize, hwords;
+    off_t framesize, hwords, edelay;
     bool may2002 = true;
     std::size_t ipos;
     int format = 1;
+    float time_units = 0.001;
     while(getline(xin, line)){
 	ipos = line.find("framesize");
 	if(ipos != std::string::npos){
@@ -128,6 +129,26 @@ int main(int argc, char* argv[]){
 		format = 2;
 	    }
 	}
+
+	ipos = line.find("EXPOSE_TIME");
+	if(ipos != std::string::npos){
+	    ipos = line.find("value=");
+	    if(ipos != std::string::npos){
+		std::string val = line.substr(ipos+7);
+		ipos = val.find("\"");
+		val = val.substr(0,ipos);
+
+		std::istringstream istr(val);
+		istr >> edelay;
+		if(!istr){
+		    std::cerr << "Failed to read exposure delay" << std::endl;
+		    exit(EXIT_FAILURE);
+		}
+	    }
+	}
+
+	ipos = line.find("<user>");
+	if(ipos != std::string::npos) time_units = 0.0001;
 	ipos = line.find("VERSION");
 	if(ipos != std::string::npos) may2002 = false;
 	ipos = line.find("V_FT_CLK");
@@ -145,6 +166,7 @@ int main(int argc, char* argv[]){
     else
 	std::cout << "These data are pre-March 2010" << std::endl;
 
+    std::cout << "Exposure delay = " << time_units*edelay << " seconds." << std::endl;
 
     // Now the data
     std::string data(argv[1]);
