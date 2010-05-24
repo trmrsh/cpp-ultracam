@@ -17,7 +17,7 @@ class Log(object):
     """
     Class to read and store log file data. These come in two formats:
 
-    1) Old style: run, target name, comment
+    1) Old style: run, target name, filters, comment
     2) New style: run, comment (target names are in the xml files)
 
     The class just stores the data in a couple of dictionaries
@@ -31,14 +31,33 @@ class Log(object):
         dictionaries if none found and reports an error
         """
         self.format  = 2
-        self.comment = {}
         self.target  = {}
+        self.filters = {}
+        self.comment = {}
+
         try:
+            rec = re.compile('file\s+object\s+filter', re.I)
+            old = re.compile('\s*(\S+)\s+(\S+)\s+(.*)$')
             f  = open(fname)
             for line in f:
+                m = rec.search(line)
+                if m:
+                    self.format = 1
+                    if len(self.comment):
+                        raise Exception('Error in night log = ' + fname + ', line = ' + line)
                 if line.startswith('run'):
                     num = int(line[3:6])
-                    self.comment[num] = line[6:].strip()
+                    if self.format == 2:
+                        self.comment[num] = line[6:].strip()
+                    else:
+                        m = old.search(line[6:])
+                        if m:
+                            self.target[num]  = m.group(1)
+                            self.filters[num] = m.group(2)
+                            self.comment[num] = m.group(3)
+                        else:
+                            raise Exception('Error in night log = ' + fname + ', line = ' + line)
+
         except Exception, err:
             print 'Night log problem: ',err
 
@@ -297,10 +316,12 @@ class Run(object):
                 if app == 'ap8_250_driftscan' or app == 'ap8_driftscan' or app == 'ap_drift_bin2':
                     self.mode    = 'DRIFT'
                     self.nwindow = 2
-                elif app == 'ap5_250_window1pair' or app == 'ap5b_250_window1pair' or \
-                        app == 'ap5_window1pair' or app == 'ap_win2_bin8' or app == 'ap_win2_bin2' or \
-                        app == 'appl5_window1pair_cfg' or app == 'appl5b_window1pair_cfg':
+                elif app == 'ap5_250_window1pair' or app == 'ap5_window1pair' or app == 'ap_win2_bin8' or \
+                        app == 'ap_win2_bin2' or app == 'appl5_window1pair_cfg':
                     self.mode    = '1-PAIR'
+                    self.nwindow = 2
+                elif app == 'ap5b_250_window1pair' or app == 'appl5b_window1pair_cfg':
+                    self.mode    = '1-PCLR'
                     self.nwindow = 2
                 elif app == 'ap6_250_window2pair' or app == 'ap6_window2pair' or \
                         app == 'ap_win4_bin1' or app == 'ap_win4_bin8' or app == 'appl6_window2pair_cfg':
