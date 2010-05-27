@@ -140,7 +140,7 @@ file. Although I try not to change the format of this file more than necessary, 
 to be updated. Download <a href="reduce.red">this file</a> for an up-to-date example file which is compatible
 with version ZzZzZ of the pipeline.
 
-<h2>Links to detailed information on the programs</h2>
+<h2>Useful links to the pipeline and related material</h2>
 
 <p>
 <table>
@@ -175,6 +175,14 @@ everything has yet to be demonstrated.
 <tr><td><a href="FAQ.html">FAQ</a></td>
 <td>Frequently Asked Questions. If you are puzzled about something, perhaps the 
 solution is here.
+</td></tr>
+
+<tr><td><a href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/calibration.html">Calibration</a></td>
+<td>Page of information on aspects of ULTRACAM calibration.
+</td></tr>
+
+<tr><td><a href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/calib/biases/">Biases</a></td>
+<td>Database of bias frames. May save yourself some effort by downloading these.
 </td></tr>
 
 </table>
