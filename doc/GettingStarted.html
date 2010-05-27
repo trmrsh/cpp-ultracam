@@ -27,7 +27,12 @@ exposures. These files can be large.  Here is how you might go about dealing wit
 <td width=20%><strong>Firing up the software</strong></td>
 <td>First of all you need to to define the aliases for the ULTRACAM programs. This requires
 sourcing a script file called Ultracam that should be located in the top-level of the installed
-distribution. It is well worth defining an alias e.g. 'ultracam' to carry this out for you..
+distribution. It is well worth defining an alias e.g. 'ultracam' to carry this
+out for you as in
+<pre>
+alias ultracam 'source $TRM_SOFTWARE/bin/ultracam/Ultracam'
+</pre>
+which you can stick in your '.cshrc' or equivalent.
 In addition, if you are accessing the data at the telescope, you need to start the ATC FileServer 
 which dishes out the raw data to the pipeline across a network via http requests; this is independent 
 of the pipeline software. If you have the raw data on a local disk, you will not need it.</td>
@@ -39,10 +44,13 @@ of the pipeline software. If you have the raw data on a local disk, you will not
 you to plot data even as it accumulates into the .dat file. It accesses the 
 large data files and plots images sequentially. It also contains facilities for setting
 up your windows, avoiding CCD defects and for fitting profiles to stars which is
-useful when focussing.</td></tr>
+useful when focussing. Useful tip: a backslash is response to any input means
+  assume default values for all following arguments, see
+  the <a href="UserInput.html">user input guide</a>.
+</td></tr>
 
 <tr valign="top">
-<td><strong>3</strong></td> <td><strong>Setting up windows
+<td><strong>3</strong></td> <td><strong>Setting up windows (observing only)
 </strong></td> <td><a href="rtplot.html">rtplot</a> has an option to load an
 ASCII file defining the windows which it plots over the data.
 As each new frame comes in it re-reads the file so you can adjust 
@@ -65,7 +73,9 @@ which could amount to hundreds or thousands for a single run so very often
 you may want to ctrl-C it. For
 example, this is useful if you want to apply bias subtraction in <a
 href="rtplot.html">rtplot</a>. First grab a bias run, then combine the
-resulting files with <a href="combine.html">combine</a>. Incidentally,
+resulting files with <a href="combine.html">combine</a> (see
+  also <a href="makebias.html">makebias</a>). 
+Incidentally,
 if you do ctrl-C during <a href="grab.html">grab</a>, you may want to
 delete the last file which may be corrupted (typically it is corrupted
 if <a href="grab.html">grab</a> did not report that it was written to disk
@@ -74,7 +84,10 @@ programs can be run on them. Alternatively you may prefer to operate with
 a reduction code of your choice, in which case you can save to FITS files using 
 <a href="grab2fits.html">grab2fits</a>. This is certainly useful if you
 want access to good image display programs such as 'ds9' and 'gaia' because 
-the pipeline does not attempt to replicate the features of such programs.
+the pipeline does not attempt to replicate the features of such programs,
+ and has just a couple of simple display programs <a href="plot.html">plot</a>
+and <a href="cplot.html">cplot</a>.
+
 </td></tr>
 
 <tr valign="top">
@@ -101,7 +114,11 @@ the light curve at the time you invoke reduce.
 set of instructions at the top detailing their contents. Any standard package should 
 be able to read these files and make suitable plots. However note that you may want to re-do all the reduction
 at the end of a run with the two-pass mode of <a href="reduce.html">reduce</a> which has certain
-advantages.
+advantages. The ASCII files are somewhat unwieldy and if you are happy with the
+  idea of reading in FITS rather than ASCII files, I suggest converting them
+to FITS using <a href="ulog2fits.html">ulog2fits</a> for which you must have
+  Python along with the 3rd-party modules numpy and pyfits. 'fv' is a
+  convenient routine to examine the FITS file output by this script.
 </td></tr>
 
 </table>
