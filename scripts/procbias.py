@@ -72,11 +72,12 @@
 # !!arg{run}{Run number of file to process, 0 for all available. Always defaults to 0 if not specified explicitly}
 # !!arg{maxfrm}{Maximum number of frames to attempt to combine. This is to ensure that 'combine' runs successfully. 
 # You may need to experiment to establish a good value for this. Once set, it should rarely need changing.}
-# !!arg{llevels}{If you chose the manual option: lowest levels of means of each window, 6 values, left & right for each CCD.}
-# !!arg{hlevels}{Highest levels of means of each window, 6 values, left & right for each CCD.}
-# !!arg{spread}{Maximum range between the means of each half of the CCD, 6 values left & right for each CCD. 
-# The lowest and highest mean values of windows in each CCD half is used. This value should be set fairly
-# tightly to spot potential problems with drift mode biases and lights being switched on.}
+# !!arg{sgold}{Maximum spread between the means of each half of the CCD, 6 values left & right for each CCD for a given run.
+# The lowest and highest mean values of windows in each CCD half is used. This one is for the 'gold standard' biases and 
+# should be set to about 4 as the majority of good biases show little variation.}
+# !!arg{ssilver}{Maximum spread between the means of each half of the CCD, 6 values left & right for each CCD for a given run.
+# The lowest and highest mean values of windows in each CCD half is used. This one is for the 'silver standard' biases and 
+# should be set to perhaps 10 to pick up some near misses.}
 # !!arg{thresh}{Threshold in RMS for computation of clipped mean}
 # !!arg{onebyone}{Reject pixels for clipped mean one by one or wholesale (faster but riskier)}
 # !!arg{high}{Threshold in RMS for judging excess of high pixels. The idea is that if too many pixels are significantly above
@@ -159,7 +160,8 @@ inpt.register('run',      inp.Input.LOCAL, inp.Input.HIDE)
 inpt.register('maxfrm',   inp.Input.LOCAL, inp.Input.HIDE)
 inpt.register('llevels',  inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('hlevels',  inp.Input.LOCAL, inp.Input.PROMPT)
-inpt.register('spread',   inp.Input.LOCAL, inp.Input.PROMPT)
+inpt.register('sgold',    inp.Input.LOCAL, inp.Input.PROMPT)
+inpt.register('ssilver',  inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('thresh',   inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('onebyone', inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('high',     inp.Input.LOCAL, inp.Input.PROMPT)
@@ -200,7 +202,8 @@ runno    = inpt.get_value('run', 'run number to analyse, 0 for all', 0)
 maxfrm   = inpt.get_value('maxfrm', 'maximum number of frames to attempt combining', 4000)
 
 # these are always prompted
-spread   = inpt.get_value('spread', 'maximum spread in window mean levels', 5.)
+sgold    = inpt.get_value('sgold', 'maximum spread in window mean levels, gold class', 4.)
+ssilver  = inpt.get_value('ssilver', 'maximum spread in window mean levels, silver class', 10.)
 thresh   = inpt.get_value('thresh', 'RMS threshold for sigma clipping', 3.) 
 onebyone = inpt.get_value('onebyone', 'slow, one-by-one rejection (else fast & risky)?', True)
 high     = inpt.get_value('high', 'RMS threshold for distinguishing biases', 5.)
@@ -244,7 +247,7 @@ for s in sout:
 dfout.close()
 
 # Define checking function
-def check_frames(fnames, llev, hlev):
+def check_frames(fnames, llev, hlev, spread):
     """
     This function checks the levels and spreads of the CCDs in the frames listed
     in fnames. It returns (ok,message,tup) where ok is True or False according to
@@ -511,7 +514,7 @@ try:
 
             print 'Checking their mean values.'
 
-            (ok,message, stats) = check_frames(fnames, mrange-rnge/2., mrange+rnge/2.)
+            (ok,message, stats) = check_frames(fnames, mrange-rnge/2., mrange+rnge/2., ssilver)
             if ok:
 
                 # Passed first few OK, lets grab some more
@@ -541,7 +544,7 @@ try:
 
                 print 'Checking all mean values.'
 
-                (ok,message, stats) = check_frames(fnames, mrange-rnge/2., mrange+rnge/2.)
+                (ok,message, stats) = check_frames(fnames, mrange-rnge/2., mrange+rnge/2., ssilver)
 
                 if ok:
                     # having got all this way with checks, now we combine the frames
@@ -624,6 +627,18 @@ try:
                     lmin,lmax,lrm,rmin,rmax,rrm = stats
                     nums = np.array([float(fname[7:12]) for fname in fnames])
                     modf['Procbias'] = {'comment': 'procbias information', 'type' : ucm.ITYPE_DIR, 'value': None}
+
+                    # Top-notch frames have no objects at all and a small spread.
+                    if nobj.sum() == 0 and (lmax-lmin < sgold).all() and (rmax-rmin < sgold).all():
+                        gold.append('<tr><td><a href="%s.ucm">%s</a></td><td>%d</td><td align="center">%sx%s</td><td align="center">%s</td>' \
+                                        % (name,name,nframe,robj.x_bin,robj.y_bin,robj.speed) + message + tail)
+                        modf['Procbias.class'] = {'comment': 'class of bias', 'type' : ucm.ITYPE_STRING, 'value': 'Gold'}
+                    else:
+                        silver.append('<tr><td><a href="%s.ucm">%s</a></td><td>%d</td><td align="center">%sx%s</td><td align="center">%s</td><td nowrap>%s</td>' \
+                                          % (name,name,nframe,robj.x_bin,robj.y_bin,robj.speed,str(nobj)) + message + tail)
+                        modf['Procbias.class'] = {'comment': 'class of bias', 'type' : ucm.ITYPE_STRING, 'value': 'Silver'}
+
+
                     modf['Procbias.nframe'] = {'comment': 'number of contributing frames', 'type' : ucm.ITYPE_INT, 'value': nframe}
                     modf['Procbias.range']  = {'comment': 'range of contributing frame numbers', 'type' : ucm.ITYPE_IVECTOR, 'value': (nums.min(),nums.max())}
                     modf['Procbias.nobj']   = {'comment': 'number of objects found in each CCD', 'type' : ucm.ITYPE_IVECTOR, 'value': nobj}
@@ -638,7 +653,8 @@ try:
                     modf['Procbias.Param.ncol']  = {'comment': 'number of columns to ignore at sides', 'type' : ucm.ITYPE_INT, 'value': ncol}
                     modf['Procbias.Param.mrange']  = {'comment': 'target mean levels', 'type' : ucm.ITYPE_FVECTOR, 'value': mrange}
                     modf['Procbias.Param.range']   = {'comment': 'allowed ranges in mean levels', 'type' : ucm.ITYPE_FVECTOR, 'value': rnge}
-                    modf['Procbias.Param.spread']   = {'comment': 'maximum spread in mean levels', 'type' : ucm.ITYPE_FLOAT, 'value': spread}
+                    modf['Procbias.Param.sgold']   = {'comment': 'gold-class maximum spread in mean levels', 'type' : ucm.ITYPE_FLOAT, 'value': sgold}
+                    modf['Procbias.Param.ssilver'] = {'comment': 'silver-class maximum spread in mean levels', 'type' : ucm.ITYPE_FLOAT, 'value': ssilver}
                     modf['Procbias.Param.thresh']   = {'comment': 'sigma clipping threshold', 'type' : ucm.ITYPE_FLOAT, 'value': thresh}
                     modf['Procbias.Param.onebyone'] = {'comment': 'reject pixels one by one?', 'type' : ucm.ITYPE_BOOL, 'value': onebyone}
                     modf['Procbias.Param.high']     = {'comment': 'RMS threshold for a pixel to count as high', 'type' : ucm.ITYPE_FLOAT, 'value': thresh}
@@ -648,13 +664,6 @@ try:
                     modf['Procbias.Param.edge']     = {'comment': 'edge strip to ignore objects (pixels)', 'type' : ucm.ITYPE_FLOAT, 'value': edge}
                     modf.write(name + '.ucm')
 
-                    # Top-notch frames have no objects at all.
-                    if nobj.sum() == 0:
-                        gold.append('<tr><td><a href="%s.ucm">%s</a></td><td>%d</td><td align="center">%sx%s</td><td align="center">%s</td>' \
-                                        % (name,name,nframe,robj.x_bin,robj.y_bin,robj.speed) + message + tail)
-                    else:
-                        silver.append('<tr><td><a href="%s.ucm">%s</a></td><td>%d</td><td align="center">%sx%s</td><td align="center">%s</td><td nowrap>%s</td>' \
-                                          % (name,name,nframe,robj.x_bin,robj.y_bin,robj.speed,str(nobj)) + message + tail)
                 else:
                     failed.append('<tr>' + sfile + '<td nowrap>' + message + '</td>' + tail)
             else:

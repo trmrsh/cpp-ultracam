@@ -710,7 +710,8 @@ class Run(object):
                         self.target == "Timing y-bin" or self.target == "Blurred Std" or \
                         self.target == "Light Level Test" or self.target == "PSF Tests" or \
                         self.target == "Read out noise test" or self.target == "32K test" or \
-                        self.target == "Fringe Frame" or self.target == "null")
+                        self.target == "Fringe Frame" or self.target == "null" or self.target == "Pluto speed test" or \
+                        self.target == "ugr" or self.target == "PowerOn" or self.target == "Slide test")
 
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
