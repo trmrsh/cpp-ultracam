@@ -86,9 +86,6 @@ See the section on <a href="UserInput.html">user input</a> for more details; you
 once, whether or not you are familiar with STARLINK software.
 
 <p>
-If you are wondering whether you want to upgrade to this version of the software from an earlier one, you
-should look at the <a href="Changes.html">list of changes</a> to the software.
-<p>
 <h2>What is 'ULTRACAM'?</h2>
 
 ULTRACAM is a high-speed CCD camera for astronomy; see <a 
@@ -172,28 +169,13 @@ with version ZzZzZ of the pipeline.
 <tr valign="top"><td><a href="Timing.html">Timing</a></td>
 <td>A description of how the GPS timestamps are translated into the times listed by
 the pipeline. If you are interested in precise absolute times, be aware that the correctness of
-everything has yet to be demonsatrated.
+everything has yet to be demonstrated.
 </td></tr>
 
 <tr><td><a href="FAQ.html">FAQ</a></td>
 <td>Frequently Asked Questions. If you are puzzled about something, perhaps the 
 solution is here.
 </td></tr>
-
-</table>
-
-<h2>Other Links</h2>
-
-<p>
-<table>
-<tr><td><a href="api/html/index.html">API docs</a></td>
-<td>For programmers only!</td></tr>
-
-<tr><td><a href="Changes.html">Changes</a></td>
-<td>List of changes made to the software.</td></tr>
-
-<tr valign="top"><td><a href="http://deneb.astro.warwick.ac.uk/phsaap/software/ultracam.tar.gz">ultracam.tar.gz</a></td>
-<td>gzipped tar file of the latest version of the pipeline software.</td></tr>
 
 </table>
 
