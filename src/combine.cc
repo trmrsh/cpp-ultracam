@@ -5,7 +5,7 @@
 !!title   combines a set of frames
 !!author  T.R. Marsh
 !!created 15 Feb 2002
-!!revised 07 Jul 2007
+!!revised 26 May 2010
 !!descr   combines a set of frames using median or clipped mean
 !!css   style.css
 !!root    combine
@@ -24,7 +24,8 @@ frames in the first place, but then to ctrl-C it and end up with the final file 
 You need to take care not to include it in the file list you supply to !!emph{combine}.
 
 There is a limit to the number of frames that this routine can handle set by the compiler because all files
-have to be opened simultaneously. For me this is somewhere around 1000 files, so I have set this as a maximum.
+have to be opened simultaneously. This is of order 1000 to 4000 files depending on the system. The program will
+collapse if you exceed this limit.
 
 !!head2 Invocation
 
@@ -117,8 +118,6 @@ int main(int argc, char* argv[]){
 	size_t nfile = flist.size();
 	if(nfile == 0) 
 	    throw Ultracam::Input_Error("No file names loaded");
-	if(nfile > 1000) 
-	    throw Ultracam::Input_Error("Too many files; maximum number possible = 1000");
 
 	// Read first frame in straight off to provide format
 	// information and to set up the final output frame.
