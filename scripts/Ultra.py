@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Support routines for Python analysis of ULtracam & Ultraspec
+Support routines for Python analysis of Ultracam & Ultraspec
 files. Mainly for database work.
 """
 
@@ -36,8 +36,9 @@ class Log(object):
         self.comment = {}
 
         try:
-            rec = re.compile('file\s+object\s+filter', re.I)
-            old = re.compile('\s*(\S+)\s+(\S+)\s+(.*)$')
+            rec    = re.compile('file\s+object\s+filter', re.I)
+            old    = re.compile('\s*(\S+)\s+(\S+)\s+(.*)$')
+            oldii  = re.compile('\s*(\S+)\s*$')
             f  = open(fname)
             for line in f:
                 m = rec.search(line)
@@ -45,6 +46,7 @@ class Log(object):
                     self.format = 1
                     if len(self.comment):
                         raise Exception('Error in night log = ' + fname + ', line = ' + line)
+
                 if line.startswith('run'):
                     num = int(line[3:6])
                     if self.format == 2:
@@ -56,7 +58,11 @@ class Log(object):
                             self.filters[num] = m.group(2)
                             self.comment[num] = m.group(3)
                         else:
-                            raise Exception('Error in night log = ' + fname + ', line = ' + line)
+                            m = oldii.search(line[6:])
+                            if m:
+                                self.target[num]  = m.group(1)
+                            self.filters[num] = '?'
+                            self.comment[num] = ''
 
         except Exception, err:
             print 'Night log problem: ',err
@@ -489,39 +495,38 @@ class Run(object):
         Returns string for initial part of html file. This interacts with a css file
         defined early on.
         """
+        
+        inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USPC' else None
 
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
             '<link rel="stylesheet" type="text/css" href="../../ultracam_test.css" />\n' + \
             '</head>\n<body>' + \
             '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
-            '<tr><td class="left">Instrument:</td>' + td(self.instrument,'left') + '</tr>\n' + \
+            '<tr><td class="left">Instrument:</td>' + td(inst,'left') + '</tr>\n' + \
             '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table>\n' + \
-            '<p>\n<table>'
+            '<p>\n<table cellpadding=2>'
         st += '<tr>\n' + th('Run<br>no.') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
-            th('Date<br>Start of night') + th('UT<br>start') + th('UT<br>end') + th('Dwell<br>sec.') + \
-            th('Sample<br>sec.') + th('Frame<br>no.') + th('Mode')
+            th('Date<br>Start of run') + th('UT<br>start') + th('UT<br>end') + th('Dwell<br>sec.') + \
+            th('Sample<br>sec.') + th('Frame<br>no.') + th('Mode') + th('Speed') + th('Bin')
 
         if self.instrument == 'UCM':
-            st += th('Gain<br>speed')
-            st += th('X1') + th('Y1') + th('NX1') + th('NY1')
-            st += th('X2') + th('Y2') + th('NX2') + th('NY2')
-            st += th('X2') + th('Y2') + th('NX2') + th('NY2')
+            st += th('Size1') + th('XLl') + th('XR1') + th('YS1') 
+            st += th('Size2') + th('XL2') + th('XR2') + th('YS2') 
+            st += th('Size3') + th('XL2') + th('XR3') + th('YS3') 
         elif self.instrument == 'USP':
-            st += th('Speed')
             st += th('Clear')
             st += th("O'put")
             st += th('Gain')
             st += th('X1') + th('Y1') + th('NX1') + th('NY1')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
 
-        st += th('Nwin')
         st += th('Run<br>no.') + th('Comment','left') + '</tr>\n'
         return st
 
     def html_table_row(self):
         """
-        Returns a row of table data
+        Returns a row of table data. Must be kept consistent with previous header routine
         """
 
         st  = '<tr>'
@@ -538,14 +543,18 @@ class Run(object):
         st += td(self.nframe, 'right')
         st += td(self.mode)
         st += td(self.speed)
+        st += td2(self.x_bin, self.y_bin)
         if self.instrument == 'USP':
             st += td(self.en_clr)
             st += td(self.output)
             st += td(self.hv_gain)
             st += td(self.xstart[0]) + td(self.ystart[0]) + td(self.nx[0]) + td(self.ny[0])
             st += td(self.xstart[1]) + td(self.ystart[1]) + td(self.nx[1]) + td(self.ny[1])
+        elif self.instrument == 'UCM':
+            st += td2(self.nx[0], self.ny[0]) + td(self.xleft[0]) + td(self.xright[0]) + td(self.ystart[0])
+            st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
+            st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
 
-        st += td(self.nwindow)
         st += td('%03d' % self.number)
         st += td(self.comment,'left')
         st += '</tr>'
@@ -630,6 +639,17 @@ class Run(object):
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
     return '<td class="' + type + '">' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
+                     
+def td2(data1, data2, type='cen'):
+    """Handle html table data whether defined or not, put 'x' in between values"""
+    if data1 is None and data2 is None:
+        return '<td class="undef">&nbsp;</td>'
+    elif data1 is None:
+        return '<td class="' + type + '">?x' + str(data2) + '</td>'
+    elif data2 is None:
+        return '<td class="' + type + '">' + str(data1) + 'x?</td>'
+    else:
+        return '<td class="' + type + '">' + str(data1) + 'x' + str(data2) + '</td>'
 
 def th(data,type='cen'):
     """HTML table header entry"""

@@ -22,11 +22,9 @@ etc. It also expects there to be a file called TARGETS with information
 of target positions and regular expressions for translating targets in
 """
 
-import os
-import sys
+import os, sys, re
 from xml.dom import Node
 from xml.dom.minidom import parse, parseString
-import re
 import trm.subs as subs
 #import traceback
 import Ultra
@@ -48,6 +46,7 @@ xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
+rdirs.sort()
 for rdir in rdirs:
 
     # Try to find the telescope.
