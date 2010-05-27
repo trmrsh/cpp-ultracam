@@ -61,11 +61,9 @@ class Log(object):
                             m = oldii.search(line[6:])
                             if m:
                                 self.target[num]  = m.group(1)
-                            self.filters[num] = '?'
-                            self.comment[num] = ''
 
         except Exception, err:
-            print 'Night log problem: ',err
+            sys.stderr.write('Night log problem:' + str(err) + '\n')
 
 class Times(object):
     """
@@ -99,7 +97,7 @@ class Times(object):
                     num = int(line[3:6])
                     self.date[num],self.utstart[num],self.utend[num],self.nframe[num],self.expose[num],self.sample[num] = line[6:].split()
         except Exception, err:
-            print 'Timing data problem: ',err,'file =',fname
+            sys.stderr.write('File = ' + fname + ', timing data problem: ' + str(err) + '\n')
 
 class Targets(object):
     """
@@ -113,7 +111,7 @@ class Targets(object):
 
     def __init__(self, fname):
         """
-        Constructs a new Targets file. Makes empty
+        Constructs a new Targets object. Makes empty
         dictionaries if none found and reports an error
         """
         self.position  = {}
@@ -137,12 +135,13 @@ class Targets(object):
                         elif decd[:1] == '+':
                             decfac = +1.
                         else:
-                            print 'Target = ' + target + ' has no sign on its declination and will be skipped.'
+                            sys.stderr.write('Target = ' + target + ' has no sign on its declination and will be skipped.\n')
+
                         dec = int(decd[1:]) + int(decm)/60. + float(decs)/3600.
                         self.position[target] = (ra,decfac*dec)
         except Exception, err:
-            print 'Target data problem: ',err
-            if line is not None: print 'Line: ' + line
+            sys.stderr.write('Target data problem: ' + err + '\n')
+            if line is not None: sys.stderr.write('Line: ' + line + '\n')
 
 class Run(object):
     """
@@ -157,7 +156,7 @@ class Run(object):
 
     FUSSY = True
 
-    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None):
+    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, warn=False):
         """
         xml       -- xml file name with format run###.xml
         log       -- previously read night log
@@ -166,6 +165,9 @@ class Run(object):
         telescope -- telescope; names from XML cannot be relied on
         night     -- date of night YYYY-MM-DD
         run       -- date of run YYYY-MM.
+        warn      -- If True, and the data is thought to be science (not bias, dark, flat, etc) to get message 
+                     of targets with no match in the 'targets' (all of them if targets=None, so only sensible 
+                     to set this if you have a targets object defined)
 
         At the end there are a whole stack of attributes. Not all will 
         be set, and if they are not they will be None. Some are specific
@@ -191,7 +193,7 @@ class Run(object):
         expose     -- exposure time, seconds
         nframe     -- number of frames
         sample     -- sample time, seconds
-        id         -- formal name of target
+        id         -- formal name of target, identified from 'targets'
         ra         -- RA
         dec        -- Dec
         speed      -- readout speed
@@ -224,18 +226,21 @@ class Run(object):
         # Add in information from the log file
         self.comment = None
         self.target  = None
+        self.filters = None
         if log is not None:
             if self.number in log.comment:
                 self.comment = log.comment[self.number]
             else:
-                #            print 'No comment found in log corresponding to ' + xml
                 self.comment = ''
+
+            if self.number in log.filters:
+                self.filters = log.filters[self.number]
 
             if log.format == 1:
                 if self.number in log.target:
                     self.target = log.target[self.number]
                 else:
-                    print 'No target found in log corresponding to ' + xml
+                    sys.stderr.write('File = ' + xml + ', no corresponding entry found in log.\n')
                     self.target = None
             else:
                 self.target = None
@@ -266,6 +271,9 @@ class Run(object):
         self.ystart    = 3*[None]
         self.nx        = 3*[None]
         self.ny        = 3*[None]
+        self.observers = ''
+        self.pid       = ''
+        self.pi        = ''
 
         try:
 
@@ -275,7 +283,7 @@ class Run(object):
                 elif self.instrument.find('Ultraspec') > -1:
                     self.instrument = 'USP'
                 else:
-                    print 'File =',self.fname,'failed to identify instrument'
+                    sys.stderr.write('File = ' + self.fname + ', failed to identify instrument.\n')
 
             if self.telescope is None and telescope is not None:
                 if telescope.find('Very Large Telescope') > -1:
@@ -285,7 +293,7 @@ class Run(object):
                 elif telescope.find('New Technology Telescope') > -1:
                     self.telescope = 'NTT'
                 else:
-                    print 'File =',self.fname,'failed to identify telescope'
+                    sys.stderr.write('File = ' + self.fname + ' failed to identify telescope\n')
             
             # identify power ons & offs
             self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
@@ -304,6 +312,14 @@ class Run(object):
                         self.target = user['target']
                     if 'flags' in user:
                         self.flag = user['flags']
+                    if 'filters' in user:
+                        self.filters = user['filters']
+                    if 'PI' in user:
+                        self.pi = user['PI']
+                    if 'Observers' in user:
+                        self.observers = user['Observers']
+                    if 'ID' in user:
+                        self.pid = user['ID']
 
                 # Try to ID target with one of known position
                 if self.target is not None and targets is not None:
@@ -314,7 +330,7 @@ class Run(object):
                                 self.ra  = subs.d2hms(targets.position[target][0],2,':',2)
                                 self.dec = subs.d2hms(targets.position[target][1],2,':',1,'yes')
                             else:
-                                print 'Multiple match to target name = ' + self.target
+                                sys.stderr.write('Multiple match to target name = ' + self.target + '\n')
 
 
                 # Translate applications into meaningful mode names
@@ -356,7 +372,7 @@ class Run(object):
                     self.mode    = 'FFOVER'
                     self.nwindow = 2
                 else:
-                    print 'File =',self.fname,'failed to identify application = ',app
+                    sys.stderr.write('File = ' + self.fname + ' failed to identify application = ' + app + '\n')
 
                 if times is not None:
                     self.date    = times.date[self.number] if self.number in times.date else None
@@ -435,8 +451,11 @@ class Run(object):
                         self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
                         self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
 
+            if warn and self.id is None and self.is_science():
+                sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.target + '\n')
+
         except Exception, err:
-            print 'File =',self.fname,'; error initialising Run: ',err
+              sys.stderr.write('File = ' + self.fname + ', error initialising Run: ' + str(err) + '\n')
 
 # for debugging
 #            traceback.print_exc(file=sys.stdout)
@@ -452,7 +471,7 @@ class Run(object):
             observatory = node.getElementsByTagName('name')[0].childNodes[0].data
             telescope   = node.getElementsByTagName('telescope')[0].childNodes[0].data
         except Exception, err:
-            print 'Error reading observatory_status: ',err
+            sys.stderr.write('Error reading observatory_status: ' + str(err) + '\n')
             observatory = None
             telescope   = None
         return (observatory, telescope)
@@ -467,7 +486,7 @@ class Run(object):
             for nd in node.getElementsByTagName('parameter_status'):
                 param[nd.getAttribute('name')] = nd.getAttribute('value')
         except Exception, err:
-            print 'Error reading instrument_status: ',err
+            sys.stderr.write('Error reading instrument_status: ' + str(err) + '\n')
             instrument  = None
             application = None
             param       = None
@@ -508,7 +527,12 @@ class Run(object):
             '<p>\n<table cellpadding=2>'
         st += '<tr>\n' + th('Run<br>no.') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
             th('Date<br>Start of run') + th('UT<br>start') + th('UT<br>end') + th('Dwell<br>sec.') + \
-            th('Sample<br>sec.') + th('Frame<br>no.') + th('Mode') + th('Speed') + th('Bin')
+            th('Sample<br>sec.') + th('Frame<br>no.') 
+
+        if self.instrument == 'UCM':
+            st += th('Filts')
+
+        st += th('Mode') + th('Speed') + th('Bin')
 
         if self.instrument == 'UCM':
             st += th('Size1') + th('XLl') + th('XR1') + th('YS1') 
@@ -520,7 +544,8 @@ class Run(object):
             st += th('Gain')
             st += th('X1') + th('Y1') + th('NX1') + th('NY1')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
-
+        
+        st += th('ID') + th('PI') + th('Observers')
         st += th('Run<br>no.') + th('Comment','left') + '</tr>\n'
         return st
 
@@ -541,6 +566,8 @@ class Run(object):
         st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
         st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
+        if self.instrument == 'UCM':
+            st += td(self.filters)
         st += td(self.mode)
         st += td(self.speed)
         st += td2(self.x_bin, self.y_bin)
@@ -555,6 +582,7 @@ class Run(object):
             st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
             st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
 
+        st += td(self.pid) + th(self.pi) + th(self.observers)
         st += td('%03d' % self.number)
         st += td(self.comment,'left')
         st += '</tr>'
@@ -629,12 +657,60 @@ class Run(object):
         """
         return (self.poweron is not None and self.poweroff is not None and not self.poweron and not self.poweroff)
 
+    def is_power_onoff(self):
+        """
+        Returns True if the run is not either a poweron or off. If in any
+        doubt it returns False.
+        """
+        return not self.is_not_power_onoff()
+
     def is_bias(self):
         """
         Returns True if the run is thought to be a bias
         """
-        return (self.target == "Bias")
+        reb = re.compile('bias',re.I)
+        return reb.search(self.target)
 
+    def is_flat(self):
+        """
+        Returns True if the run is thought to be a flat
+        """
+        return (self.target == "Tungsten" or self.target == "tungsten" or self.target == "Flat" or \
+                    self.target == "Twilight" or self.target == "Twilight flat" or \
+                    self.target == "Skyflat" or self.target == "Flats" or \
+                    self.target == "Sky_flat" or self.target == "Sky flat" or \
+                    self.target == "Test/skyflat" or self.target == "Sky flats" or \
+                    self.target == "twilight" or self.target == "Sky Flat" or self.target == "Tungsten flat" or \
+                    self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats")
+
+    def is_dark(self):
+        """
+        Returns True if the run is thought to be a dark
+        """
+        reb = re.compile('dark',re.I)
+        return reb.search(self.target)
+
+    def is_science(self):
+        """
+        Returns True if the run is thought to be a science frame.
+        """
+        return not (self.is_power_onoff() or self.is_bias() or self.is_flat() or self.is_dark() or \
+                        self.target == "&nbsp;" or self.target == "Vik_test" or self.target == "Noise" or \
+                        self.target == "Timing x-bin" or self.target == "Junk" or self.target == "Timing nx" or \
+                        self.target == "Timing ny" or self.target == "Lin_test" or self.target == "NoiseBad" or \
+                        self.target == "Focus star" or self.target == "Test" or self.target == "Rubbish" or \
+                        self.target == "Saturn" or self.target == "Comet" or self.target == "JUNK" or \
+                        self.target == "junk" or self.target == "?" or self.target == "BS" or \
+                        self.target == "32K Test" or self.target == "Noise Tests" or \
+                        self.target == "Arc - CuAr CuNe" or self.target == "Drift Mode Test" or \
+                        self.target == "Timing Test" or self.target == "Timing x-left" or \
+                        self.target == "Timing x-right" or self.target == "Bright_star" or \
+                        self.target == "CCD Tests" or self.target == "Timing y-start" or \
+                        self.target == "Timing test" or self.target == "32k Test" or self.target == "Zenith" or \
+                        self.target == "Timing y-bin" or self.target == "Blurred Std" or \
+                        self.target == "Light Level Test" or self.target == "PSF Tests" or \
+                        self.target == "Read out noise test" or self.target == "32K test" or \
+                        self.target == "Fringe Frame" or self.target == "null")
 
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""

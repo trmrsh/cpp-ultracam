@@ -81,6 +81,7 @@ if __name__ == "__main__":
                                 utend   = arr[5]
                         ft.write(run + ' ' + date + ' ' + utstart + ' ' + utend + ' ' + ngood + ' ' + expose + ' ' + sample + '\n')
                     ft.close()
+                    print 'Created file =',times
                             
 
 

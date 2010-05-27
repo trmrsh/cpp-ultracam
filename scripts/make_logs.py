@@ -108,7 +108,7 @@ for rdir in rdirs:
         expose = 0.
         for xml in xmls:
             try:
-                run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir)
+                run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, True)
                 if first:
                     fh.write('\n' + run.html_start() + '\n')
                     first = False
