@@ -5,3 +5,11 @@ data. It is often referred to as the 'ultracam pipeline'.
 Installation order: subs --> colly --> ultracam
 
 See www.astro.warwick.ac.uk/people/marsh/software for further info.
+
+NB There are some scripts which although released in the pipeline are intended
+more for me (TRM) than anyone else and require extra bits of software to
+run. 'procbias' is probably the best example as it needs bit and pieces of my
+Python programs as well as SExtractor, but few others should want to use it.
+Some others are more useful, in particular 'ulog2fits' for which you will need
+Python along with 3rd-party modules numpy and pyfits. I don't have configure 
+check for these so that people can get up and running reasonably quickly. 
