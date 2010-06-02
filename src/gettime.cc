@@ -94,6 +94,12 @@ int main(int argc, char* argv[]){
     }
     
     int n = 1;
+    enum Mode {
+	FULLFRAME_CLEAR,
+	FULLFRAME_NOCLEAR,
+	WINDOWS_CLEAR,
+	WINDOWS,
+    } mode;
     std::string line;
     off_t framesize, hwords, edelay;
     bool may2002 = true;
@@ -144,6 +150,31 @@ int main(int argc, char* argv[]){
 		if(!istr){
 		    std::cerr << "Failed to read exposure delay" << std::endl;
 		    exit(EXIT_FAILURE);
+		}
+	    }
+	}
+
+	ipos = line.find("SDSU Exec");
+	if(ipos != std::string::npos){
+	    ipos = line.find("name=");
+	    if(ipos != std::string::npos){
+		std::string val = line.substr(ipos+6);
+		ipos = val.find("\"");
+		val = val.substr(0,ipos);
+		if(val == "ap3_fullframe" || val == "ap3_250_fullframe" ||
+		   val == "appl3_fullframe_cfg"){ 
+		    mode = FULLFRAME_CLEAR;
+		}else if(val == "ap9_fullframe_mindead" || val == "ap9_250_fullframe_mindead" || 
+			 val == "appl9_fullframe_mindead_cfg"){
+		    mode = FULLFRAME_NOCLEAR;
+		}else if(val ==  "ap5b_250_window1pair" || val == "appl5_window1pair_app"){
+		    mode = WINDOWS_CLEAR;
+		}else if(val == "ap5_250_window1pair" || val == "ap6_250_window2pair" ||
+			 val == "ap7_250_window3pair" || val == "ap_win4_bin1" ||
+			 val == "ap_win4_bin8" || val == "ap_win2_bin2" ||
+			 val == "appl5_window1pair_cfg" || val == "appl5b_window1pair_cfg" ||
+			 val == "appl6_window2pair_cfg" || val == "appl7_window3pair_cfg"){
+		    mode = WINDOWS;
 		}
 	    }
 	}
