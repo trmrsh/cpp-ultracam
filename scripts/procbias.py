@@ -55,7 +55,7 @@
 #
 # !!head2 Invocation
 #
-# procbias dir [source debug nrow ncol run maxfrm] (llevels hlevels) spread thresh onebyone high frac sthresh smarea
+# procbias dir [source debug nrow ncol run maxfrm] sgold ssilver thresh high frac sthresh smarea edge regexp
 #
 # !!head2 Arguments
 #
@@ -79,14 +79,16 @@
 # The lowest and highest mean values of windows in each CCD half is used. This one is for the 'silver standard' biases and 
 # should be set to perhaps 10 to pick up some near misses.}
 # !!arg{thresh}{Threshold in RMS for computation of clipped mean}
-# !!arg{onebyone}{Reject pixels for clipped mean one by one or wholesale (faster but riskier)}
 # !!arg{high}{Threshold in RMS for judging excess of high pixels. The idea is that if too many pixels are significantly above
 # the mean, then the frames are not biases. At least 100 such pixels must be found for this to trigger.}
-# !!arg{frac}{Maximum fraction of pixels above 'high' for the frames to count as biases}
+# !!arg{frac}{Maximum fraction of pixels above 'high' for the frames to count as biases. This is affected by dark
+# pixels so should not be set too low. }
 # !!arg{sthresh}{RMS threshold for SExtractor for object detection.}
 # !!arg{smarea}{Minimum number of pixels that must be at sthresh*RMS above background to count as an object.}
 # !!arg{edge}{We ignore objects located within edge pixels of the outermost ones because these tend to be spurious and this region
 # is not normally of interest. Note that this acts in addition to the nrow / ncol parameters.}
+# !!arg{regexp}{Regular expression which if it is a match is used to kick frames out. The main confusing types are
+# noise tests and junk frames so 'noise|junk' may be a good choice. The match is carried out case insensitively.}
 # !!table
 #
 # !!end
@@ -111,45 +113,28 @@ combine    = subs.find_exec('combine', ultracam)
 sextractor = subs.find_exec('sex')
 
 # Target mid-range values and half variability ranges to the means of each half of each CCD for different readout speeds.
-# The ranges can probably be narrowed as experience accumulates.
+# Variation with binning probably means that the ranges should not be lowered much below 200
 predef = {}
 
 predef['2002-05'] = {}
-predef['2002-05']['fdd'] = {'mrange' : (2060.,2115.,1966.,1948.,2245.,2046.,), 'range' : (100., 100., 100., 100.,100.,100.)}
+predef['2002-05']['fdd'] = {'mrange' : (2060.,2115.,1966.,1948.,2245.,2046.,), 'range' : (200., 200., 200., 200.,200.,200.)}
 
 predef['2002-09'] = {}
-predef['2002-09']['cdd'] = {'mrange' : (2120., 2180., 1985., 2034., 2278., 2193.), 'range' : (100., 100., 100., 100.,100.,100.)}
+predef['2002-09']['cdd'] = {'mrange' : (2120., 2180., 1985., 2034., 2278., 2193.), 'range' : (200., 200., 200., 200.,200.,200.)}
 
 predef['2003-10'] = {}
-predef['2003-10']['cdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (100., 100., 100., 100.,100.,100.)}
-predef['2003-10']['fdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (1000., 1000., 1000., 1000.,1000.,1000.)}
+predef['2003-10']['cdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (200., 200., 200., 200.,200.,200.)}
+predef['2003-10']['fdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (400., 400., 400., 400.,400.,400.)}
+predef['2003-10']['fbb'] = {'mrange' : (2650.,2710.,2348.,2332.,2890.,2830.), 'range' : (200., 200., 200., 200.,200.,200.)}
 
-predef['2004-08'] = {}
-predef['2004-08']['cdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (100., 100., 100., 100.,100.,100.)}
-predef['2004-08']['fdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (1000., 1000., 1000., 1000.,1000.,1000.)}
-predef['2004-08']['fbb'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (1000., 1000., 1000., 1000.,1000.,1000.)}
+predef['2007-06'] = {}
+predef['2007-06']['cdd'] = {'mrange' : (1642.,1702.,1535.,1570.,1840.,1688.), 'range' : (200., 200., 200., 200., 200., 200.)}
+predef['2007-06']['fbb'] = {'mrange' : (1642.,1702.,1535.,1570.,1840.,1688.), 'range' : (200., 200., 200., 200., 200., 200.)}
 
-predef['2005-05'] = {}
-predef['2005-05']['cdd'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (2000., 2000., 2000., 2000., 2000., 2000.)}
-predef['2005-05']['fbb'] = {'mrange' : (2240.,2300.,2148.,2213.,2455.,2356.), 'range' : (2000., 2000., 2000., 2000., 2000., 2000.)}
-
-# binning correction offsets. These give an approximate correction to the mean levels
-# in the case of binning (when known) compared to the 1x1 case. bcorr[xbin-1][ybin-1] gives
-# the corresponding mean level change. A value of '0' generally means that no measurement 
-# has been made
-bcorr = ( (0,0,0,0,0,0,0,0),\
-              (0,-30,0,0,0,0,0,0),\
-              (0,0,-50,0,0,0,0,0),\
-              (0,0,0,0,-60,0,0,0),\
-              (0,0,0,0,0,0,0,0),\
-              (0,0,0,0,0,0,0,0),\
-              (0,0,0,0,0,0,0,0),\
-              (0,0,0,0,0,0,0,0))
 # Get inputs
 inpt = inp.Input('ULTRACAM_ENV', '.ultracam', sys.argv)
 
 allowed = ['run%03d' % x for x in range(1,1000)]
-
 # register parameters
 inpt.register('dir',      inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('source',   inp.Input.LOCAL, inp.Input.HIDE)
@@ -158,17 +143,15 @@ inpt.register('nrow',     inp.Input.LOCAL, inp.Input.HIDE)
 inpt.register('ncol',     inp.Input.LOCAL, inp.Input.HIDE)
 inpt.register('run',      inp.Input.LOCAL, inp.Input.HIDE)
 inpt.register('maxfrm',   inp.Input.LOCAL, inp.Input.HIDE)
-inpt.register('llevels',  inp.Input.LOCAL, inp.Input.PROMPT)
-inpt.register('hlevels',  inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('sgold',    inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('ssilver',  inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('thresh',   inp.Input.LOCAL, inp.Input.PROMPT)
-inpt.register('onebyone', inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('high',     inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('frac',     inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('sthresh',  inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('smarea',   inp.Input.LOCAL, inp.Input.PROMPT)
 inpt.register('edge',     inp.Input.LOCAL, inp.Input.PROMPT)
+inpt.register('regexp',   inp.Input.LOCAL, inp.Input.PROMPT)
 
 dir = inpt.get_value('dir', 'directory containing runs', '2010_04_28')
 if not os.path.isdir(dir):
@@ -205,12 +188,12 @@ maxfrm   = inpt.get_value('maxfrm', 'maximum number of frames to attempt combini
 sgold    = inpt.get_value('sgold', 'maximum spread in window mean levels, gold class', 4.)
 ssilver  = inpt.get_value('ssilver', 'maximum spread in window mean levels, silver class', 10.)
 thresh   = inpt.get_value('thresh', 'RMS threshold for sigma clipping', 3.) 
-onebyone = inpt.get_value('onebyone', 'slow, one-by-one rejection (else fast & risky)?', True)
 high     = inpt.get_value('high', 'RMS threshold for distinguishing biases', 5.)
 frac     = inpt.get_value('frac', 'maximum fraction of pixels > high*RMS above mean', 1.e-4)
 sthresh  = inpt.get_value('sthresh', 'SExtractor object detection threshold', 3.) 
 smarea   = inpt.get_value('smarea', 'SExtractor minimum object area (pixels)', 7) 
 edge     = inpt.get_value('edge', 'number of pixels distance from edge to ignore objects (pixels)', 2.) 
+regexp   = inpt.get_value('regexp', 'regular expression for picking up other frames to chuck out', 'noise|junk')
 
 # Run SExtractor to get default parameters and uncomment a few
 args = (sextractor,  '-dp')
@@ -289,7 +272,7 @@ def check_frames(fnames, llev, hlev, spread):
                 win -= np.c_[win.shape[1]*[medx]].transpose()
 
                 # Sigma-clipped mean
-                (rmean,rrms,cmean,crms,nrej,ncyc) = subs.sigma_reject(win, thresh, onebyone)
+                (rmean,rrms,cmean,crms,nrej,ncyc) = subs.sigma_reject(win, thresh, False)
                 mw.append(cmean+medx.mean()+medy.mean())
                 rw.append(crms)
                 nptot += np.size(win)
@@ -425,6 +408,7 @@ if os.path.isfile(ffailed):
 try:
     print 'Working on directory =',dir
     # Wind through all runs
+    rect = re.compile(regexp, re.I)
     for run in runs:
 
         file  = os.path.join(dir, 'run%03d' % run)
@@ -437,6 +421,9 @@ try:
 
         robj = Ultra.Run(file + '.xml', log)
         tail = '<td nowrap>%s</td><td nowrap>%s</td></tr>\n' % (robj.target,robj.comment)
+        if robj.target is not None and rect.search(robj.target):
+            failed.append('<tr>' + sfile + '<td nowrap>Target name matched regular expression = ' + regexp + '</td>' + tail)
+            continue
 
         if robj.is_not_power_onoff():
 
@@ -483,7 +470,7 @@ try:
                     break
             
             if robj.speed in predef[key]:
-                mrange = np.array(predef[key][robj.speed]['mrange']) + bcorr[int(robj.x_bin)-1][int(robj.y_bin)-1]
+                mrange = np.array(predef[key][robj.speed]['mrange'])
                 rnge   = np.array(predef[key][robj.speed]['range'])
             else:
                 print 'Read speed =',robj.speed,'not recognised from predef dated: ',key
@@ -656,7 +643,6 @@ try:
                     modf['Procbias.Param.sgold']   = {'comment': 'gold-class maximum spread in mean levels', 'type' : ucm.ITYPE_FLOAT, 'value': sgold}
                     modf['Procbias.Param.ssilver'] = {'comment': 'silver-class maximum spread in mean levels', 'type' : ucm.ITYPE_FLOAT, 'value': ssilver}
                     modf['Procbias.Param.thresh']   = {'comment': 'sigma clipping threshold', 'type' : ucm.ITYPE_FLOAT, 'value': thresh}
-                    modf['Procbias.Param.onebyone'] = {'comment': 'reject pixels one by one?', 'type' : ucm.ITYPE_BOOL, 'value': onebyone}
                     modf['Procbias.Param.high']     = {'comment': 'RMS threshold for a pixel to count as high', 'type' : ucm.ITYPE_FLOAT, 'value': thresh}
                     modf['Procbias.Param.frac']     = {'comment': 'maximum fraction of high pixels', 'type' : ucm.ITYPE_FLOAT, 'value': frac}
                     modf['Procbias.Param.sthresh']  = {'comment': 'SExtractor object detection threshold', 'type' : ucm.ITYPE_FLOAT, 'value': sthresh}
