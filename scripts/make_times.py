@@ -24,8 +24,6 @@ import re
 import trm.subs as subs
 import subprocess as subproc
 
-# Finally, lets do something.
-
 if __name__ == "__main__":
 
     gettime = os.path.join(os.environ['TRM_SOFTWARE'], 'bin', 'ultracam', 'gettime')
@@ -56,13 +54,15 @@ if __name__ == "__main__":
 
                     for dfile in dfiles:
                         args = (gettime, dfile)
-                        output = subproc.Popen(args, stdout=subproc.PIPE, stderr=subproc.PIPE).communicate()[0].split('\n')
-                        run    = 'UNDEF'
-                        nframe = 'UNDEF'
-                        ngood  = 'UNDEF'
-                        expose = 'UNDEF'
-                        sample = 'UNDEF'
-                        date   = 'UNEF'
+                        output  = subproc.Popen(args, stdout=subproc.PIPE, stderr=subproc.PIPE).communicate()[0].split('\n')
+                        run     = 'UNDEF'
+                        date    = 'UNDEF'
+                        utstart = 'UNDEF'
+                        utend   = 'UNDEF'
+                        ngood   = 'UNDEF'
+                        nframe  = 'UNDEF'
+                        expose  = 'UNDEF'
+                        sample  = 'UNDEF'
                         for line in output:
                             arr = line.split()
                             if line.startswith('Run'):
