@@ -764,18 +764,16 @@ namespace Ultracam {
   struct ServerData {
       
       //! Constructor to define the initial state of some variables
-      ServerData() : clock_board_default(true) {}
+      ServerData() : timestamp_default(true) {}
       
-      //! Which clock board fix to assume
-      /** When the clock board was upgraded in July 2003 from 50MHz to 250Mhz
-       * a subtle problem was introduced in when the timestamps were taken which requires
-       * different code according to the run. This was spotted in December 2004 and
-       * runs since then revert to the old method which is more reliable. This parameter
-       * if set to true will apply whichever is thought to be the appropriate fix, which
-       * can be reliably determined from the date. If set false, it applies the reverse to
-       * allow one to judge the magnitude of the effect.
+      //! Which time stamp correction to apply
+      /** In July 2003 and again in March 2010 upgrades caused a change in when timestamps 
+       * were taken such that were taken immediately after rather before readouts. The
+       * original problem was fixed in Dec 2004, but then re-appeared in March 2010
+       * This parameter if True will mean that corrections are made according to these dates.
+       * If False, the reverse corrections are applied.
        */
-      bool clock_board_default;
+      bool timestamp_default;
       
       //! Number of bytes in a frame
       int  framesize;

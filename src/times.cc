@@ -148,7 +148,7 @@ int main(int argc, char* argv[]){
     Ultracam::Mwindow mwindow;
     Subs::Header header;
     Ultracam::ServerData serverdata;
-    serverdata.clock_board_default = clock;
+    serverdata.timestamp_default = clock;
     parseXML(source, url, mwindow, header, serverdata, false, 0, 0, twait, tmax);
 
     Ultracam::Frame data(mwindow, header);
