@@ -442,9 +442,9 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
     }else if(timing.format == 2){
 	data.set("Frame.tstamp_status", new Subs::Husint(timing.tstamp_status, "Time stamp status word"));
     }
-    data.set("Frame.vclock_frame", new Subs::Hfloat(timing.vclock_frame,         "The row transfer time used, seconds"));
-    data.set("Frame.as_documented",new Subs::Hbool(timing.fix_as_documented,     "Timestamps as documented (else Dec 2004 bug fix)?"));
-    data.set("Frame.bad_blue",     new Subs::Hbool(timing.blue_is_bad,           "Blue-side data is junk for this frame"));
+    data.set("Frame.vclock_frame", new Subs::Hfloat(timing.vclock_frame,  "The row transfer time used, seconds"));
+    data.set("Frame.as_documented",new Subs::Hbool(timing.default_tstamp, "Timestamps handled in default manner or not"));
+    data.set("Frame.bad_blue",     new Subs::Hbool(timing.blue_is_bad,    "Blue-side data is junk for this frame"));
     if(serverdata.nblue > 1)
 	data.set("Frame.reliable_blue", new Subs::Hbool(timing.reliable_blue, "UT_date_blue reliable?"));
 

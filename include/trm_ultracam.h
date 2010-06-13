@@ -906,10 +906,11 @@ namespace Ultracam {
       float vclock_frame;
       
       //! This shows how we are treating the times
-      /** If true, this measn that we are assuming the timestamping works as documented, else
-       * as we think it worked from July 2003 to Dec 2004.
+      /** If true, this mean that we are assuming the timestamping works as
+       * it originally did, else as it did July 2003 to Dec 2004, and from
+       * March 2010
        */
-      bool fix_as_documented;
+      bool default_tstamp;
 
       //! Is the blue frame junk? (owing to accumulation option of spring 2007)
       bool blue_is_bad;

@@ -270,8 +270,40 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // and the date when it was fixed in early 2005. Basically the timestamps started to
     // occur immediately after readout as opposed to immediately prior to the frame shift
     // into the masked region.
-    const Subs::Time clock_board_change(1,Subs::Date::Aug,2003); 
-    const Subs::Time clock_board_fixed(1,Subs::Date::Jan,2005); 
+
+    // This happened again when the GPS changed in March 2010. Extract from e-mail from 
+    // Dave Atkinson 11 June 2010:
+    //
+    // Apps3,4,5b
+    // Loop:
+    // CLEAR CCD
+    // TIME STAMP +ve edge
+    // EXPOSE DELAY
+    // FRAME TRANSFER
+    // READ CCD
+    // *TIME STAMP -ve edge
+    //
+    // Apps5,6,7,8,9
+    // CLEAR CCD ONCE
+    //
+    // Loop:
+    // EXPOSE DELAY
+    // FRAME TRANSFER
+    // TIME STAMP +VE EDGE
+    // READ CCD
+    // *TIME STAMP -ve EDGE
+    //
+    // * timestamp captures are happening here on -ve edge
+    // rather than the +ve edges as expected
+    //
+
+    // Dates to define when change occurred. "Default" time stamps occurred
+    // prior to timestamp_change1 and then toggled thereafter.
+    const Subs::Time clockboard_change(1,Subs::Date::Aug,2003); 
+
+    const Subs::Time timestamp_change1(1,Subs::Date::Aug,2003); 
+    const Subs::Time timestamp_change2(1,Subs::Date::Jan,2005); 
+    const Subs::Time timestamp_change3(1,Subs::Date::Mar,2010); 
 
     if(format == 1 && nsatellite == -1){
 
@@ -417,7 +449,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		// clock board that occured in July 2003 which altered the conversion
 		// formulae.
 
-		if(gps_timestamp > clock_board_change){
+		if(gps_timestamp > clockboard_change){
 		    if(serverdata.v_ft_clk > 127){
 			vclock_frame = 6.e-9*(40+320*(serverdata.v_ft_clk - 128));
 		    }else{
@@ -448,10 +480,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // which depends upon the mode employed and the particular run to some extent because of
     // of the bug introduced with the clock board change of summer 2003 which we only spotted
     // in Dec 2004. Decide how to fix times, accounting for inverting switch
-    timing.fix_as_documented = 
-	(serverdata.clock_board_default  && (gps_timestamp < clock_board_change || gps_timestamp > clock_board_fixed)) ||
-	(!serverdata.clock_board_default && (gps_timestamp > clock_board_change && gps_timestamp < clock_board_fixed));
 
+    bool deftime = gps_timestamp < timestamp_change1 || (gps_timestamp > timestamp_change2 && gps_timestamp < timestamp_change3);
+    timing.default_tstamp = (serverdata.timestamp_default  && deftime) || (!serverdata.timestamp_default && !deftime);
 
     // One-off variables that need saving
     static double clear_time;
@@ -520,7 +551,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	if(first){
 
 	    std::cout << "#" << std::endl;
-	    if(timing.fix_as_documented)
+	    if(timing.default_tstamp)
 		std::cout << "# Standard timing mode" << std::endl;
 	    else
 		std::cout << "# Non-standard timing mode" << std::endl;
@@ -529,9 +560,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
       
 	}
 
-	// Order of events: [expose, frame transfer, readout, clear]
-	if(timing.fix_as_documented){
+	if(timing.default_tstamp){
 
+	    // Order of events: loop [clear, timestamp, expose, frame transfer, readout]
 	    // Timestamp is placed at start of 'expose', so this is easy and accurate
 	    ut_date = gps_times[0];
 	    ut_date.add_second(serverdata.expose_time/2.);
@@ -539,6 +570,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	}else{
 
+	    // Order of events: loop [clear, expose, frame transfer, readout, timestamp]
 	    // Timestamp in this case is placed between 'readout' and 'clear' so one must 
 	    // backtrack to get to mid 'expose'. Reliability of this is unclear to me.
 
@@ -550,12 +582,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		// Time taken to read CCD (assuming cdd mode) ?? needs generalising ??
 		if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_CLEAR){
 		    readout_time = (1024/serverdata.ybin)*(VCLOCK_STORAGE*serverdata.ybin + 536*HCLOCK + (512/serverdata.xbin+2)*VIDEO)/1.e6;
-
 		}else if(serverdata.readout_mode == Ultracam::ServerData::FULLFRAME_OVERSCAN){
 		    readout_time = (1032/serverdata.ybin)*(VCLOCK_STORAGE*serverdata.ybin + 540*HCLOCK + (540/serverdata.xbin+2)*VIDEO)/1.e6;
-
 		}else{
-
 		    const Wind& lwin = serverdata.window[0];
 		    const Wind& rwin = serverdata.window[1];
 		    int nxu          = serverdata.xbin*rwin.nx;
@@ -565,9 +594,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    int xright       = rwin.llx + nxu - 1;
 		    int diff_shift   = abs(xleft - 1 - (1024 - xright) );
 		    int num_hclocks  = (xleft - 1 > 1024 - xright) ? nxu + diff_shift + (1024 - xright) + 8 : nxu + diff_shift + (xleft - 1) + 8;
-
 		    readout_time = nyb*(VCLOCK_STORAGE*serverdata.ybin + num_hclocks*HCLOCK + (nxb+2)*VIDEO)/1.e6;
-
 		}
 
 		// Frame transfer time
@@ -584,7 +611,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	    if(gps_times.size() == 1){
 
-		// Case where we have not got a previous timestamp
+		// Case where we have not got a previous timestamp. Hop back over the 
+		// readout and frame transfer and half the exposure delay
 		ut_date = gps_times[0];
 		ut_date.add_second(-frame_transfer-readout_time-serverdata.expose_time/2.);
 		if(reliable){
@@ -596,7 +624,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }else{
 
 		// Case where we have got previous timestamp is somewhat easier and perhaps
-		// more reliable.
+		// more reliable since we merely need to step forward over the clear time and
+		// half the exposure time.
 		ut_date = gps_times[1];
 		ut_date.add_second(clear_time + serverdata.expose_time/2.);
 
@@ -663,7 +692,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	    std::cout << "#" << std::endl;
       
-	    if(timing.fix_as_documented)
+	    if(timing.default_tstamp)
 		std::cout << "# Standard timing mode" << std::endl;
 	    else
 		std::cout << "# Non-standard timing mode" << std::endl;
@@ -675,19 +704,18 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
       
 	}
 
-	// Order of events: [expose, frame transfer, readout]
 	// For all except first frame, the actual exposure covers [readout+expose]
 
-	if(timing.fix_as_documented){
+	if(timing.default_tstamp){
 
-	    // Timestamp here is placed between 'frame transfer' and 'readout'
+	    // Order of events: loop [expose, frame transfer, time stamp, readout]
+
 	    if(frame_number == 1){
 	
 		// First frame of all is a special case. It has an exposure part but no
 		// preceding read.
 		ut_date = gps_times[0];
 
-		// This used to add the frame_transfer, but I think it should subtract it
 		ut_date.add_second(-frame_transfer-serverdata.expose_time/2.);
 		exposure_time = serverdata.expose_time;
 	
@@ -722,17 +750,21 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	}else{
 
-	    // non-standard mode
+	    // Order of events: loop [expose, frame transfer, readout, timestamp]
 
 	    // Timestamp here is placed between 'read' and 'expose', skipping
-	    // the expose at the start.
+	    // the expose at the start. It is more complex than you might think 
+	    // owing to the skipped timestamp at the start which means that the correct
+	    // timestamps take one cycle longer to come out than you might guess. Read
+	    // the PDF document for detailed info. Do not monkey with this code without
+	    // fully understanding the issues.
 	    if(frame_number == 1){
 	
 		// First frame of all is a special case and we can't get a reliable value
 		// Just try to skip back over the frame transfer and readout
 		ut_date = gps_times[0];
-		ut_date.add_second(-frame_transfer-readout_time);
 		exposure_time = serverdata.expose_time;
+		ut_date.add_second(-frame_transfer-readout_time-exposure_time/2.);
 		if(reliable){
 		    reason = "cannot establish an accurate time for first frame in this mode";
 		    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
@@ -827,10 +859,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	    std::cout << "#" << std::endl;
 
-	    if(timing.fix_as_documented)
-		std::cout << "# Standard timing mode" << std::endl;
+	    if(timing.default_tstamp)
+		std::cout << "# Standard time stamp handling" << std::endl;
 	    else
-		std::cout << "# Non-standard timing mode" << std::endl;
+		std::cout << "# Non-standard time stamp handling" << std::endl;
 
 	    std::cout << "# NWIN                         = " << nwins << std::endl;
 	    std::cout << "# Vertical clock time          = " << form(vclock_frame)   << " seconds" << std::endl;
@@ -843,7 +875,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	// Never need more than nwins+2 times
 	if(int(gps_times.size()) > nwins+2) gps_times.pop_back(); 
 
-	if(timing.fix_as_documented){
+	if(timing.default_tstamp){
 
 	    // Pre board change or post-bug fix
 	    if(int(gps_times.size()) > nwins){
