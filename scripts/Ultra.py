@@ -297,7 +297,7 @@ class Run(object):
             
             # identify power ons & offs
             self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
-            self.poweroff = (self.application.find('poweroff') > -1) (self.application.find('appl2_pof_cfg') > -1)
+            self.poweroff = (self.application.find('poweroff') > -1) or (self.application.find('appl2_pof_cfg') > -1)
 
             if self.poweron:
                 self.target = 'Power on'
