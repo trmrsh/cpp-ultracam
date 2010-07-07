@@ -11,6 +11,7 @@ import time, datetime, calendar
 import subprocess
 import re
 import math as m
+import sys
 
 # You may have to edit the next appropriately depending upon which
 # imap account you want to go to. Don't use the password directly for
@@ -105,7 +106,7 @@ print
 ToOok   = re.compile('ToO:\s*\[OK')
 ToOnok  = re.compile('ToO:\s*\[not OK')
 RA      = re.compile('RA\s*\(J2000\)\s*=\s*(\d\d):(\d\d):(\d\d(?:\.\d*))')
-DEC     = re.compile('DEC\s*\(J2000\)\s*=\s*([-+])(\d\d):(\d\d):(\d\d(?:\.\d*))')
+DEC     = re.compile('DEC\(J2000\)\s*=\s*([-+])(\d?\d):(\d\d):(\d\d(?:\.\d*))')
 GRBline = re.compile('GRB\s+([\d\.]+)\s+GRB-time:\s+([\d:\.]+)\s+UT')
 Error   = re.compile('Error radius:\s*(.*)\s*\r\n')
 AV      = re.compile('A\_V\s*=\s*(\d+\.\d*)')
@@ -279,9 +280,9 @@ try:
                         if found_ra and found_dec:
                             # Offset telescope to west so that target moves East which at PA=0 means towards
                             # right-hand side of chips in region with no major defects.
-                            rar -= m.radians(82./3600.)
-                            print '\nSet the PA=0, point telescope at RA, Dec =',tohms(m.degrees(rar)/15.),tohms(m.degrees(decr),False)
-                            print 'Look for the GRB at pixel (x,y) ~ 580, 516'
+			    rar -= m.radians(82./3600.)
+			    print '\nSet the PA=0, point telescope at RA, Dec =',tohms(m.degrees(rar)/15.),tohms(m.degrees(decr),False)
+			    print 'Look for the GRB at pixel (x,y) ~ 580, 516'
 
                         # Work out whether we might have to go for RRM from coordinates
                         if found_ra and found_dec:
