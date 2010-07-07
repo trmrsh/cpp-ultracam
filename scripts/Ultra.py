@@ -140,7 +140,7 @@ class Targets(object):
                         dec = int(decd[1:]) + int(decm)/60. + float(decs)/3600.
                         self.position[target] = (ra,decfac*dec)
         except Exception, err:
-            sys.stderr.write('Target data problem: ' + err + '\n')
+            sys.stderr.write('Target data problem: ' + str(err) + '\n')
             if line is not None: sys.stderr.write('Line: ' + line + '\n')
 
 class Run(object):
@@ -297,7 +297,7 @@ class Run(object):
             
             # identify power ons & offs
             self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
-            self.poweroff = (self.application.find('poweroff') > -1)
+            self.poweroff = (self.application.find('poweroff') > -1) (self.application.find('appl2_pof_cfg') > -1)
 
             if self.poweron:
                 self.target = 'Power on'
@@ -335,7 +335,8 @@ class Run(object):
 
                 # Translate applications into meaningful mode names
                 app = self.application
-                if app == 'ap8_250_driftscan' or app == 'ap8_driftscan' or app == 'ap_drift_bin2':
+                if app == 'ap8_250_driftscan' or app == 'ap8_driftscan' or app == 'ap_drift_bin2' or \
+                        app == 'appl8_driftscan_cfg':
                     self.mode    = 'DRIFT'
                     self.nwindow = 2
                 elif app == 'ap5_250_window1pair' or app == 'ap5_window1pair' or app == 'ap_win2_bin8' or \
@@ -681,7 +682,8 @@ class Run(object):
                     self.target == "Sky_flat" or self.target == "Sky flat" or \
                     self.target == "Test/skyflat" or self.target == "Sky flats" or \
                     self.target == "twilight" or self.target == "Sky Flat" or self.target == "Tungsten flat" or \
-                    self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats")
+                    self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats" or \
+                    self.target == "flats" or self.target == "Dome flat")
 
     def is_dark(self):
         """
