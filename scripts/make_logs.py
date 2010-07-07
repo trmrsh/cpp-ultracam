@@ -101,7 +101,11 @@ for rdir in rdirs:
         times = Ultra.Times(os.path.join(npath, ndir + '.times'))
 
         # Start off html log file for the night
-        fh = open(os.path.join(npath, ndir + '.htm'), 'w')
+        htlog = os.path.join(npath, ndir + '.htm')
+        if os.path.exists(htlog): continue
+
+        print 'Generating',htlog
+        fh = open(htlog, 'w')
 
         # Read XML files for this night
         dpath = os.path.join(npath, 'data')
