@@ -509,6 +509,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     //  const double INVERSION_DELAY = 110.;   // microseconds
     const double VCLOCK_STORAGE  = vclock_frame;   // microseconds
     const double HCLOCK          = 0.48;   // microseconds
+    const double CDS_TIME_FDD    = 2.2;    // microseconds
     const double CDS_TIME_FBB    = 4.4;    // microseconds
     const double CDS_TIME_CDD    = 10.;    // microseconds
     const double SWITCH_TIME     = 1.2;    // microseconds
@@ -525,9 +526,12 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }else if(serverdata.gain_speed == "4027"){
 		// 4027 == FBB in hex
 		cds_time = CDS_TIME_FBB;
+	    }else if(serverdata.gain_speed == "4061"){
+		// 4061 == FDD in hex
+		cds_time = CDS_TIME_FDD;
 	    }else{
-		std::cerr << "Unrecognised gain speed setting = "            << serverdata.gain_speed << std::endl;
-		std::cerr << "Recognised values are 3293==CDD and 4027==FBB" << std::endl;
+		std::cerr << "Unrecognised gain speed setting = " << serverdata.gain_speed << std::endl;
+		std::cerr << "Recognised values are 3293==CDD, 4027==FBB, 4061==FDD" << std::endl;
 		std::cerr << "Will set CDS time = to CDD time, but this may not be right" << std::endl;
 		cds_time = CDS_TIME_CDD;
 	    }
