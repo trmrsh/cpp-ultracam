@@ -4,7 +4,7 @@
 !!title    Converts from FITS to Ultracam format
 !!author   T.R. Marsh
 !!created  14 Sep 2002
-!!revised  11 May 2006
+!!revised  21 Oct 2010
 !!root     fits2ucm
 !!index    fits2ucm
 !!descr    converts a FITS file to an ULTRACAM ucm file
@@ -14,19 +14,13 @@
 !!class    FITS
 !!head1    fits2ucm - converts an Ultracam frame to FITS format
 
-!!emph{fits2ucm} reads a FITS file or many FITS files representing a
-CCD and converts it/them to Ultracam format files. Different FITS
-formats may well require updates to this routine to adjust for
-different header names.  At the moment it supports the JKT, WHT Aux
-Port, Faulkes telescope (full frame only until I get hold of example
-windowed data), TNG DOLORES, FORS1, SAAO high-speed CCD, NOT ALFOSC, ATC and SOFI
-formats. The generality of some of these is open to question as they
-are based upon limited example data sets. In some cases I was also not sure which
-time was most reliable (NOT data), so if this is important to you, you may want
-to check the values by hand. The times in the headers are
-corrected to the mid-exposure time as assumed in the ultracam
-software. The file name is preserved by this routine so that
-'abc.fits' for instance becomes 'abc.ucm'
+!!emph{fits2ucm} reads a FITS file or many FITS files representing a CCD and
+converts it/them to Ultracam format files. Different FITS formats may well
+require updates to this routine to adjust for different header names. Usually
+I base these on one or two example frames so they may not be completely
+general.  The times in the headers are corrected to the mid-exposure time as
+assumed in the ultracam software. The file name is preserved by this routine
+so that 'abc.fits' for instance becomes 'abc.ucm'
 
 !!head2 Invocation
 
@@ -39,16 +33,18 @@ fits2ucm data format dtype
 !!arg{data}{The file name or list of file names. If it ends with either ".fit", ".fits" or ".fts" 
 it is assumed to be a single fits file.}
 !!arg{format}{Format of the FITS data. Choices at the moment are:
-!!emph{JKT} for the 1m JKT on La Palma, !!emph{AUX} for the WHT's AUX Port, 
+!!emph{JKT} for the 1m JKT on La Palma, 
+!!emph{AUX} for the WHT's AUX Port, 
 !!emph{Faulkes} for FITS data from the Faulkes telescope, 
 !!emph{Dolores} for the TNG's Dolores, 
 !!emph{FORS1} for VLT FORS1 data,
 !!emph{SAAO} for the UCT camera at SAAO, 
 !!emph{NOT} for NOT ALFOSC data,
 !!emph{ATC} for the ULTRASPEC multi-image FITS files from Derek Ives,
-!!{RISE} for Don Pollacco's camera for the LT,
+!!emph{RISE} for Don Pollacco's camera for the LT,
 !!emph{ACAM} for the WHT's ACAM replacement for AUX,
 !!emph{SOFI} for split data from SOFI as produced by Steven Parsons,
+!!emph{ST7} for an SBIG ST-7 CCD camera,
 !!emph{ST10} for an SBIG ST-10 CCD camera,
 !!emph{IAC80} for the IAC80 telescope at Izana,
 !!emph{FASTCAM} for the Andor iXon DU-897 EMCCD camera used in FASTCAM (on the TCS, NOT, WHT and GRANTECAN), 
@@ -109,27 +105,28 @@ int main(int argc, char* argv[]){
 	std::string fname;
 	input.get_value("data", fname, "run001", "data file or list of data files");
 	std::string format;
-	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, Dolores, FORS1, SAAO, NOT, ATC, RISE, ACAM, SOFI, ST`0, IAC80, FASTCAM, QSI)");
+	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, ... etc ... junk for a full list)");
 	format = Subs::toupper(format);
 	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
 	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE" && format != "ACAM" && \
-	   format != "SOFI" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && format != "QSI")
-	    throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
-					" 1) JKT for the 1m JKT on La Palma\n"
-					" 2) AUX for the 4.2m WHT's Aux Port camera\n"
-					" 3) Faulkes for the Faulkes telescopes\n"
-					" 4) Dolores for the 3.6m TNG's Dolores\n"
-					" 5) FORS1 for VLT FORS1\n"
-					" 6) SAAO for UCT camera data from SAAO\n"
-					" 7) NOT for NOT ALFOSC data\n"
-					" 8) ATC for Derek Ives' multi-image FITS \n"
-					" 9) RISE for the 2m Liverpool Telescope\n"
-					"10) ACAM for the 4.2m's ACAM\n"
-					"11) SOFI for the IR data from SOFI/NTT"
-					"12) ST10 for an SBIG ST-10 CCD camera \n" 
-					"13) IAC80 for the CCD camera on the IAC80 at Izana \n"
-					"14) FASTCAM for FASTCAM on the NOT, WHT or TCS\n"
-					"15) QSI for QSI532 CCD Camera");
+	   format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && format != "QSI")
+	  throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
+				      "JKT     --- 1m JKT on La Palma\n"
+				      "AUX     --- 4.2m WHT's Aux Port camera\n"
+				      "Faulkes --- Faulkes telescopes\n"
+				      "Dolores --- 3.6m TNG's Dolores\n"
+				      "FORS1   --- VLT FORS1\n"
+				      "SAAO    --- UCT camera data from SAAO\n"
+				      "NOT     --- NOT ALFOSC data\n"
+				      "ATC     --- Derek Ives' multi-image FITS \n"
+				      "RISE    --- 2m Liverpool Telescope RISE\n"
+				      "ACAM    --- WHT's ACAM\n"
+				      "SOFI    --- IR data from SOFI/NTT\n"
+				      "ST7     --- SBIG ST-7 camera\n" 
+				      "ST10    --- SBIG ST-10 camera\n" 
+				      "IAC80   --- CCD camera on the IAC80 at Izana \n"
+				      "FASTCAM --- FASTCAM on the NOT, WHT or TCS\n"
+				      "QSI     --- QSI532 CCD Camera");
 	bool intout;
 	input.get_value("intout", intout, false, "2-byte integer output (else float)?");
 
@@ -137,6 +134,7 @@ int main(int argc, char* argv[]){
 	std::vector<std::string> flist;
 	if(fname.find(".fit")  == fname.length() - 4  || 
 	   fname.find(".fits") == fname.length() - 5 ||
+	   fname.find(".FIT") == fname.length() - 4 ||
 	   fname.find(".fts")  == fname.length() - 4){
 	    flist.push_back(fname);
 	}else{      
@@ -165,6 +163,15 @@ int main(int argc, char* argv[]){
 		fits_close_file(fptr, &status);
 		throw Ultracam::Ultracam_Error("fits2ucm: " + fits + ": " + errmsg);
 	    }
+
+
+	    // First deal with the headers, except ATC format for which
+	    // we deal with header and data.
+
+	    // If you want to add a new format, you need to add further items to the next if block which
+	    // for the most part deals with headers, and the succeeding if block for data. Please try to 
+	    // order these in the same way as can be found above. This makes it easier to navigate this very
+	    // long file.
 
 	    if(format == "ATC"){
 
@@ -329,56 +336,6 @@ int main(int argc, char* argv[]){
 		    Subs::Time ut_date(mjd);
 		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
 		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));
-
-		}else if(format == "RISE"){
-
-		    char cbuff[256];
-
-		    // Read binning factors, time etc.
-		    fits_read_key(fptr,TINT,"CCDXBIN",&xbin,NULL,&status);
-		    fits_read_key(fptr,TINT,"CCDYBIN",&ybin,NULL,&status);		    
-		    
-		    if(fits_read_key(fptr,TSTRING,"DATE",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("RISE 01: " + fits + ": " + errmsg);
-		    }
-		    int day, month, year;
-		    std::string buff;
-		    std::istringstream istr(buff);
-		    istr.str(cbuff);
-		    char c;
-		    istr >> year >> c >> month >> c >> day;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("RISE 02: failed to translate date = " + std::string(cbuff));
-		    istr.clear();
-	  
-		    if(fits_read_key(fptr,TSTRING,"UTSTART",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("RISE 03: " + fits + ": " + errmsg);
-		    }
-		    int hour, minute;
-		    double second;
-		    istr.str(cbuff);
-		    istr >> hour >> c >> minute >> c >> second;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("RISE 04: failed to translate time = " + std::string(cbuff));
-		    istr.clear();
-	  
-		    float exposure;
-		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("RISE 05: " + fits + ": " + errmsg);
-		    }
-		    Subs::Time ut_date(day, month, year, hour, minute, second);
-		    ut_date.add_second(exposure/2.);
-	  
-		    // store time
-		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
-		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
-
 
 		}else if(format == "AUX"){
 	  
@@ -621,112 +578,6 @@ int main(int argc, char* argv[]){
 		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
 		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
 
-		}else if(format == "ST10"){
-
-		    char cbuff[256];
-		    
-		    // Read binning factors, time etc.
-		    if(fits_read_key(fptr,TINT,"XBINNING",&xbin,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("ST10 01: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    if(fits_read_key(fptr,TINT,"YBINNING",&ybin,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("ST10 02: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    
-		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("ST10 03: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
-		    
-		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("ST10 04: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    int day, month, year;
-		    int hour, minute;
-		    float second;
-		    std::string buff;
-		    std::istringstream istr(buff);
-		    istr.str(cbuff);
-		    char c;
-		    istr >> year >> c >> month >> c >> day >> c >> hour >> c >> minute >> c >> second ;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
-		    istr.clear();
-		    
-		    float exposure;
-		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("ST10 05: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    Subs::Time ut_date(day, month, year, hour, minute, second);
-		    ut_date.add_second(exposure/2.);
-		    
-		    // store time
-		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
-		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
-		    
-		}else if(format == "QSI"){
-		    
-		    char cbuff[256];
-		    
-		    // Read binning factors, time etc.
-		    if(fits_read_key(fptr,TINT,"XBINNING",&xbin,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("QSI 01: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    if(fits_read_key(fptr,TINT,"YBINNING",&ybin,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("QSI 02: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    
-		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("QSI 03: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
-		    
-		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("QSI 04: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    int day, month, year;
-		    int hour, minute;
-		    float second;
-		    std::string buff;
-		    std::istringstream istr(buff);
-		    istr.str(cbuff);
-		    char c;
-		    istr >> year >> c >> month >> c >> day >> c >> hour >> c >> minute >> c >> second ;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
-		    istr.clear();
-		    
-		    float exposure;
-		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("QSI 05: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    Subs::Time ut_date(day, month, year, hour, minute, second);
-		    ut_date.add_second(exposure/2.);
-		    
-		    // store time
-		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
-		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
-		    
 		}else if(format == "SAAO"){
 
 		    char cbuff[256];
@@ -849,6 +700,55 @@ int main(int argc, char* argv[]){
 		    }
 		    data.set("Filename", new Subs::Hstring(std::string(cbuff), "Original NOT/ALFOSC file name"));
 
+		}else if(format == "RISE"){
+
+		    char cbuff[256];
+
+		    // Read binning factors, time etc.
+		    fits_read_key(fptr,TINT,"CCDXBIN",&xbin,NULL,&status);
+		    fits_read_key(fptr,TINT,"CCDYBIN",&ybin,NULL,&status);		    
+		    
+		    if(fits_read_key(fptr,TSTRING,"DATE",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RISE 01: " + fits + ": " + errmsg);
+		    }
+		    int day, month, year;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error("RISE 02: failed to translate date = " + std::string(cbuff));
+		    istr.clear();
+	  
+		    if(fits_read_key(fptr,TSTRING,"UTSTART",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RISE 03: " + fits + ": " + errmsg);
+		    }
+		    int hour, minute;
+		    double second;
+		    istr.str(cbuff);
+		    istr >> hour >> c >> minute >> c >> second;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error("RISE 04: failed to translate time = " + std::string(cbuff));
+		    istr.clear();
+	  
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RISE 05: " + fits + ": " + errmsg);
+		    }
+		    Subs::Time ut_date(day, month, year, hour, minute, second);
+		    ut_date.add_second(exposure/2.);
+	  
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
 		}else if(format == "ACAM"){
 	  
 		    char cbuff[256];
@@ -943,8 +843,244 @@ int main(int argc, char* argv[]){
 		    }
 		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
 	  
+		}else if(format == "ST7" || format == "ST10"){
+
+		    char cbuff[256];
+		    
+		    // Read binning factors, time etc.
+		    if(fits_read_key(fptr,TINT,"XBINNING",&xbin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SBIG 01: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(fits_read_key(fptr,TINT,"YBINNING",&ybin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SBIG 02: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    
+		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SBIG 03: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+		    
+		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SBIG 04: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    int day, month, year;
+		    int hour, minute;
+		    float second;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day >> c >> hour >> c >> minute >> c >> second ;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
+		    istr.clear();
+		    
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("SBIG 05: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    Subs::Time ut_date(day, month, year, hour, minute, second);
+		    ut_date.add_second(exposure/2.);
+		    
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		}else if(format == "IAC80"){
+
+		  char cbuff[256];
+		  
+		  // Read and parse binning factors
+		  if(fits_read_key(fptr,TSTRING,"CCDSUM",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("IAC80 00: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  std::string fitsHead = cbuff;
+		  std::vector<std::string> binFacs;
+		  Tokenize(fitsHead,binFacs);
+		  xbin = Subs::string_to_int(binFacs[0]);
+		  ybin = Subs::string_to_int(binFacs[1]);
+		  
+		  if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("IAC80 01: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+		  
+		  if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("IAC80 02: " + fits + ": " + errmsg);
+		  }
+		  int day, month, year;
+		  std::string buff;
+		  std::istringstream istr(buff);
+		  istr.str(cbuff);
+		  char c;
+		  istr >> year >> c >> month >> c >> day;
+		  if(!istr)
+		    throw Ultracam::Ultracam_Error("IAC80 03: failed to translate date = " + std::string(cbuff));
+		  istr.clear();
+		  
+		  if(fits_read_key(fptr,TSTRING,"UT",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("IAC80 04: " + fits + ": " + errmsg);
+		  }
+		  int hour, minute;
+		  double second;
+		  istr.str(cbuff);
+		  istr >> hour >> c >> minute >> c >> second;
+		  if(!istr)
+		    throw Ultracam::Ultracam_Error("IAC80 05: failed to translate time = " + std::string(cbuff));
+		  istr.clear();
+		  
+		  float exposure;
+		  if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("IAC80 06: " + fits + ": " + errmsg);
+		  }
+		  Subs::Time ut_date(day, month, year, hour, minute, second);
+		  ut_date.add_second(exposure/2.);
+	  
+		  // store time
+		  data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		  data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		}else if(format == "FASTCAM"){
+		  
+		  char cbuff[256];
+		  
+		  // Read binning factors
+		  if(fits_read_key(fptr,TSTRING,"BINNING",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("FASTCAM 01: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  std::string fitsHead = cbuff;
+		  std::vector<std::string> binFacs;
+		  Tokenize(fitsHead,binFacs,"X");
+		  xbin = Subs::string_to_int(binFacs[0]);
+		  ybin = Subs::string_to_int(binFacs[1]);
+		  
+		  if(fits_read_key(fptr,TSTRING,"OBJNAME",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("FASTCAM 02: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+		  
+		  if(fits_read_key(fptr,TSTRING,"DATE",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("FASTCAM 03: " + fits + ": " + errmsg);
+		  }
+		  int day, month, year;
+		  std::string buff;
+		  std::istringstream istr(buff);
+		  istr.str(cbuff);
+		  char c;
+		  istr >> year >> c >> month >> c >> day;
+		  if(!istr)
+		    throw Ultracam::Ultracam_Error("FASTCAM 04: failed to translate date = " + std::string(cbuff));
+		  istr.clear();
+		  
+		  if(fits_read_key(fptr,TSTRING,"UT",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("FASTCAM 05: " + fits + ": " + errmsg);
+		  }
+		  int hour, minute;
+		  double second;
+		  istr.str(cbuff);
+		  istr >> hour >> c >> minute >> c >> second;
+		  if(!istr)
+		    throw Ultracam::Ultracam_Error("FASTCAM 06: failed to translate time = " + std::string(cbuff));
+		  istr.clear();
+		  
+		  float exposure;
+		  if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("FASTCAM 07: " + fits + ": " + errmsg);
+		  }
+		  Subs::Time ut_date(day, month, year, hour, minute, second);
+		  ut_date.add_second(exposure/2000.);
+		  
+		  // store time
+		  data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		  data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+		  
+		  
+		}else if(format == "QSI"){
+		    
+		    char cbuff[256];
+		    
+		    // Read binning factors, time etc.
+		    if(fits_read_key(fptr,TINT,"XBINNING",&xbin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("QSI 01: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(fits_read_key(fptr,TINT,"YBINNING",&ybin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("QSI 02: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    
+		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("QSI 03: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+		    
+		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("QSI 04: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    int day, month, year;
+		    int hour, minute;
+		    float second;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day >> c >> hour >> c >> minute >> c >> second ;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
+		    istr.clear();
+		    
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("QSI 05: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    Subs::Time ut_date(day, month, year, hour, minute, second);
+		    ut_date.add_second(exposure/2.);
+		    
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+		    
 		}
 	
+		// Headers done, now the data
 		int nhdu;
 		if(fits_get_num_hdus(fptr, &nhdu, &status)){
 		    fits_get_errstatus(status, errmsg);
@@ -1093,173 +1229,6 @@ int main(int argc, char* argv[]){
 			}
 		    }
 
-		}else if(format == "RISE"){
-	  
-		    if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("117: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-	  
-		    if(hdutype == IMAGE_HDU){
-			if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
-			    fits_get_errstatus(status, errmsg);
-			    fits_close_file(fptr, &status);
-			    throw Ultracam::Ultracam_Error(std::string("118: ") + fits + std::string(": ") + std::string(errmsg));
-			}
-			if(naxis == 2){
-			    data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,1048,1048));
-			}else{
-			    fits_close_file(fptr, &status);
-			    throw Ultracam::Ultracam_Error(std::string("119: ") + fits + std::string(": naxis does not equal 2"));
-			}
-		    }else{
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("120: ") + fits + std::string(": HDU is not an image."));
-		    }
-	
-		    // Start reading from lower left
-		    fpixel[0] = fpixel[1] = 1;
-	  
-		    // Read the data in, row by row 
-		    for(long j=0; j<dims[1]; j++){
-			fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
-			if(status){
-			    fits_get_errstatus(status, errmsg);
-			    fits_close_file(fptr, &status); 
-			    throw Ultracam::Ultracam_Error("121: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
-			}
-			fpixel[1]++;
-		    }    
-
-		}else if(format == "FASTCAM"){
-
-		    char cbuff[256];
-		    
-		    // Read binning factors
-		    if(fits_read_key(fptr,TSTRING,"BINNING",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("FASTCAM 01: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    std::string fitsHead = cbuff;
-		    std::vector<std::string> binFacs;
-		    Tokenize(fitsHead,binFacs,"X");
-		    xbin = Subs::string_to_int(binFacs[0]);
-		    ybin = Subs::string_to_int(binFacs[1]);
-		    
-		    if(fits_read_key(fptr,TSTRING,"OBJNAME",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("FASTCAM 02: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
-		    
-		    if(fits_read_key(fptr,TSTRING,"DATE",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("FASTCAM 03: " + fits + ": " + errmsg);
-		    }
-		    int day, month, year;
-		    std::string buff;
-		    std::istringstream istr(buff);
-		    istr.str(cbuff);
-		    char c;
-		    istr >> year >> c >> month >> c >> day;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("FASTCAM 04: failed to translate date = " + std::string(cbuff));
-		    istr.clear();
-		    
-		    if(fits_read_key(fptr,TSTRING,"UT",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("FASTCAM 05: " + fits + ": " + errmsg);
-		    }
-		    int hour, minute;
-		    double second;
-		    istr.str(cbuff);
-		    istr >> hour >> c >> minute >> c >> second;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("FASTCAM 06: failed to translate time = " + std::string(cbuff));
-		    istr.clear();
-		    
-		    float exposure;
-		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("FASTCAM 07: " + fits + ": " + errmsg);
-		    }
-		    Subs::Time ut_date(day, month, year, hour, minute, second);
-		    ut_date.add_second(exposure/2000.);
-		    
-		    // store time
-		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
-		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
-		    
-		}else if(format == "IAC80"){
-		    
-		    char cbuff[256];
-		    
-		    // Read and parse binning factors
-		    if(fits_read_key(fptr,TSTRING,"CCDSUM",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("IAC80 00: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    std::string fitsHead = cbuff;
-		    std::vector<std::string> binFacs;
-		    Tokenize(fitsHead,binFacs);
-		    xbin = Subs::string_to_int(binFacs[0]);
-		    ybin = Subs::string_to_int(binFacs[1]);
-		    
-		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error(std::string("IAC80 01: ") + fits + std::string(": ") + std::string(errmsg));
-		    }
-		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
-		    
-		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("IAC80 02: " + fits + ": " + errmsg);
-		    }
-		    int day, month, year;
-		    std::string buff;
-		    std::istringstream istr(buff);
-		    istr.str(cbuff);
-		    char c;
-		    istr >> year >> c >> month >> c >> day;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("IAC80 03: failed to translate date = " + std::string(cbuff));
-		    istr.clear();
-		    
-		    if(fits_read_key(fptr,TSTRING,"UT",&cbuff,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("IAC80 04: " + fits + ": " + errmsg);
-		    }
-		    int hour, minute;
-		    double second;
-		    istr.str(cbuff);
-		    istr >> hour >> c >> minute >> c >> second;
-		    if(!istr)
-			throw Ultracam::Ultracam_Error("IAC80 05: failed to translate time = " + std::string(cbuff));
-		    istr.clear();
-		    
-		    float exposure;
-		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
-			fits_get_errstatus(status, errmsg);
-			fits_close_file(fptr, &status);
-			throw Ultracam::Ultracam_Error("IAC80 06: " + fits + ": " + errmsg);
-		    }
-		    Subs::Time ut_date(day, month, year, hour, minute, second);
-		    ut_date.add_second(exposure/2.);
-		    
-		    // store time
-		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
-		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
-		    
 		}else if(format == "DOLORES"){
 		    
 		    // Read window position
@@ -1455,10 +1424,49 @@ int main(int argc, char* argv[]){
 			fpixel[1]++;
 		    }
 
-  		}else if(format == "SOFI"){
-
+		}else if(format == "RISE"){
+	  
 		    if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
 			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("117: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+	  
+		    if(hdutype == IMAGE_HDU){
+			if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error(std::string("118: ") + fits + std::string(": ") + std::string(errmsg));
+			}
+			if(naxis == 2){
+			    data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,1048,1048));
+			}else{
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error(std::string("119: ") + fits + std::string(": naxis does not equal 2"));
+			}
+		    }else{
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("120: ") + fits + std::string(": HDU is not an image."));
+		    }
+	
+		    // Start reading from lower left
+		    fpixel[0] = fpixel[1] = 1;
+	  
+		    // Read the data in, row by row 
+		    for(long j=0; j<dims[1]; j++){
+			fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+			if(status){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status); 
+			    throw Ultracam::Ultracam_Error("121: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+			}
+			fpixel[1]++;
+		    }    
+
+  		}else if(format == "SOFI"){
+		  
+  		  if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
 			fits_close_file(fptr, &status);
 			throw Ultracam::Ultracam_Error(std::string("147: ") + fits + std::string(": ") + std::string(errmsg));
 		    }
@@ -1488,19 +1496,179 @@ int main(int argc, char* argv[]){
 			}
 			fpixel[1]++;
 		    }
+		    
+		}else if(format == "ST7" || format == "ST10"){
+		  
+		  if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("151: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  
+		  if(hdutype == IMAGE_HDU){
+		    if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("152: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(naxis == 2){
+		      if(format == "ST7"){ 
+			data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,765,510));
+		      }else{
+			data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,2184,1472));
+		      }
+		    }else{
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("153: ") + fits + std::string(": naxis does not equal 2"));
+		    }
+		  }else{
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("154: ") + fits + std::string(": HDU is not an image."));
+		  }
+	
+		  // Start reading from lower left
+		  fpixel[0] = fpixel[1] = 1;
+	  
+		  // Read the data in, row by row 
+		  for(long j=0; j<dims[1]; j++){
+		    fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+		    if(status){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status); 
+		      throw Ultracam::Ultracam_Error("155: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+		    }
+		    fpixel[1]++;
+		  }    
+		
+		}else if(format == "FASTCAM"){
+	      
+		  if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("156: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+	      
+		  if(hdutype == IMAGE_HDU){
+		    if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("157: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(naxis == 2){
+		      data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,512,512));
+		    }else{
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("158: ") + fits + std::string(": naxis does not equal 2"));
+		    }
+		  }else{
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("159: ") + fits + std::string(": HDU is not an image."));
+		  }
+	      
+		  // Start reading from lower left
+		  fpixel[0] = fpixel[1] = 1;
+	      
+		  // Read the data in, row by row 
+		  for(long j=0; j<dims[1]; j++){
+		    fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+		    if(status){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status); 
+		      throw Ultracam::Ultracam_Error("160: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+		    }
+		    fpixel[1]++;
+		  }    
+	      
+		}else if(format == "IAC80"){
+	      
+		  if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("161: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+	      
+		  if(hdutype == IMAGE_HDU){
+		    if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("162: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(naxis == 2){
+		      data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,2098,2048));
+		    }else{
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("163: ") + fits + std::string(": naxis does not equal 2"));
+		    }
+		  }else{
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("164: ") + fits + std::string(": HDU is not an image."));
+		  }
+	      
+		  // Start reading from lower left
+		  fpixel[0] = fpixel[1] = 1;
+	      
+		  // Read the data in, row by row 
+		  for(long j=0; j<dims[1]; j++){
+		    fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+		    if(status){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status); 
+		      throw Ultracam::Ultracam_Error("165: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+		    }
+		    fpixel[1]++;
+		  }    
+	      
+		}else if(format == "QSI"){
+	  
+		  if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("166: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+	  
+		  if(hdutype == IMAGE_HDU){
+		    if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("167: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    if(naxis == 2){
+		      data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,2184,1472));
+		    }else{
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error(std::string("168: ") + fits + std::string(": naxis does not equal 2"));
+		    }
+		  }else{
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("169: ") + fits + std::string(": HDU is not an image."));
+		  }
+	
+		  // Start reading from lower left
+		  fpixel[0] = fpixel[1] = 1;
+	  
+		  // Read the data in, row by row 
+		  for(long j=0; j<dims[1]; j++){
+		    fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+		    if(status){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status); 
+		      throw Ultracam::Ultracam_Error("170: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+		    }
+		    fpixel[1]++;
+		  }    
 
 		}
-
+		
 		// Write out the ultracam file
 		data.write(fits.substr(0,fits.find_last_of('.')), intout ? Ultracam::Windata::RAW : Ultracam::Windata::NORMAL);
 		std::cerr << fits.substr(0,fits.find_last_of('.')) << ".ucm written to disk." << std::endl;
-	
-	    }
+	      
+	    } // end of data if block
 
 	    // Close the fits file
 	    fits_close_file(fptr, &status);
 
-	}
+	} // next file
     }
     catch(const std::string& err){
 	std::cerr << err << std::endl;
