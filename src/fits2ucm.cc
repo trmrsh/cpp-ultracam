@@ -14,13 +14,15 @@
 !!class    FITS
 !!head1    fits2ucm - converts an Ultracam frame to FITS format
 
-!!emph{fits2ucm} reads a FITS file or many FITS files representing a CCD and
-converts it/them to Ultracam format files. Different FITS formats may well
+!!emph{fits2ucm} reads a FITS file or many FITS files of CCD images
+and converts it/them to Ultracam format files. Different FITS formats may well
 require updates to this routine to adjust for different header names. Usually
 I base these on one or two example frames so they may not be completely
 general.  The times in the headers are corrected to the mid-exposure time as
 assumed in the ultracam software. The file name is preserved by this routine
 so that 'abc.fits' for instance becomes 'abc.ucm'
+
+If you want to add another format, please look at the code for instructions.
 
 !!head2 Invocation
 
@@ -30,8 +32,8 @@ fits2ucm data format dtype
 
 !!table
 
-!!arg{data}{The file name or list of file names. If it ends with either ".fit", ".fits" or ".fts" 
-it is assumed to be a single fits file.}
+!!arg{data}{The file name or list of file names. If it ends with either ".fit", ".fits", ".fts" or ".FIT" it is assumed to be a single fits file, otherwise it is assumed to a list. If
+you get a message about not opening SIMPLE it is probably thinking a genuine fits file is a list.}
 !!arg{format}{Format of the FITS data. Choices at the moment are:
 !!emph{JKT} for the 1m JKT on La Palma, 
 !!emph{AUX} for the WHT's AUX Port, 
@@ -58,6 +60,8 @@ Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fit
 !!end
 
 */
+
+// Every time you see READ THIS, there will be comments on what to do.
 
 #include <stdlib.h>
 #include <string>
@@ -107,9 +111,13 @@ int main(int argc, char* argv[]){
 	std::string format;
 	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, ... etc ... junk for a full list)");
 	format = Subs::toupper(format);
+
+	// READ THIS
+	// You need to decide on a name for your new format and add it to the following statement
 	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
 	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE" && format != "ACAM" && \
-	   format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && format != "QSI")
+	   format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && 
+	   format != "QSI")
 	  throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
 				      "JKT     --- 1m JKT on La Palma\n"
 				      "AUX     --- 4.2m WHT's Aux Port camera\n"
@@ -168,10 +176,24 @@ int main(int argc, char* argv[]){
 	    // First deal with the headers, except ATC format for which
 	    // we deal with header and data.
 
+	    // READ THIS
+	    //
 	    // If you want to add a new format, you need to add further items to the next if block which
-	    // for the most part deals with headers, and the succeeding if block for data. Please try to 
-	    // order these in the same way as can be found above. This makes it easier to navigate this very
-	    // long file.
+	    // in the majority of cases deals with headers only, and the succeeding if block for data. Please 
+	    // try to add to the end of the if block to preserve the relative order of formats as much as
+	    // possible. This makes it easier to navigate this very long file. You can pick up any header 
+	    // items you like, but above all UT_date and Exposure must be set. Look below for examples.
+	    //
+	    // Note that ULTRACAM's native format allows you to store multiple CCDs but usually you will only
+	    // want to store one. It also allows you to store any number of sub-windows of a CCD so requires 
+	    // you to supply the maximum dimensions, needed so that one can correctly display the positioning 
+	    // of the windows within the CCD.
+	    //
+	    // A statement like:
+	    // 		    
+	    // data[0].push_back(Ultracam::Windata(x1_start,y1_start,dims[0],dims[1],xbin,ybin,1072,1072));
+	    //
+	    // is adding a window to the first CCD with dimensions 1072 by 1072.
 
 	    if(format == "ATC"){
 
@@ -1079,8 +1101,13 @@ int main(int argc, char* argv[]){
 		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
 		    
 		}
-	
-		// Headers done, now the data
+
+		// READ THIS
+		//
+		// Now another if block, which is concerned with getting the data. This varies according to whether you
+		// are having to dig through HDUs or use the primary one etc. Again there are quite a few examples to work
+		// from. Again please add to the end of the if block to preserve the ordering.
+
 		int nhdu;
 		if(fits_get_num_hdus(fptr, &nhdu, &status)){
 		    fits_get_errstatus(status, errmsg);
