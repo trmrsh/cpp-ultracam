@@ -49,10 +49,10 @@ if not clobber and os.path.exists(ufits):
     print 'Output file = ' + ufits + ' already exists'
     exit(1)
 
-# OK, now for the real work.
-
 import numpy as npy
 import pyfits
+
+# OK, now for the real work.
 
 # initialise dictionaries keyed on CCD number
 
@@ -190,19 +190,19 @@ for line in fin:
 
             for ap in range(nap):
                 snap = str(ap+1)
-                cols[nc].append(pyfits.Column(name='X ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Y ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='XM ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='YM ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='EXM ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='EYM ' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Counts ' + snap, unit='DN', format='E'))
-                cols[nc].append(pyfits.Column(name='Sigma ' + snap, unit='DN', format='E'))
-                cols[nc].append(pyfits.Column(name='Sky ' + snap, unit='DN/pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Nsky ' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Nrej ' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Worst ' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Eflag ' + snap, format='J'))
+                cols[nc].append(pyfits.Column(name='X_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='Y_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='XM_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='YM_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='EXM_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='EYM_' + snap, unit='pix', format='E'))
+                cols[nc].append(pyfits.Column(name='Counts_' + snap, unit='DN', format='E'))
+                cols[nc].append(pyfits.Column(name='Sigma_' + snap, unit='DN', format='E'))
+                cols[nc].append(pyfits.Column(name='Sky_' + snap, unit='DN/pix', format='E'))
+                cols[nc].append(pyfits.Column(name='Nsky_' + snap, format='J'))
+                cols[nc].append(pyfits.Column(name='Nrej_' + snap, format='J'))
+                cols[nc].append(pyfits.Column(name='Worst_' + snap, format='J'))
+                cols[nc].append(pyfits.Column(name='Eflag_' + snap, format='J'))
 
             # Define the lists
             tmjd[nc]    = []
@@ -404,17 +404,17 @@ for nc in nccd:
     tbhdu.data.field('beta')[:]   = beta[nc]
     for ap in range(x[nc].shape[1]):
         snap = str(ap+1)
-        tbhdu.data.field('X ' + snap)[:]      = x[nc][:,ap]
-        tbhdu.data.field('Y ' + snap)[:]      = y[nc][:,ap]
-        tbhdu.data.field('XM ' + snap)[:]     = xm[nc][:,ap]
-        tbhdu.data.field('YM ' + snap)[:]     = ym[nc][:,ap]
-        tbhdu.data.field('Counts ' + snap)[:] = counts[nc][:,ap]
-        tbhdu.data.field('Sigma ' + snap)[:]  = sigma[nc][:,ap]
-        tbhdu.data.field('Sky ' + snap)[:]    = sky[nc][:,ap]
-        tbhdu.data.field('Nsky ' + snap)[:]   = nsky[nc][:,ap]
-        tbhdu.data.field('Nrej ' + snap)[:]   = nrej[nc][:,ap]
-        tbhdu.data.field('Worst ' + snap)[:]  = worst[nc][:,ap]
-        tbhdu.data.field('Eflag ' + snap)[:]  = eflag[nc][:,ap]
+        tbhdu.data.field('X_' + snap)[:]      = x[nc][:,ap]
+        tbhdu.data.field('Y_' + snap)[:]      = y[nc][:,ap]
+        tbhdu.data.field('XM_' + snap)[:]     = xm[nc][:,ap]
+        tbhdu.data.field('YM_' + snap)[:]     = ym[nc][:,ap]
+        tbhdu.data.field('Counts_' + snap)[:] = counts[nc][:,ap]
+        tbhdu.data.field('Sigma_' + snap)[:]  = sigma[nc][:,ap]
+        tbhdu.data.field('Sky_' + snap)[:]    = sky[nc][:,ap]
+        tbhdu.data.field('Nsky_' + snap)[:]   = nsky[nc][:,ap]
+        tbhdu.data.field('Nrej_' + snap)[:]   = nrej[nc][:,ap]
+        tbhdu.data.field('Worst_' + snap)[:]  = worst[nc][:,ap]
+        tbhdu.data.field('Eflag_' + snap)[:]  = eflag[nc][:,ap]
     hdus.append(tbhdu)
 
     # save memory
