@@ -15,23 +15,37 @@
 !!class   Arithematic
 !!head1   makeflat - a series of frames into a flat field.
 
-!!emph{makeflat} coadds a set of frames by taking the median or the clipped mean
-at each pixel. It is designed to take the hassle out of producing sky flats for
-ULTRACAM data. The user can specify thresholds to determine which frames to use
-for the flats because typically evening flats start saturated and only become
-unsaturated after a while. "Saturated" for ULTRACAM really means no "pepper"
-pattern which typically appears above about 30,000 in the g and u CCDs, > 50,000
-in the red CCD.  The program first determines the mean levels of all input
-frames (which must be bias subtracted beforehand) and then averages them in
-groups of similar mean level, each of size !!emph{ngroup} (see below). This averaging is done via a clipped mean or
-median. The averages are then co-added. This procedure correctly weights low and high
-signal flats avoiding the problem in simultaneous combination of all frames (with
-!!ref{combiune.html}{combine} for example) that one can add ratty data to good data.
-The final step is to normalise each CCD by its mean. You can separately normalise over 
-different regions later by hand if you prefer. Frames are also selected with a lower threshold
-on the basis that if the level is low, uncertainty in the bias level might cause errors in the
-final flat. Of course, setting this level may depend on just what is available. The program
-tell you how many valid flats there were at the end to help you decide.
+!!emph{makeflat} coadds a set of frames by taking the median or the clipped
+mean at each pixel. It is designed to take the hassle out of producing sky
+flats for ULTRACAM data. The user can specify thresholds to determine which
+frames to use for the flats because typically evening flats start saturated
+and only become unsaturated after a while. "Saturated" for ULTRACAM really
+means no up/down "pepper" pattern which typically appears above about ~28,000
+in the g and u CCDs and ~50,000 in the red CCD.  The program first determines
+the mean levels of all input frames (which must be bias subtracted beforehand)
+and then averages them in groups of similar mean level, each of size
+!!emph{ngroup} (see below). This averaging is done via a clipped mean or
+median. The averages are then co-added. This procedure correctly weights low
+and high signal flats avoiding the problem in simultaneous combination of all
+frames (with !!ref{combine.html}{combine} for example) that one give ratty
+data and good data equal weight.
+
+Consider taking 70 frames and setting ngroup=7. The frames will then be
+grouped by mean level into 10 groups. Each of these will be combined with
+normalisation. The frames must be normalised to make median/clipped mean
+combining possible under circumstances when the mean level is always
+changing. The 10 resulting frames should be free of stars, assuming that the
+telescope was moved as the flat was being taken because the median will kick
+them out. The 10 frames are then scaled back to the mean level of their input
+groups and then added together. This is the step that allocates the correct
+weight to both high and low count frames.
+
+The final step is to normalise each CCD by its mean. You can separately
+normalise over different regions later by hand if you prefer. Frames are also
+selected with a lower threshold on the basis that if the level is low,
+uncertainty in the bias level might cause errors in the final flat. Of course,
+setting this level may depend on just what is available. The program tells you
+how many valid flats there were at the end to help you decide.
 
 <p>
 The 'sigma clipping' method used is not without pitfalls: consider what happens
@@ -51,7 +65,8 @@ you may corrupt the last file. You can tell this by seeing if there is a file in
 <p>
 <strong><font color="red">NB The flats must be bias subtracted prior to
 running this routine. If there are no valid frames for any CCD, the corresponding CCD
-will be set = 1 on output and you make to splice in from a different flat using !!ref{uset.html}{uset}.
+will be set = 1 on output and you will need to splice it in from a different flat 
+using !!ref{uset.html}{uset}.
 </font></strong>
 
 !!head2 Invocation
@@ -70,7 +85,7 @@ on choosing this.}
 one at a time, worst first. false means pixels are rejected in groups which can potentially lead to
 the odd false rejection.}
 !!arg{ngroup}{The number of frames/group to be combined prior to summing. This is used as a minimum number if it
-does not divide the number of available frames equally.}
+does not divide the number of available frames equally. A typical number is 7.}
 !!arg{region}{The region over which to measure the average, specified as a window file (e.g. see
 !!ref{setwin.html}{setwin}).  Set equal to "FULLFRAME" to get the entire frame.}
 !!arg{low}{Lowest mean level to include. You will be prompted for a value for <strong>each</strong> CCD}
