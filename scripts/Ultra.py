@@ -359,6 +359,9 @@ class Run(object):
                 elif app == 'ap3_250_fullframe' or app == 'appl3_fullframe_cfg':
                     self.mode    = 'FFCLR'
                     self.nwindow = 2
+                elif app == 'appl4_frameover_cfg':
+                    self.mode    = 'FFOVER'
+                    self.nwindow = 2
                 elif app == 'ap9_250_fullframe_mindead' or app == 'ap9_fullframe_mindead' or app == 'appl9_fullframe_mindead_cfg':
                     self.mode    = 'FFNCLR'
                     self.nwindow = 2
@@ -395,7 +398,12 @@ class Run(object):
                         self.xright[0] = '513'
                         self.nx[0]     = '512'
                         self.ny[0]     = '1024'
-
+                    elif self.mode == 'FFOVER':
+                        self.ystart[0] = '1'
+                        self.xleft[0]  = '1'
+                        self.xright[0] = '541'
+                        self.nx[0]     = '540'
+                        self.ny[0]     = '1032'
                     else:
 
                         self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
@@ -670,50 +678,53 @@ class Run(object):
         Returns True if the run is thought to be a bias
         """
         reb = re.compile('bias',re.I)
-        return reb.search(self.target)
+        return self.target is not None and reb.search(self.target)
 
     def is_flat(self):
         """
         Returns True if the run is thought to be a flat
         """
-        return (self.target == "Tungsten" or self.target == "tungsten" or self.target == "Flat" or \
-                    self.target == "Twilight" or self.target == "Twilight flat" or \
-                    self.target == "Skyflat" or self.target == "Flats" or \
-                    self.target == "Sky_flat" or self.target == "Sky flat" or \
-                    self.target == "Test/skyflat" or self.target == "Sky flats" or \
-                    self.target == "twilight" or self.target == "Sky Flat" or self.target == "Tungsten flat" or \
-                    self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats" or \
-                    self.target == "flats" or self.target == "Dome flat")
+        return self.target is not None and \
+            (self.target == "Tungsten" or self.target == "tungsten" or self.target == "Flat" or \
+                 self.target == "Twilight" or self.target == "Twilight flat" or \
+                 self.target == "Skyflat" or self.target == "Flats" or \
+                 self.target == "Sky_flat" or self.target == "Sky flat" or \
+                 self.target == "Test/skyflat" or self.target == "Sky flats" or \
+                 self.target == "twilight" or self.target == "Sky Flat" or self.target == "Tungsten flat" or \
+                 self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats" or \
+                 self.target == "flats" or self.target == "Dome flat")
 
     def is_dark(self):
         """
         Returns True if the run is thought to be a dark
         """
         reb = re.compile('dark',re.I)
-        return reb.search(self.target)
+        return self.target is not None and reb.search(self.target)
 
     def is_science(self):
         """
         Returns True if the run is thought to be a science frame.
         """
-        return not (self.is_power_onoff() or self.is_bias() or self.is_flat() or self.is_dark() or \
-                        self.target == "&nbsp;" or self.target == "Vik_test" or self.target == "Noise" or \
-                        self.target == "Timing x-bin" or self.target == "Junk" or self.target == "Timing nx" or \
-                        self.target == "Timing ny" or self.target == "Lin_test" or self.target == "NoiseBad" or \
-                        self.target == "Focus star" or self.target == "Test" or self.target == "Rubbish" or \
-                        self.target == "Saturn" or self.target == "Comet" or self.target == "JUNK" or \
-                        self.target == "junk" or self.target == "?" or self.target == "BS" or \
-                        self.target == "32K Test" or self.target == "Noise Tests" or \
-                        self.target == "Arc - CuAr CuNe" or self.target == "Drift Mode Test" or \
-                        self.target == "Timing Test" or self.target == "Timing x-left" or \
-                        self.target == "Timing x-right" or self.target == "Bright_star" or \
-                        self.target == "CCD Tests" or self.target == "Timing y-start" or \
-                        self.target == "Timing test" or self.target == "32k Test" or self.target == "Zenith" or \
-                        self.target == "Timing y-bin" or self.target == "Blurred Std" or \
-                        self.target == "Light Level Test" or self.target == "PSF Tests" or \
-                        self.target == "Read out noise test" or self.target == "32K test" or \
-                        self.target == "Fringe Frame" or self.target == "null" or self.target == "Pluto speed test" or \
-                        self.target == "ugr" or self.target == "PowerOn" or self.target == "Slide test")
+        return not (self.target is None or \
+                        (self.is_power_onoff() or self.is_bias() or self.is_flat() or self.is_dark() or \
+                             self.target == "&nbsp;" or self.target == "Vik_test" or self.target == "Noise" or \
+                             self.target == "Timing x-bin" or self.target == "Junk" or self.target == "Timing nx" or \
+                             self.target == "Timing ny" or self.target == "Lin_test" or self.target == "NoiseBad" or \
+                             self.target == "Focus star" or self.target == "Test" or self.target == "Rubbish" or \
+                             self.target == "Saturn" or self.target == "Comet" or self.target == "JUNK" or \
+                             self.target == "junk" or self.target == "?" or self.target == "BS" or \
+                             self.target == "32K Test" or self.target == "Noise Tests" or \
+                             self.target == "Arc - CuAr CuNe" or self.target == "Drift Mode Test" or \
+                             self.target == "Timing Test" or self.target == "Timing x-left" or \
+                             self.target == "Timing x-right" or self.target == "Bright_star" or \
+                             self.target == "CCD Tests" or self.target == "Timing y-start" or \
+                             self.target == "Timing test" or self.target == "32k Test" or self.target == "Zenith" or \
+                             self.target == "Timing y-bin" or self.target == "Blurred Std" or \
+                             self.target == "Light Level Test" or self.target == "PSF Tests" or \
+                             self.target == "Read out noise test" or self.target == "32K test" or \
+                             self.target == "Fringe Frame" or self.target == "null" or \
+                             self.target == "Pluto speed test" or self.target == "ugr" or \
+                             self.target == "PowerOn" or self.target == "Slide test"))
 
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
