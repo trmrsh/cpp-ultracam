@@ -617,43 +617,56 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		    std::string name = AttToString((DOMElement*)child->item(j), "name");
 		    serverdata.application = name;
 		    
+		    std::cerr << "name = " << name << std::endl;
+ 
 		    // 250 settings from updates of July 2003
 		    // ap5b is a two window mode with a clear that allows faster accurately exposed
 		    // frames. Change made 19/08/2004
 		    if(serverdata.instrument == "ULTRACAM" && 
-		       (name.find("ap9_fullframe_mindead") != std::string::npos || name.find("ap9_250_fullframe_mindead") != std::string::npos ||
-			name.find("appl9_fullframe_mindead_cfg") != std::string::npos)){ // CHECK
+		       (name.find("ap9_fullframe_mindead") != std::string::npos || 
+			name.find("ap9_250_fullframe_mindead") != std::string::npos ||
+			name.find("appl9_fullframe_mindead_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_NOCLEAR;
 
 		    }else if(serverdata.instrument == "ULTRACAM" &&
-			     (name.find("ap3_fullframe") != std::string::npos || name.find("ap3_250_fullframe") != std::string::npos ||
+			     (name.find("ap3_fullframe") != std::string::npos || 
+			      name.find("ap3_250_fullframe") != std::string::npos ||
 			      name.find("appl3_fullframe_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_CLEAR;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("ap5b") != std::string::npos ||
-								     name.find("appl5_window1pair_app") != std::string::npos)){ // CHECK
+		    }else if(serverdata.instrument == "ULTRACAM" && 
+			     (name.find("ap5b_250_window1pair")   != std::string::npos ||
+			      name.find("appl5b_window1pair_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::WINDOWS_CLEAR;
 
 		    }else if(serverdata.instrument == "ULTRACAM" && 
-			     (name.find("window")       != std::string::npos ||
-			      name.find("ap_win4_bin8") != std::string::npos || // May 2002
-			      name.find("ap_win4_bin1") != std::string::npos || // May 2002
-			      name.find("ap_win2_bin2") != std::string::npos || // May 2002
+			     (name.find("ap5_250_window1pair")   != std::string::npos ||
+			      name.find("ap6_250_window2pair")   != std::string::npos ||
+			      name.find("ap7_250_window3pair")   != std::string::npos ||
+			      name.find("ap5_window1pair")       != std::string::npos ||
+			      name.find("ap6_window2pair")       != std::string::npos ||
+			      name.find("ap7_window3pair")       != std::string::npos ||
+			      name.find("ap_win4_bin8")          != std::string::npos || 
+			      name.find("ap_win4_bin1")          != std::string::npos || 
+			      name.find("ap_win2_bin2")          != std::string::npos || 
 			      name.find("appl5_window1pair_cfg") != std::string::npos ||
-			      name.find("appl5b_window1pair_cfg") != std::string::npos ||
 			      name.find("appl6_window2pair_cfg") != std::string::npos ||
-			      name.find("appl7_window3pair_cfg") != std::string::npos)){  // May 2002
+			      name.find("appl7_window3pair_cfg") != std::string::npos)){
+
 			serverdata.readout_mode = Ultracam::ServerData::WINDOWS;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("drift") != std::string::npos ||
-								     name.find("appl8_driftscan_cfg") != std::string::npos)){
+		    }else if(serverdata.instrument == "ULTRACAM" && 
+			     (name.find("drift") != std::string::npos ||
+			      name.find("appl8_driftscan_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::DRIFT;
 
-		    }else if(serverdata.instrument == "ULTRACAM" && (name.find("frameover") != std::string::npos ||
-								     name.find("appl4_frameover_cfg") != std::string::npos)){
+		    }else if(serverdata.instrument == "ULTRACAM" && 
+			     (name.find("frameover") != std::string::npos ||
+			      name.find("appl4_frameover_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_OVERSCAN;
 
-		    }else if(serverdata.instrument == "ULTRASPEC" && name.find("ccd201_winbin_con") != std::string::npos){
+		    }else if(serverdata.instrument == "ULTRASPEC" && 
+			     name.find("ccd201_winbin_con") != std::string::npos){
 			serverdata.readout_mode = Ultracam::ServerData::L3CCD_WINDOWS;
 
 		    }else{
