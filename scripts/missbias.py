@@ -39,9 +39,7 @@
 #
 # !!end
 
-import os
-import re
-import Ultra
+import os, re, Ultra
 from optparse import OptionParser
 
 # define and parse options
