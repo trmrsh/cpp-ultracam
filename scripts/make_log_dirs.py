@@ -35,6 +35,13 @@ for run in rlist:
         print log_dir,'already exists but is not a directory.'
         exit(1)
 
+    link_targ = os.path.join(log, run, 'telescope')
+    if not os.path.exists(link_targ):
+        link = os.path.join('../..', raw, run, 'telescope')
+        print 'linking',link_targ,'--->',link
+        os.symlink(link, link_targ)        
+
+
 mdir = re.compile(raw + '/(\d\d\d\d-\d\d)/(\d\d\d\d-\d\d-\d\d)$')
 
 # Now check for day directories
@@ -52,7 +59,7 @@ for (root,dirs,files) in os.walk('.'):
                 dlist[run] = [date,]
 
 # Create day directories, copy data logs across
-# if need be
+# if need be, link back to data directories
 for key,dirs in dlist.iteritems():
     for d in dirs:
         log_dir  = os.path.join(log, d)
@@ -66,6 +73,12 @@ for key,dirs in dlist.iteritems():
         elif not os.path.isdir(log_dir):
             print log_dir,'already exists but is not a directory.'
             continue
+
+        link_targ = os.path.join(log, d, 'data')
+        if not os.path.exists(link_targ):
+            link      = os.path.join('../..', raw, d)
+            print 'linking',link_targ,'--->',link
+            os.symlink(link, link_targ)        
 
         (year,month,day) = d.split('-')
         link_targ = os.path.join(log, d, d + '.dat')
