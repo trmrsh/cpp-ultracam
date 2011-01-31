@@ -4,19 +4,19 @@
 Script to generate html web pages for ULTRACAM and ULTRASPEC. This is 
 to upgrade and replace the old perl-based ones.
 
-It expects directories of the form '2005-11' (Nov 2005) which have
-a structure like so:
+It should be run in the 'logs' directory which has sub-directories of 
+the form '2005-11' (Nov 2005) which have a structure like so:
 
 2005-11
   telescope   -- name of telescope
   2005-11-23  -- directory for 23 Nov
     2005-11-23.dat   -- night log file
     2005-11-23.times -- timing data
-    data             -- directory with run###.xml and run###.dat files    
+    data      -- run .dat and .xml files
   2005-11-24  -- directory for 24 Nov
     2005-11-24.dat   -- night log file
     2005-11-24.times -- timing data
-    data      -- directory with run###.xml and run###.dat files    
+    data      -- run .dat and .xml files
 
 etc. It also expects there to be a file called TARGETS with information
 of target positions and regular expressions for translating targets in
@@ -63,6 +63,7 @@ for rdir in rdirs:
 
     # Now the night-by-night directories
     ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and ndir_re.match(x) is not None]
+    ndirs.sort()
 
     # Write a guide
     fg = open(os.path.join(rdir, 'guide.htm'), 'w')
