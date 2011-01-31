@@ -5,13 +5,10 @@ Support routines for Python analysis of Ultracam & Ultraspec
 files. Mainly for database work.
 """
 
-import os
-import sys
+import os, sys, re, traceback
 from xml.dom import Node
 from xml.dom.minidom import parse, parseString
-import re
 import trm.subs as subs
-import traceback
 
 class Log(object):
     """
@@ -591,7 +588,7 @@ class Run(object):
             st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
             st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
 
-        st += td(self.pid) + th(self.pi) + th(self.observers)
+        st += td(self.pid) + td(self.pi) + tdnw(self.observers.replace(' ', ''))
         st += td('%03d' % self.number)
         st += td(self.comment,'left')
         st += '</tr>'
@@ -729,6 +726,10 @@ class Run(object):
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
     return '<td class="' + type + '">' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
+
+def tdnw(data, type='cen'):
+    """Handle html table data whether defined or not, disable line breaking"""
+    return '<td class="' + type + '" nowrap>' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
                      
 def td2(data1, data2, type='cen'):
     """Handle html table data whether defined or not, put 'x' in between values"""
