@@ -5,10 +5,19 @@ Support routines for Python analysis of Ultracam & Ultraspec
 files. Mainly for database work.
 """
 
-import os, sys, re, traceback
+import os, sys, re, traceback, math
 from xml.dom import Node
 from xml.dom.minidom import parse, parseString
 import trm.subs as subs
+import trm.simbad as simbad
+import trm.sla as sla
+
+# couple of helper functions
+def cosd(deg):
+    return math.cos(math.radians(deg))
+
+def sind(deg):
+    return math.sin(math.radians(deg))
 
 class Log(object):
     """
@@ -96,14 +105,23 @@ class Times(object):
         except Exception, err:
             sys.stderr.write('File = ' + fname + ', timing data problem: ' + str(err) + '\n')
 
-class Targets(object):
+class Targets(dict):
     """
-    Class to read and store the target positions and regular expressions
+    Class to read and store the target positions and regular expressions. 
+    The lines in the targets file must have format
 
-    Attributes (all dictionaries keyed on run number):
+    Target HH MM SS.SS [-+]DD MM SS.SS Match
 
-    position  -- dictionary of positions keyed by target name
-    translate -- dictionary of target names keyed by regular expressions to match names from logs
+    Both target and match must have no spaces.
+
+    A dictionary keyed on target names. Each item is in turn a dictionary
+    with the following keys:
+
+    'ra'     -- RA
+    'dec'    -- Dec
+    'match'  -- Expression to match against.
+    'exact'  -- True for string match as opposed to regular expression match
+
     """
 
     def __init__(self, fname):
@@ -111,31 +129,23 @@ class Targets(object):
         Constructs a new Targets object. Makes empty
         dictionaries if none found and reports an error
         """
-        self.position  = {}
-        self.translate = {}
 
         try:
             f  = open(fname)
             for line in f:
                 if not line.startswith('#') and line[:1].isalnum():
-                    if line.startswith('Translate:'):
-                        try:
-                            (d,target,rexpr) = line.split()
-                        except:                            
-                            (d,target,rexpr,flag) = line.split()
-                        self.translate[re.compile(rexpr)] = target
+                    (target,rah,ram,ras,decd,decm,decs,match) = line.strip().split()
+                    ra  = int(rah) + int(ram)/60. + float(ras)/3600.
+                    if decd[:1] == '-':
+                        decfac = -1.
+                    elif decd[:1] == '+':
+                        decfac = +1.
                     else:
-                        (target,rah,ram,ras,decd,decm,decs) = line.strip().split()
-                        ra  = int(rah) + int(ram)/60. + float(ras)/3600.
-                        if decd[:1] == '-':
-                            decfac = -1.
-                        elif decd[:1] == '+':
-                            decfac = +1.
-                        else:
-                            sys.stderr.write('Target = ' + target + ' has no sign on its declination and will be skipped.\n')
-
-                        dec = int(decd[1:]) + int(decm)/60. + float(decs)/3600.
-                        self.position[target] = (ra,decfac*dec)
+                        sys.stderr.write('Target = ' + target + ' has no sign on its declination and will be skipped.\n')
+                        continue
+                    dec = int(decd[1:]) + int(decm)/60. + float(decs)/3600.
+                    self[target] = {'ra' : ra, 'dec' : decfac*dec, 'match' : re.compile(match), 'exact' : False}
+            print 'Loaded',len(self),'targets from',fname
         except Exception, err:
             sys.stderr.write('Target data problem: ' + str(err) + '\n')
             if line is not None: sys.stderr.write('Line: ' + line + '\n')
@@ -153,7 +163,7 @@ class Run(object):
 
     FUSSY = True
 
-    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, warn=False):
+    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, sskip=None, warn=False):
         """
         xml       -- xml file name with format run###.xml
         log       -- previously read night log
@@ -162,13 +172,17 @@ class Run(object):
         telescope -- telescope; names from XML cannot be relied on
         night     -- date of night YYYY-MM-DD
         run       -- date of run YYYY-MM.
+        sskip     -- list of targets to avoid Simbad searches for. Added to as a given target fails to avoid
+                     stressing the Simbad server.
         warn      -- If True, and the data is thought to be science (not bias, dark, flat, etc) to get message 
                      of targets with no match in the 'targets' (all of them if targets=None, so only sensible 
                      to set this if you have a targets object defined)
 
         At the end there are a whole stack of attributes. Not all will 
         be set, and if they are not they will be None. Some are specific
-        to either ULTRACAM or ULTRASPEC
+        to either ULTRACAM or ULTRASPEC. If calling this constructor 
+        repeatedly, 'targets' should be updated with any found in Simbad as 
+        indicated by the simbad flag.
 
         fname      -- name of xml file the run was constructed from
         telescope  -- name of the telescope
@@ -187,6 +201,11 @@ class Run(object):
         date       -- date at start of run
         utstart    -- UT at start of run
         utend      -- UT at end of run
+        hastart    -- Hour angle at start of run
+        haend      -- Hour angle at start of run
+        amassmin   -- minimum airmass during run
+        amassmax   -- maximum airmass during run
+        haend      -- Hour angle at start of run
         expose     -- exposure time, seconds
         nframe     -- number of frames
         sample     -- sample time, seconds
@@ -204,6 +223,7 @@ class Run(object):
         nx         -- number of pixels in X, per pair ULTRACAM, per window ULTRASPEC
         ny         -- number of pixels in Y, per pair ULTRACAM, per window ULTRASPEC
         comment    -- log file comment
+        simbad     -- flag: True if target data came from Simbad.
         """
         self.fname     = xml
         self.telescope = telescope
@@ -252,6 +272,11 @@ class Run(object):
         self.date      = None
         self.utstart   = None
         self.utend     = None
+        self.hastart   = None
+        self.haend     = None
+        self.amassmin  = None
+        self.amassmax  = None
+        self.haend     = None
         self.expose    = None
         self.nframe    = None
         self.sample    = None
@@ -271,6 +296,7 @@ class Run(object):
         self.observers = ''
         self.pid       = ''
         self.pi        = ''
+        self.simbad    = False
 
         try:
 
@@ -319,16 +345,52 @@ class Run(object):
                         self.pid = user['ID']
 
                 # Try to ID target with one of known position
-                if self.target is not None and targets is not None:
-                    for reg, target in targets.translate.iteritems():
-                        if reg.match(self.target):
-                            if self.id is None:
-                                self.id  = target.replace('~',' ')
-                                self.ra  = subs.d2hms(targets.position[target][0],2,':',2)
-                                self.dec = subs.d2hms(targets.position[target][1],2,':',1,'yes')
-                            else:
-                                sys.stderr.write('Multiple match to target name = ' + self.target + '\n')
+                if self.target is not None:
+                    if targets is not None:
+                        for target, entry in targets.iteritems():
+                            if entry['exact'] and self.target == entry['match']:
+                                if self.id is None:
+                                    self.id  = target.replace('~',' ')
+                                    self.ra  = subs.d2hms(entry['ra'],2,':',2)
+                                    self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
+                                else:
+                                    sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
+                            elif not entry['exact'] and entry['match'].match(self.target):
+                                if self.id is None:
+                                    self.id  = target.replace('~',' ')
+                                    self.ra  = subs.d2hms(entry['ra'],2,':',2)
+                                    self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
+                                else:
+                                    sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
 
+                        # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
+                        # be updated between multiple invocations of run and then this lookup will not be repeated.
+                        if self.id is None and self.is_science() and self.target not in sskip:
+                            print 'Making SIMBAD query for',self.target
+                            qsim = simbad.Query(self.target).query()
+                            if len(qsim) == 0:
+                                sys.stderr.write('Error: SIMBAD returned no matches to ' + self.target + '\n')
+                            elif len(qsim) > 1:
+                                sys.stderr.write('Error: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
+                            else:
+                                name = qsim[0]['Name']
+                                pos  = qsim[0]['Position']
+                                print 'Matched with',name,pos
+                                ms = pos.find('-')
+                                if ms > -1:
+                                    self.id  = qsim[0]['Name']
+                                    self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
+                                    self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
+                                    self.simbad = True
+                                else:
+                                    mp = pos.find('+')
+                                    if mp > -1:
+                                        self.id  = qsim[0]['Name']
+                                        self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
+                                        self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
+                                        self.simbad = True
+                                    else:
+                                        sys.stderr.write('Could not parse the SIMBAD position\n')
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -377,13 +439,45 @@ class Run(object):
 
                 if times is not None:
                     self.date    = times.date[self.number] if self.number in times.date else None
-                    self.utstart = times.utstart[self.number] if self.number in times.utstart else None
-                    self.utend   = times.utend[self.number] if self.number in times.utend else None
+                    self.utstart = subs.d2hms(subs.hms2d(times.utstart[self.number]),1,':') if self.number in times.utstart else None
+                    self.utend   = subs.d2hms(subs.hms2d(times.utend[self.number]),1,':') if self.number in times.utend else None
                     self.expose  = times.expose[self.number] if self.number in times.expose else None
                     self.expose  = self.expose if self.expose != 'UNDEF' else None
                     self.nframe  = times.nframe[self.number] if self.number in times.nframe else None
                     self.sample  = times.sample[self.number] if self.number in times.sample else None
                     self.sample  = self.sample if self.sample != 'UNDEF' else None
+
+                    # Try to compute start and end hour angles
+                    if self.ra is not None and self.dec is not None and self.telescope is not None and \
+                            self.utstart is not None and self.utend is not None and self.date is not None and self.date != 'UNDEF':
+                        try:
+                            (tel,obs,longitude,latitude,height) = subs.observatory(self.telescope)
+                            (ra,dec,system) = subs.str2radec(self.ra + ' ' + self.dec)
+                            uts = subs.hms2d(self.utstart)
+                            (d,m,y) = self.date.split('/')
+                            mjd = sla.cldj(int(y), int(m), int(d))
+                            (ams,alt,az,ha,pa,delz) = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)                    
+                            if ha > 12.:
+                                self.hastart = ha - 24.
+                            else:
+                                self.hastart = ha
+                            ute = subs.hms2d(self.utend)
+                            if ute < uts:
+                                mjd += 1
+                            (ame,alt,az,ha,pa,delz) = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)                    
+                            if ha < self.hastart:
+                                self.haend = ha + 24.
+                            else:
+                                self.haend = ha
+                            amax = ams if ams > ame else ame 
+                            if self.hastart < 0 and self.haend > 0.:
+                                amin = 1./cosd(latitude-dec)
+                            else:
+                                amin = ams if ams < ame else ame 
+                            self.amassmax = '%5.2f' % (amax,)
+                            self.amassmin = '%5.2f' % (amin,)
+                        except subs.SubsError, err:
+                            print err
 
                 if self.instrument == 'UCM':
 
@@ -532,8 +626,8 @@ class Run(object):
             '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table>\n' + \
             '<p>\n<table cellpadding=2>'
         st += '<tr>\n' + th('Run<br>no.') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
-            th('Date<br>Start of run') + th('UT<br>start') + th('UT<br>end') + th('Dwell<br>sec.') + \
-            th('Sample<br>sec.') + th('Frame<br>no.') 
+            th('Date<br>Start of run') + th('UT<br>start') + th('UT<br>end') + th('Amss<br>min') + th('Amss<br>max') + \
+            th('Dwell<br>sec.') + th('Sample<br>sec.') + th('Frame<br>no.') 
 
         if self.instrument == 'UCM':
             st += th('Filts')
@@ -569,6 +663,8 @@ class Run(object):
         st += td(self.date)
         st += td(self.utstart)
         st += td(self.utend)
+        st += td(self.amassmin)
+        st += td(self.amassmax)
         st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
         st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
