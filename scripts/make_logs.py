@@ -45,6 +45,10 @@ rdir_re = re.compile('^\d\d\d\d-\d\d$') # Search for YYYY-MM
 ndir_re = re.compile('^\d\d\d\d-\d\d-\d\d$') # Search for night directories
 xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
+# Targets to skip Simbad searches for; will be added to as more failures are found ensuring
+# that searches for a given target are only made once.
+sskip = ['Pluto','GRB','32K','Test data']
+
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
 rdirs.sort()
@@ -87,9 +91,8 @@ for rdir in rdirs:
     fg.write('</body>\n</html>\n')
     fg.close()
 
-    sims = []
-    sids = {}
-    runs = []
+    runs  = []
+    
     # now to the night-by-night files
     for ndir in ndirs:
 
@@ -116,40 +119,12 @@ for rdir in rdirs:
         expose = 0.
         for xml in xmls:
             try:
-                run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, True)
-
-                # Fancy SIMBAD lookup
-                if run.id is None and run.is_science():
-                    if run.target not in sims:
-                        sims.append(run.target)
-                        print 'Making SIMBAD query for',run.target
-                        qsim = simbad.Query(run.target).query()
-                        if len(qsim) == 0:
-                            sys.stderr.write('Error: SIMBAD returned no matches to ' + run.target + '\n')
-                        elif len(qsim) > 1:
-                            sys.stderr.write('Error: SIMBAD returned ' + str(len(qsim)) + ' matches to ' + run.target + '\n')
-                        else:
-                            name = qsim[0]['Name']
-                            pos  = qsim[0]['Position']
-                            print 'Matched with',name,pos
-                            ms = pos.find('-')
-                            if ms > -1:
-                                run.id  = qsim[0]['Name']
-                                run.ra  = pos[:ms].strip()
-                                run.dec = pos[ms:].strip()
-                            else:
-                                mp = pos.find('+')
-                                if mp > -1:
-                                    run.id  = qsim[0]['Name']
-                                    run.ra  = pos[:mp].strip()
-                                    run.dec = pos[mp:].strip()
-                                else:
-                                    sys.stderr.write('Could not parse the SIMBAD position\n')
-                            if run.id is not None:
-                                sids[run.target] = (run.id,run.ra,run.dec)
-                    elif run.target in sids:
-                        run.id,run.ra,run.dec = sids[run.target]
-                        
+                run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
+                # update targets to reduce simbad lookups
+                if run.simbad:
+                    targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : run.target, 'exact' : True}
+                elif run.id is None:
+                    sskip.append(run.target)
 
                 if first:
                     fh.write('\n' + run.html_start() + '\n')
