@@ -47,7 +47,7 @@ xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
 # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
 # that searches for a given target are only made once.
-sskip = ['Pluto','GRB','32K','Test data']
+sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K']
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
