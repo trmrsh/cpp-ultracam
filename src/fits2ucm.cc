@@ -50,7 +50,9 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{ST10} for an SBIG ST-10 CCD camera,
 !!emph{IAC80} for the IAC80 telescope at Izana,
 !!emph{FASTCAM} for the Andor iXon DU-897 EMCCD camera used in FASTCAM (on the TCS, NOT, WHT and GRANTECAN), 
-!!emph{QSI} for a QSI532 CCD camera.} 
+!!emph{QSI} for a QSI532 CCD camera,
+!!emph{BUSCA} for the Calar Alto BUSCA camera (but only one CCD at a time).
+} 
 !!arg{intout}{true for 2-byte integer output, false for floats. If you specify the integer format, ensure that
 you are not losing precision by so doing.}
 !!table
@@ -117,7 +119,7 @@ int main(int argc, char* argv[]){
 	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
 	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE" && format != "ACAM" && \
 	   format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && 
-	   format != "QSI")
+	   format != "QSI" && format != "BUSCA")
 	  throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
 				      "JKT     --- 1m JKT on La Palma\n"
 				      "AUX     --- 4.2m WHT's Aux Port camera\n"
@@ -134,7 +136,8 @@ int main(int argc, char* argv[]){
 				      "ST10    --- SBIG ST-10 camera\n" 
 				      "IAC80   --- CCD camera on the IAC80 at Izana \n"
 				      "FASTCAM --- FASTCAM on the NOT, WHT or TCS\n"
-				      "QSI     --- QSI532 CCD Camera");
+				      "QSI     --- QSI532 CCD Camera\n"
+				      "BUSCA   --- BUSCA camera at Calar Alto");
 	bool intout;
 	input.get_value("intout", intout, false, "2-byte integer output (else float)?");
 
@@ -1099,7 +1102,66 @@ int main(int argc, char* argv[]){
 		    // store time
 		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
 		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		}else if(format == "BUSCA"){
 		    
+		    char cbuff[256];
+		    
+		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("BUSCA 01: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+
+		    if(fits_read_key(fptr,TSTRING,"SEQUENCE",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("BUSCA 02: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+
+		    std::string sequence(cbuff);
+		    if(sequence.find("_bin2") == std::string::npos)
+			throw Ultracam::Ultracam_Error(std::string("BUSCA 03: ") + fits + std::string(": unrecognised sequence = ") + 
+						       sequence);
+
+		    // Assume no binning until proven otherwise
+		    xbin = 2;
+		    ybin = 2;			  
+		    
+		    double jd;
+		    fits_read_key(fptr,TDOUBLE,"JULIAN",&jd,NULL,&status);
+		    
+		    if(fits_read_key(fptr,TSTRING,"SHOPEN",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("BUSCA 03: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+
+		    int hour, minute, second;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> hour >> c >> minute >> c >> second ;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("BUSCA 04: Failed to translate SHOPEN = ") + std::string(cbuff));
+		    istr.clear();
+
+		    float exposure;
+		    fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status);
+		    if(status){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("BUSCA 04: " + fits + ": " + errmsg);
+		    }
+
+		    //Create a time
+		    Subs::Time ut_date(int(jd-2400000.5) + (hour + minute/60. + (second+exposure/2.)/3600.)/24.);
+	  
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));
+
 		}
 
 		// READ THIS
@@ -1684,7 +1746,103 @@ int main(int argc, char* argv[]){
 		    fpixel[1]++;
 		  }    
 
-		}
+		}else if(format == "BUSCA"){
+	  
+		    char cbuff[256];
+
+		    const int MAXX = 4096;
+		    const int MAXY = 4096;
+		    
+		    // Read number of windows
+		    int nwin;
+		    if(fits_read_key(fptr,TINT,"WINNR",&nwin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("180: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+
+		    int yoff = 0;
+		    for(int nw=0; nw<nwin; nw++){
+
+			std::string winxy = "WINXY" + Subs::str(nw);
+			if(fits_read_key(fptr,TSTRING,winxy.c_str(),&cbuff,NULL,&status)){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error("190: " + fits + ": " + errmsg);
+			}
+			std::string llxy(cbuff);
+			std::string::size_type start = llxy.find('[');			
+			std::string::size_type end   = llxy.find(':');
+			if(start == std::string::npos || end == std::string::npos)
+			    throw Ultracam::Ultracam_Error(std::string("200: ") + fits + std::string(": failed to find '[' or ':' in ") + llxy);
+			std::istringstream istr(llxy.substr(start+1,end-start-1));
+			int llx;
+			istr >> llx;
+			if(!istr)
+			    throw Ultracam::Ultracam_Error("210: failed to translate llx = " + llxy.substr(start+1,end-start-1));
+			istr.clear();
+
+			start = llxy.find(',');			
+			end   = llxy.rfind(':');
+			if(start == std::string::npos || end == std::string::npos)
+			    throw Ultracam::Ultracam_Error(std::string("220: ") + fits + std::string(": failed to find ',' or ':' in ") + llxy);
+			istr.str(llxy.substr(start+1,end-start-1));
+			int lly;
+			istr >> lly;
+			if(!istr)
+			    throw Ultracam::Ultracam_Error("230: failed to translate lly = " + llxy.substr(start+1,end-start-1));
+			istr.clear();
+
+			std::string windim = "WINDIM" + Subs::str(nw);
+			if(fits_read_key(fptr,TSTRING,windim.c_str(),&cbuff,NULL,&status)){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error("240: " + fits + ": " + errmsg);
+			}
+			std::string wdims(cbuff);
+			start = wdims.find('(');			
+			end   = wdims.find(',');
+			if(start == std::string::npos || end == std::string::npos)
+			    throw Ultracam::Ultracam_Error(std::string("250: ") + fits + std::string(": failed to find '(' or ',' in ") + wdims);
+			istr.str(wdims.substr(start+1,end-start-1));
+			int nx;
+			istr >> nx;
+			if(!istr)
+			    throw Ultracam::Ultracam_Error("260: failed to translate nx = " + wdims.substr(start+1,end-start-1));
+			istr.clear();
+
+			start = end;
+			end   = wdims.find(')');
+			if(start == std::string::npos || end == std::string::npos)
+			    throw Ultracam::Ultracam_Error(std::string("270: ") + fits + std::string(": failed to find ',' or ')' in ") + wdims);
+			istr.str(wdims.substr(start+1,end-start-1));
+			int ny;
+			istr >> ny;
+			if(!istr)
+			    throw Ultracam::Ultracam_Error("270: failed to translate ny = " + wdims.substr(start+1,end-start-1));
+			istr.clear();
+
+			// Finally have window position and dimensions (although there has to be a better way!)
+			// Create window
+			data[0].push_back(Ultracam::Windata(llx,lly,nx,ny,xbin,ybin,MAXX,MAXY));
+
+			// Start reading 
+			fpixel[0] = 1;
+			fpixel[1] = 1 + yoff;
+	  
+			// Read the data in, row by row 
+			for(long j=0; j<ny; j++){
+			    fits_read_pix(fptr, TFLOAT, fpixel, nx, 0, data[0][data[0].size()-1].row(j), &anynul, &status);
+			    if(status){
+				fits_get_errstatus(status, errmsg);
+				fits_close_file(fptr, &status); 
+				throw Ultracam::Ultracam_Error("280: " + fits + ": row " + Subs::str(j+1) + ". "  + errmsg);
+			    }
+			    fpixel[1]++;
+			} 
+			yoff += ny;
+		    }
+		}  
 		
 		// Write out the ultracam file
 		data.write(fits.substr(0,fits.find_last_of('.')), intout ? Ultracam::Windata::RAW : Ultracam::Windata::NORMAL);
