@@ -95,6 +95,7 @@ $(ALIASES):
 	@echo 'alias addaframe $(progdir)/addaframe.csh'           >> $(ALIASES)
 	@echo 'alias averun    $(progdir)/averun.csh'              >> $(ALIASES)
 	@echo 'alias breakup   $(progdir)/breakup.csh'             >> $(ALIASES)
+	@echo "alias busca2ucm 'python $(progdir)/busca2ucm.py'"   >> $(ALIASES)
 	@echo 'alias check_for_bad_data $(progdir)/check_for_bad_data.csh' >> $(ALIASES)
 	@echo "alias copymask  'perl $(progdir)/copymask.pl'"      >> $(ALIASES)
 	@echo 'alias debias    $(progdir)/debias.csh'              >> $(ALIASES)
