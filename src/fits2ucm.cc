@@ -51,13 +51,14 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{IAC80} for the IAC80 telescope at Izana,
 !!emph{FASTCAM} for the Andor iXon DU-897 EMCCD camera used in FASTCAM (on the TCS, NOT, WHT and GRANTECAN), 
 !!emph{QSI} for a QSI532 CCD camera,
-!!emph{BUSCA} for the Calar Alto BUSCA camera (but only one CCD at a time).
-} 
+!!emph{BUSCA} for the Calar Alto BUSCA camera (but only one CCD at a time). See !!ref{busca2ucm.html}{busca2ucm}
+for an attempt to combine the different BUSCA filters.
+}
 !!arg{intout}{true for 2-byte integer output, false for floats. If you specify the integer format, ensure that
 you are not losing precision by so doing.}
 !!table
 
-Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fits}
+Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fits}, !!ref{busca2ucm.html}{busca2ucm}
 
 !!end
 
@@ -109,7 +110,24 @@ int main(int argc, char* argv[]){
 	input.sign_in("intout",    Subs::Input::LOCAL, Subs::Input::PROMPT);
 
 	std::string fname;
-	input.get_value("data", fname, "run001", "data file or list of data files");
+	input.get_value("data", fname, "run001", "data file or name of list of data files");
+
+	// Read file or list
+	std::vector<std::string> flist;
+	if(fname.find(".fit")  == fname.length() - 4  || 
+	   fname.find(".fits") == fname.length() - 5 ||
+	   fname.find(".FIT") == fname.length() - 4 ||
+	   fname.find(".fts")  == fname.length() - 4){
+	    flist.push_back(fname);
+	}else{      
+	    std::ifstream istr(fname.c_str());
+	    while(istr >> fname){
+		flist.push_back(fname);
+	    }
+	    istr.close();
+	    if(flist.size() == 0) throw Ultracam::Input_Error("No file names loaded");
+	}
+
 	std::string format;
 	input.get_value("format", format, "JKT", "data format (JKT, AUX, Faulkes, ... etc ... junk for a full list)");
 	format = Subs::toupper(format);
@@ -138,24 +156,9 @@ int main(int argc, char* argv[]){
 				      "FASTCAM --- FASTCAM on the NOT, WHT or TCS\n"
 				      "QSI     --- QSI532 CCD Camera\n"
 				      "BUSCA   --- BUSCA camera at Calar Alto");
+
 	bool intout;
 	input.get_value("intout", intout, false, "2-byte integer output (else float)?");
-
-	// Read file or list
-	std::vector<std::string> flist;
-	if(fname.find(".fit")  == fname.length() - 4  || 
-	   fname.find(".fits") == fname.length() - 5 ||
-	   fname.find(".FIT") == fname.length() - 4 ||
-	   fname.find(".fts")  == fname.length() - 4){
-	    flist.push_back(fname);
-	}else{      
-	    std::ifstream istr(fname.c_str());
-	    while(istr >> fname){
-		flist.push_back(fname);
-	    }
-	    istr.close();
-	    if(flist.size() == 0) throw Ultracam::Input_Error("No file names loaded");
-	}
 
 	std::string fits;
 
@@ -163,7 +166,7 @@ int main(int argc, char* argv[]){
 	int xbin, ybin, llx, lly;
 
 	for(size_t nfile=0; nfile<flist.size(); nfile++){
-
+	  
 	    fits = flist[nfile];
 
 	    // open the file
@@ -174,7 +177,6 @@ int main(int argc, char* argv[]){
 		fits_close_file(fptr, &status);
 		throw Ultracam::Ultracam_Error("fits2ucm: " + fits + ": " + errmsg);
 	    }
-
 
 	    // First deal with the headers, except ATC format for which
 	    // we deal with header and data.
@@ -239,10 +241,10 @@ int main(int argc, char* argv[]){
 		nhdu = 1;
 		int ndigit = int(log10(float(NIMAGE))+1);
 		for(int nim=0; nim<NIMAGE; nim++){
-	  
+
 		    // Create an empty Ultracam frame with 1 CCD.
 		    Ultracam::Frame data(1);
-
+	  
 		    nhdu++;
 		    if(fits_movabs_hdu(fptr, nhdu, &hdutype, &status)){
 			fits_get_errstatus(status, errmsg);
