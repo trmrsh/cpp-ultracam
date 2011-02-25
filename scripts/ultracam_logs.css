@@ -1,0 +1,67 @@
+body {
+  background-color: black; 
+  font: 9pt sans-serif;
+  color:#ffffff
+}
+
+p {color: #ffffff}
+
+h1 {color: #ffffff}
+input.text {margin-right: 20px; margin-left: 10px}
+spa {margin-right: 20px; margin-left: 20px}
+
+table { 
+  border-top:1px solid #555500; 
+  border-right:1px solid #555500; 
+  border-bottom:2px solid #555500; 
+  border-left:1px solid #555500; 
+}
+
+td { 
+  vertical-align: top;
+  text-align: top;
+  white-space: nowrap;
+  padding-right: 10px;
+}
+
+td.cen { 
+  vertical-align: top;
+  text-align: center;
+  white-space: nowrap;
+}
+
+td.coords { 
+  vertical-align: top;
+  text-align: center;
+  white-space: nowrap;
+}
+
+td.format { 
+  vertical-align: top;
+  text-align: center;
+  white-space: nowrap;
+}
+
+th { 
+  vertical-align:top;
+}
+
+/* links */
+
+a:link {
+  color: #AAAAFF;
+  text-decoration:underline;
+  font-size: 11pt;
+  }
+
+a:visited {
+  color: #9A6Ba2;
+  text-decoration:underline;
+  font-size: 11pt;
+  }
+
+a:hover {
+  color: red;
+  text-decoration:underline;
+  font-size: 11pt;
+  }
