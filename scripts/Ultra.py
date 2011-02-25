@@ -33,7 +33,7 @@ class Log(object):
 
     def __init__(self, fname):
         """
-        Constructs a new Log given a file name. Makes empty
+        Constructs a new Log given a file. Makes empty
         dictionaries if none found and reports an error
         """
         self.format  = 2
@@ -108,47 +108,98 @@ class Times(object):
 class Targets(dict):
     """
     Class to read and store the target positions and regular expressions. 
-    The lines in the targets file must have format
 
-    Target HH MM SS.SS [-+]DD MM SS.SS Match
-
-    Both target and match must have no spaces.
-
-    A dictionary keyed on target names. Each item is in turn a dictionary
+    It is a dictionary keyed on target names. Each item is in turn a dictionary
     with the following keys:
 
-    'ra'     -- RA
-    'dec'    -- Dec
-    'match'  -- Expression to match against.
-    'exact'  -- True for string match as opposed to regular expression match
-
+    'ra'     -- RA (decimal hours)
+    'dec'    -- Dec (decimal degrees)
+    'match'  -- A list of tuples. Each tuples has a matching expression and a flag. If the flag is True, it indicates
+                that an exact match is needed while it is false regular expression matchin is used. In this case the tuple
+                aends with a compiled version of the regular expression to spped processing
     """
 
-    def __init__(self, fname):
+    def __init__(self, *fnames):
         """
         Constructs a new Targets object. Makes empty
-        dictionaries if none found and reports an error
+        dictionaries if none found and reports an error. Multiple
+        file names can be specified; any which do not exist will be skipped.
+        The files must have the format
+        
+        name hh mm ss.ss dd mm ss.ss E expr1 R expr2 E expr3 ...
+       
+        where name is the name that will be attached to the target dd include the 
+        declination sign. E = exact, R = regex matching using the following expression.
+        These can come in any order.
         """
 
         try:
-            f  = open(fname)
-            for line in f:
-                if not line.startswith('#') and line[:1].isalnum():
-                    (target,rah,ram,ras,decd,decm,decs,match) = line.strip().split()
-                    ra  = int(rah) + int(ram)/60. + float(ras)/3600.
-                    if decd[:1] == '-':
-                        decfac = -1.
-                    elif decd[:1] == '+':
-                        decfac = +1.
-                    else:
-                        sys.stderr.write('Target = ' + target + ' has no sign on its declination and will be skipped.\n')
-                        continue
-                    dec = int(decd[1:]) + int(decm)/60. + float(decs)/3600.
-                    self[target] = {'ra' : ra, 'dec' : decfac*dec, 'match' : re.compile(match), 'exact' : False}
-            print 'Loaded',len(self),'targets from',fname
+            for fname in fnames:
+                if os.path.isfile(fname):
+                    f  = open(fname)
+                    for line in f:
+                        if not line.startswith('#') and line[:1].isalnum():
+                            tokens = line.strip().split()
+                            if len(tokens) >= 9 and (len(tokens)-7) % 2 == 0:
+                                (target,rah,ram,ras,decd,decm,decs) = tokens[:7]
+                                match = []
+                                for i in range(7, len(tokens), 2):
+                                    if tokens[i] == 'E':
+                                        exact = True
+                                    elif tokens[i] == 'R':
+                                        exact = False
+                                    else:
+                                        raise Exception('Invalid target line = ' + line + '; could not recognise match type = ' + tokens[i])
+                                        
+                                    if tokens[i+1] in match:
+                                        raise Exception('Repeated match expression in line = ' + line)
+
+                                    if exact:
+                                        match.append((tokens[i+1].replace('~',' '), exact))
+                                    else:
+                                        match.append((tokens[i+1], exact, re.compile(tokens[i+1])))
+                            else:
+                                raise Exception('Invalid target line = ' + line)
+
+                            (ra,dec,system) = subs.str2radec(rah + ' ' + ram + ' ' + ras + ' ' + decd + ' ' + decm + ' ' + decs)
+                            target = target.strip().replace('~',' ')
+
+                            if target in self:
+                                raise Exception('Found target name = "' + target + '" more than once in ' + str(fnames))
+                            self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
+                    f.close()
+                    print len(self),'targets after loading',fname
+                else:
+                    print 'No targets loaded from',fname,'as it does not exist.'
         except Exception, err:
             sys.stderr.write('Target data problem: ' + str(err) + '\n')
             if line is not None: sys.stderr.write('Line: ' + line + '\n')
+
+    def write(self, fname):
+        """
+        Write targets out to disk file fname.
+        """
+
+        # write in RA order
+        ras   = dict([(targ,entry['ra']) for targ, entry in self.iteritems()])
+        targs = sorted(ras, key=ras.get)
+
+        f = open(fname,'w')
+        f.write("""
+#
+# File of targets written by Ultra.Targets.write
+#
+
+""")
+
+        for targ in targs:
+            entry = self[targ]
+            pos = subs.d2hms(entry['ra'],sep=' ') + '   ' + subs.d2hms(entry['dec'],sep=' ',sign=True)
+            f.write('%-35s %s' % (targ.replace(' ','~'),pos))
+            for ent in entry['match']:
+                f.write(' ' + ('E' if ent[1] else 'R') + ' ' + ent[0].replace(' ','~'))
+            f.write('\n')
+        f.close()
 
 class Run(object):
     """
@@ -162,6 +213,7 @@ class Run(object):
     """
 
     FUSSY = True
+    RESPC = re.compile('\s+')
 
     def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, sskip=None, warn=False):
         """
@@ -332,65 +384,65 @@ class Run(object):
 
                 if user is not None:
                     if self.target is None and 'target' in user:
-                        self.target = user['target']
+                        self.target = user['target'].strip()
                     if 'flags' in user:
-                        self.flag = user['flags']
+                        self.flag = user['flags'].strip()
                     if 'filters' in user:
-                        self.filters = user['filters']
+                        self.filters = user['filters'].strip()
                     if 'PI' in user:
-                        self.pi = user['PI']
+                        self.pi = user['PI'].strip()
                     if 'Observers' in user:
-                        self.observers = user['Observers']
+                        self.observers = user['Observers'].strip()
                     if 'ID' in user:
-                        self.pid = user['ID']
+                        self.pid = user['ID'].strip()
 
                 # Try to ID target with one of known position
                 if self.target is not None:
-                    if targets is not None:
-                        for target, entry in targets.iteritems():
-                            if entry['exact'] and self.target == entry['match']:
+
+                    # Search through target entries.
+                    for target, entry in targets.iteritems():
+                        for ent in entry['match']:
+                            if (ent[1] and self.target == ent[0]) or \
+                                    (not ent[1] and ent[2].match(self.target)):
                                 if self.id is None:
-                                    self.id  = target.replace('~',' ')
-                                    self.ra  = subs.d2hms(entry['ra'],2,':',2)
-                                    self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
-                                else:
-                                    sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
-                            elif not entry['exact'] and entry['match'].match(self.target):
-                                if self.id is None:
-                                    self.id  = target.replace('~',' ')
+                                    self.id  = target
                                     self.ra  = subs.d2hms(entry['ra'],2,':',2)
                                     self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
                                 else:
                                     sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
 
-                        # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
-                        # be updated between multiple invocations of run and then this lookup will not be repeated.
-                        if self.id is None and self.is_science() and self.target not in sskip:
-                            print 'Making SIMBAD query for',self.target
-                            qsim = simbad.Query(self.target).query()
-                            if len(qsim) == 0:
-                                sys.stderr.write('Error: SIMBAD returned no matches to ' + self.target + '\n')
-                            elif len(qsim) > 1:
-                                sys.stderr.write('Error: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
+                    # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
+                    # be updated between multiple invocations of run and then this lookup will not be repeated.
+                    if self.id is None and self.is_science() and self.target not in sskip:
+                        print 'Making SIMBAD query for',self.target
+                        qsim = simbad.Query(self.target).query()
+                        if len(qsim) == 0:
+                            sys.stderr.write('Error: SIMBAD returned no matches to ' + self.target + '\n')
+                        elif len(qsim) > 1:
+                            sys.stderr.write('Error: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
+                        else:
+                            name = qsim[0]['Name']
+                            pos  = qsim[0]['Position']
+                            if name.startswith('V* '):
+                                name = name[3:]
+                            name = name.strip()
+                            name = re.sub(Run.RESPC, ' ', name)
+                            print 'Matched with',name,pos
+                            ms = pos.find('-')
+                            if ms > -1:
+                                self.id  = name
+                                self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
+                                self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
+                                self.simbad = True
                             else:
-                                name = qsim[0]['Name']
-                                pos  = qsim[0]['Position']
-                                print 'Matched with',name,pos
-                                ms = pos.find('-')
-                                if ms > -1:
-                                    self.id  = qsim[0]['Name']
-                                    self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
-                                    self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
+                                mp = pos.find('+')
+                                if mp > -1:
+                                    self.id  = name
+                                    self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
+                                    self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
                                     self.simbad = True
                                 else:
-                                    mp = pos.find('+')
-                                    if mp > -1:
-                                        self.id  = qsim[0]['Name']
-                                        self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
-                                        self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
-                                        self.simbad = True
-                                    else:
-                                        sys.stderr.write('Could not parse the SIMBAD position\n')
+                                    sys.stderr.write('Could not parse the SIMBAD position\n')
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -438,13 +490,19 @@ class Run(object):
                     sys.stderr.write('File = ' + self.fname + ' failed to identify application = ' + app + '\n')
 
                 if times is not None:
-                    self.date    = times.date[self.number] if self.number in times.date else None
-                    self.utstart = subs.d2hms(subs.hms2d(times.utstart[self.number]),1,':') if self.number in times.utstart else None
-                    self.utend   = subs.d2hms(subs.hms2d(times.utend[self.number]),1,':') if self.number in times.utend else None
-                    self.expose  = times.expose[self.number] if self.number in times.expose else None
+                    self.date    = times.date[self.number] \
+                        if self.number in times.date and times.date[self.number] != 'UNDEF' else None
+                    self.utstart = subs.d2hms(subs.hms2d(times.utstart[self.number]),1,':') \
+                        if self.number in times.utstart and times.utstart[self.number] != 'UNDEF' else None
+                    self.utend   = subs.d2hms(subs.hms2d(times.utend[self.number]),1,':') \
+                        if self.number in times.utend and times.utend[self.number] != 'UNDEF' else None
+                    self.expose  = times.expose[self.number] \
+                        if self.number in times.expose and times.expose[self.number] else None
                     self.expose  = self.expose if self.expose != 'UNDEF' else None
-                    self.nframe  = times.nframe[self.number] if self.number in times.nframe else None
-                    self.sample  = times.sample[self.number] if self.number in times.sample else None
+                    self.nframe  = times.nframe[self.number] \
+                        if self.number in times.nframe and times.nframe[self.number] != 'UNDEF' else None
+                    self.sample  = times.sample[self.number] \
+                        if self.number in times.sample and times.sample[self.number] != 'UNDEF' else None
                     self.sample  = self.sample if self.sample != 'UNDEF' else None
 
                     # Try to compute start and end hour angles
@@ -551,7 +609,7 @@ class Run(object):
                         self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
                         self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
 
-            if warn and self.id is None and self.is_science():
+            if warn and self.id is None and self.is_science() and self.target not in sskip:
                 sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.target + '\n')
 
         except Exception, err:
@@ -737,6 +795,49 @@ class Run(object):
             return not equal_result
         return NotImplemented
 
+    def __ge__(self, other):
+        """
+        Defines >=. One run is said to be 'greater than or equal to' another run if it can be re-formatted to 
+        match that run. This is to allow the identification of calibration frames that match a data frame. 
+        This means that the windows must cover the target frames windows and be compatible in terms of binning.
+        This does not insist on identical readout modes or speeds (because one can use a flat field of differing
+        readout speed for example). The routine insists that windows in 'other' are wholly enclosed by windows in
+        'self', i.e. it does not search for windows enclosed by multiple windows in self. This probably never happens
+        in practice in any case.
+        """
+	if (isinstance(other, Run)):
+
+            # Basic checks
+            if self.instrument != other.instrument or self.x_bin is None or other.x_bin is None or \
+                    self.y_bin is None or other.y_bin is None:
+                return False
+
+            xbin,ybin,sxbin,sybin = int(other.x_bin),int(other.y_bin),int(self.x_bin),int(self.y_bin)
+
+            if (sxbin != xbin and sxbin > 1) or (sybin != ybin and sybin > 1):
+                return False
+
+            # OK, we need to look at the window formats. 
+            for (xleft,xright,ystart,nx,ny) in zip(other.xleft,other.xright,other.ystart,other.nx,other.ny):
+                if xleft is None:
+                    break
+                xleft,xright,ystart,nx,ny = int(xleft),int(xright),int(ystart),int(nx),int(ny)
+                ok = False
+                for (sxleft,sxright,systart,snx,sny) in zip(self.xleft,self.xright,self.ystart,self.nx,self.ny):
+                    if sxleft is None:
+                        break
+                    sxleft,sxright,systart,snx,sny = int(sxleft),int(sxright),int(systart),int(snx),int(sny)
+                    # check vertical overlap and left and right-hand window overlap
+                    if (systart <= ystart and systart+sybin*sny >= ystart+ybin*ny and (ystart-systart) % sybin == 0) and \
+                            ((sxleft <= xleft and sxleft+sxbin*snx >= xleft+xbin*nx and (xleft-sxleft) % sxbin == 0) or \
+                                 (sxright <= xright and sxright+sxbin*snx >= xright+xbin*nx and (xright-sxright) % sxbin == 0)):
+                        ok = True
+                        break
+            return ok
+
+        else:
+            return NotImplemented
+
     def __str__(self):
         st = '%-25s %3s %1d %1s %1s %7s' % (self.target,self.instrument,self.nwindow,self.x_bin,self.y_bin,self.mode)
         if self.instrument == 'USP':
@@ -794,6 +895,14 @@ class Run(object):
         reb = re.compile('dark',re.I)
         return self.target is not None and reb.search(self.target)
 
+    def is_calib(self):
+        """
+        Returns True if the run is identified as a calibration frame (for data access) or is thought to be a dark, flat
+        or bias.
+        """
+        reb = re.compile('calib',re.I)
+        return self.pid is None or reb.match(self.pid) or self.is_flat() or self.is_dark() or self.is_bias()
+
     def is_science(self):
         """
         Returns True if the run is thought to be a science frame.
@@ -819,6 +928,23 @@ class Run(object):
                              self.target == "Pluto speed test" or self.target == "ugr" or \
                              self.target == "PowerOn" or self.target == "Slide test"))
 
+    def size(self):
+        """
+        Returns size in bytes per frame
+        """
+        if self.is_power_onoff():
+            return 0
+
+        if self.nframe is not None:
+            nbytes = 24            
+            for nx,ny in zip(self.nx,self.ny):
+                if nx is not None and ny is not None:
+                    nx,ny = int(nx),int(ny)
+                    nbytes += 4*nx*ny
+            return nbytes*int(self.nframe)
+        else:
+            return None
+        
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
     return '<td class="' + type + '">' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
