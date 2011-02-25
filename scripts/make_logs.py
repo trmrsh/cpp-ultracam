@@ -37,8 +37,8 @@ import trm.simbad as simbad
 # until no such warnings appear. html files are made on a night-by-night
 # basis.
 
-# First read target data
-targets = Ultra.Targets('TARGETS')
+# First read target data.
+targets = Ultra.Targets('TARGETS', 'AUTO_TARGETS')
 
 # File matching regular expressions
 rdir_re = re.compile('^\d\d\d\d-\d\d$') # Search for YYYY-MM
@@ -52,6 +52,9 @@ sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K']
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
 rdirs.sort()
+
+# to keep track of those targets IDed from Simbad
+sims = []
 for rdir in rdirs:
 
     # Try to find the telescope.
@@ -63,7 +66,6 @@ for rdir in rdirs:
     except Exception, err:
         telescope = None
         print 'Run directory =',rdir,',',err
-
 
     # Now the night-by-night directories
     ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and ndir_re.match(x) is not None]
@@ -120,9 +122,14 @@ for rdir in rdirs:
         for xml in xmls:
             try:
                 run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
+
                 # update targets to reduce simbad lookups
                 if run.simbad:
-                    targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : run.target, 'exact' : True}
+                    if run.id in targets:
+                        targets[run.id]['match'].append((run.target, True))
+                    else:
+                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
+                        sims.append(run.id)
                 elif run.id is None:
                     sskip.append(run.target)
 
@@ -139,3 +146,22 @@ for rdir in rdirs:
         fh.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
         fh.write('</body>\n</html>')
         fh.close()
+
+# Write out all 'exact' targets to disk to save future simbad lookups
+if len(sims):
+
+    # These have to be appended to the AUTO_TARGETS file. So we read them in again
+    ntargs = Ultra.Targets('AUTO_TARGETS')
+
+    if os.path.exists('AUTO_TARGETS'):
+        os.rename('AUTO_TARGETS', 'AUTO_TARGETS.old')
+
+    # add in the new ones
+    for rid in sims:
+        ntargs[rid] = targets[rid]
+
+    ntargs.write('AUTO_TARGETS')
+
+    print 'Total of',len(sims),'targets identified by Simbad.'
+    print 'Written to AUTO_TARGETS to save future lookups.'
+
