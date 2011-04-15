@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Script to setup directories in logs
+Script to setup directories in logs. Run from the top-level ultracam directory
 
 Once new data are imported into the raw data directories (requires directories 
 for each day containing log files in format 'yyyy-mm-dd.dat') run this script 
@@ -9,8 +9,12 @@ to set up corresponding directories in the log directories and to link the log
 files.
 """
 
-import os
-import re
+import os, re
+
+cwd = os.getcwd()
+if cwd != '/storage/astro2/phsaap/ultracam':
+    print 'This must be run from /storage/astro2/phsaap/ultracam'
+    exit(1)
 
 raw = 'raw_data'
 log = 'logs'
