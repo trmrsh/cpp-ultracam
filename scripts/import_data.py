@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
 # Script to re-organise files after initial import in VSD/PK format
-# with underscores and the like. Just give the name of the directory
-# containing the night directories. It will:
+# with underscores and the like. It should be run from the raw_data
+# directory where all the night-by-night and run directories are.
+# Just give the name of the run directory of the form YYYY-MM 
+# containing the initial import of data from ULTRACAM. It will:
 #
 # 1) Find all directories of form yyyy_mm_dd
 # 2) Move all files into a sub-directory 'data' of each night
@@ -17,11 +19,15 @@ if len(sys.argv) != 2:
     print 'usage: directory'
     exit(1)
 
+cwd = os.getcwd()
+if cwd != '/storage/astro2/phsaap/ultracam/raw_data':
+    print 'This must be run from /storage/astro2/phsaap/ultracam/raw_data'
+    exit(1)
+
 tdir = sys.argv[1]
 if not os.path.isdir(tdir):
     print tdir,'is not a directory; aborting',sys.argv[0]
     exit(1)
-
 
 vikdir = re.compile('\d\d\d\d_\d\d_\d\d$')
 dirs = [d for d in os.listdir(tdir) if vikdir.match(d) \
@@ -29,28 +35,25 @@ dirs = [d for d in os.listdir(tdir) if vikdir.match(d) \
 
 lfile = re.compile('\d\d\d\d_\d\d_\d\d_log.dat$')
 for d in dirs:
-    dir   = os.path.join(tdir, d)
-    flist = os.listdir(dir)
-    data  = os.path.join(dir, 'data')
-    if not os.path.exists(data):
-        pass
-        os.makedirs(data)
-    elif os.path.exists(data) and not os.path.isdir(data):
-        print 'Found',data,'but it is not a directory.'
-        print 'Aborting',sys.argv[0]
+
+    old_dir   = os.path.join(tdir, d)
+    new_dir   = d.replace('_','-')
+    if os.path.exists(new_dir):
+        print new_dir,'already exists!'
         exit(1)
 
-    for fname in flist:
-        old_name = os.path.join(dir, fname)
-        if fname != 'data':
-            if lfile.match(fname):
-                new_log = os.path.join(data, fname[:-8].replace('_','-') + '.dat')
-                print 'copy',old_name,'-->',new_log
-                shutil.copy(old_name, new_log)
-            new_name = os.path.join(data, fname)
-            print 'move',old_name,'-->',new_name
-            shutil.move(old_name, new_name)
+    flist = os.listdir(old_dir)
 
-    new_dir = dir.replace('_','-')
-    print 'move',dir,'-->',new_dir
-    shutil.move(dir, new_dir)
+    for fname in flist:
+        old_log = os.path.join(old_dir, fname)
+        if lfile.match(fname):
+            new_log = os.path.join(old_dir, fname[:-8].replace('_','-') + '.dat')
+            print '\ncopy',old_log,'-->',new_log
+            shutil.copy(old_log, new_log)
+
+    print 'move',old_dir,'-->',new_dir
+    shutil.move(old_dir, new_dir)
+    src = os.path.join('..', new_dir)
+    dst = os.path.join(tdir, new_dir)
+    print 'linking',src,'--->',dst
+    os.symlink(src, dst)
