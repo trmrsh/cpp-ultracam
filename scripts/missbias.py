@@ -79,7 +79,7 @@ for dir in dirs:
     xmls = [rn for rn in os.listdir(dir) if run_re.match(rn) != None]
 
     for xml in xmls:
-        run = Ultra.Run(os.path.join(dir,xml))
+        run = Ultra.Run(os.path.join(dir,xml), noid=True)
 
         if run.is_not_power_onoff():
 
@@ -99,9 +99,10 @@ for dir in dirs:
                 new_format = True
                 for rn, rold in nonbias.iteritems():
                     if run == rold:
-                        new_format = False
                         if rold.flag == 'data caution' and run.flag != 'data caution':
-                            nonbias[rn] = run
+                            del nonbias[rn]
+                        else:
+                            new_format = False
                         break
             
                 if new_format:
@@ -110,6 +111,7 @@ for dir in dirs:
 remove = []
 for rn, run in nonbias.iteritems():
     match = False
+
     for rnb, runb in bias.iteritems():
         if run == runb:
             match = True

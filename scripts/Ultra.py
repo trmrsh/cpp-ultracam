@@ -215,7 +215,7 @@ class Run(object):
     FUSSY = True
     RESPC = re.compile('\s+')
 
-    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, sskip=None, warn=False):
+    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, sskip=None, warn=False, noid=False):
         """
         xml       -- xml file name with format run###.xml
         log       -- previously read night log
@@ -229,6 +229,7 @@ class Run(object):
         warn      -- If True, and the data is thought to be science (not bias, dark, flat, etc) to get message 
                      of targets with no match in the 'targets' (all of them if targets=None, so only sensible 
                      to set this if you have a targets object defined)
+        noid      -- make no effort to ID a target
 
         At the end there are a whole stack of attributes. Not all will 
         be set, and if they are not they will be None. Some are specific
@@ -387,6 +388,7 @@ class Run(object):
                         self.target = user['target'].strip()
                     if 'flags' in user:
                         self.flag = user['flags'].strip()
+#                        print self.number, user['flags'], self.flag
                     if 'filters' in user:
                         self.filters = user['filters'].strip()
                     if 'PI' in user:
@@ -397,7 +399,7 @@ class Run(object):
                         self.pid = user['ID'].strip()
 
                 # Try to ID target with one of known position
-                if self.target is not None:
+                if self.target is not None and noid is False:
 
                     # Search through target entries.
                     for target, entry in targets.iteritems():
@@ -410,6 +412,7 @@ class Run(object):
                                     self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
                                 else:
                                     sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
+
 
                     # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
                     # be updated between multiple invocations of run and then this lookup will not be repeated.
@@ -443,6 +446,7 @@ class Run(object):
                                     self.simbad = True
                                 else:
                                     sys.stderr.write('Could not parse the SIMBAD position\n')
+
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -616,7 +620,7 @@ class Run(object):
               sys.stderr.write('File = ' + self.fname + ', error initialising Run: ' + str(err) + '\n')
 
 # for debugging
-#            traceback.print_exc(file=sys.stdout)
+#              traceback.print_exc(file=sys.stdout)
 
 
     # Series of one-off helper routines for ULTRACAM/ULTRASPEC XML
@@ -755,7 +759,7 @@ class Run(object):
         not matter
         """
 	if (isinstance(other, Run)):
-            ok = self.instrument == other.instrument and self.mode == other.mode and \
+            ok = self.instrument == other.instrument and same_mode(self,other) and \
                 ((self.x_bin is None and other.x_bin is None) or  self.x_bin == other.x_bin) and \
                 ((self.y_bin is None and other.y_bin is None) or self.y_bin == other.y_bin) and \
                 ((self.nwindow is None and other.nwindow is None) or self.nwindow == other.nwindow) and \
@@ -944,6 +948,15 @@ class Run(object):
             return nbytes*int(self.nframe)
         else:
             return None
+
+def same_mode(run1, run2):
+    """
+    Defines when two runs have the same mode as far as calibrations are concerned 
+    (e.g. FFCLR and FFNCLR are regarded as the same)
+    """
+    return run1.mode == run2.mode or (run1.mode == 'FFCLR' and run2.mode == 'FFNCLR') or \
+            (run1.mode == 'FFNCLR' and run2.mode == 'FFCLR') or (run1.mode == '1-PAIR' and run2.mode == '1-PCLR') or \
+            (run1.mode == '1-PCLR' and run2.mode == '1-PAIR')
         
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
