@@ -76,7 +76,7 @@ for rdir in rdirs:
     fg.write("""
 <html>
 <head>
-<link rel="stylesheet" type="text/css" href="../ultracam_test.css" />
+<link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />
 </head>
 <body>
 """)
