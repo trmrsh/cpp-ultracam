@@ -47,11 +47,7 @@ $dec1   = $_REQUEST['Dec1'];
 $dec2   = $_REQUEST['Dec2'];
 $unique = $_REQUEST['unique'];
 
-if($unique == "Unique nights only"){
-  $args = $ra1 . ' ' . $ra2 . ' ' . $dec1 . ' ' . $dec2 . ' y';
-}else{
-  $args = $ra1 . ' ' . $ra2 . ' ' . $dec1 . ' ' . $dec2 . ' n';
-}
+$args = $ra1 . ' ' . $ra2 . ' ' . $dec1 . ' ' . $dec2 . ' ' . $unique;
 
 system('../../python/ulogs.py ' . $args)
 ?>
