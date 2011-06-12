@@ -680,7 +680,7 @@ class Run(object):
         inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USPC' else None
 
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="../../ultracam_test.css" />\n' + \
+            '<link rel="stylesheet" type="text/css" href="../../ultracam_logs.css" />\n' + \
             '</head>\n<body>' + \
             '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
