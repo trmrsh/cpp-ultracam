@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>ULTRACAM interactive logs</title>
-<link rel="stylesheet" href="ultracam_test.css">
+<link rel="stylesheet" href="ultracam_ilogs.css">
 
 <script type="text/javascript">
 

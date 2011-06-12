@@ -10,7 +10,7 @@ import numpy as np
 
 def main(argv):
 
-  print '<p> Arguments =' + '|'.join(argv) + '|\n<p>'
+#  print '<p> Arguments =' + '|'.join(argv) + '|\n<p>'
   
   if len(argv)  >= 4:
     ra1, ra2, dec1, dec2 = argv[:4]
@@ -62,7 +62,7 @@ def main(argv):
   ids     = table.field('ID')
 
   ok = (ras > ra1) & (ras < ra2) & (decs > dec1) & (decs < dec2)
-  print 'There were',len(ras[ok]),'matches out of a possible',len(ras)
+  print 'There were',len(ras[ok]),'matches out of a possible ' + str(len(ras)) + '. '
 
   if len(ras[ok]):
 
@@ -78,11 +78,11 @@ def main(argv):
 
     if unique:
       for ra,dec,run,night,number,target,iden in zip(ras[ok][uk],decs[ok][uk],runs[ok][uk],nights[ok][uk],numbers[ok][uk],targets[ok][uk],ids[ok][uk]):
-        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s.htm">%s</a></td><td class="cen"> %s </td><td> %s </td><td> %s </td></tr>' \
+        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s.htm" target="_blank">%s</a></td><td class="cen"> %s </td><td> %s </td><td> %s </td></tr>' \
             % (ra,dec,run,run,night,night,night,number,target,iden)
     else:
       for ra,dec,run,night,number,target,iden in zip(ras[ok],decs[ok],runs[ok],nights[ok],numbers[ok],targets[ok],ids[ok]):
-        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s.htm">%s</a> </td><td class="cen"> %s </td><td> %s </td><td> %s </td></tr>' \
+        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s.htm" target="_blank">%s</a> </td><td class="cen"> %s </td><td> %s </td><td> %s </td></tr>' \
             % (ra,dec,run,run,night,night,night,number,target,iden)
     print '</table>'
   else:
