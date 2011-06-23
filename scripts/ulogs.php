@@ -2,29 +2,6 @@
 <head>
 <title>ULTRACAM interactive logs</title>
 <link rel="stylesheet" href="ultracam_ilogs.css">
-
-<script type="text/javascript">
-
-function submitenter(myfield,e) {
-   var keycode;
-   if (window.event) {
-      keycode = window.event.keyCode;
-   } else if (e) {
-      keycode = e.which;
-   } else {
-     return true;
-   }
-
-   if (keycode == 13){
-     myfield.form.submit();
-     return false;
-   } else {
-     return true;
-   }
-}
-
-</script>
-
 </head>
 
 
@@ -34,21 +11,26 @@ function submitenter(myfield,e) {
 
 <p>
 This page is designed to help trace ULTRACAM runs, i.e. to answer burning
-questions such as "did we ever observe NN Ser, and if so, when?". Below,
-the RA and Dec should be specified in decimal hours and degrees respectively.
-Once you have set your limits, press enter on any of the fields and the page
-should update. 
+questions such as <a title="ULTRACAM in-joke">"did we ever observe NN Ser?"</a>. 
 
 <?php 
 
-$ra1    = $_REQUEST['RA1'];
-$ra2    = $_REQUEST['RA2'];
-$dec1   = $_REQUEST['Dec1'];
-$dec2   = $_REQUEST['Dec2'];
-$unique = $_REQUEST['unique'];
+$slimits = htmlspecialchars($_REQUEST['slimits']);
+$target  = htmlspecialchars($_REQUEST['target']);
+$delta   = htmlspecialchars($_REQUEST['delta']);
+$ra1     = htmlspecialchars($_REQUEST['RA1']);
+$ra2     = htmlspecialchars($_REQUEST['RA2']);
+$dec1    = htmlspecialchars($_REQUEST['Dec1']);
+$dec2    = htmlspecialchars($_REQUEST['Dec2']);
+$emin    = htmlspecialchars($_REQUEST['emin']);
+$unique  = htmlspecialchars($_REQUEST['unique']);
 
-$args = $ra1 . ' ' . $ra2 . ' ' . $dec1 . ' ' . $dec2 . ' ' . $unique;
-
+if($slimits == "simbad"){
+  $args = $slimits . ' ' . '"' . $target . '"' . ' ' . $delta . ' ' . $emin . ' ' . $unique;
+}else{
+  $args = $slimits . ' ' . $ra1 . ' ' . $ra2 . ' ' . $dec1 . ' ' . $dec2 . ' '
+  . $emin . ' ' . '"' . $target . '"' . ' ' . $delta . ' ' . $unique;
+}
 system('../../python/ulogs.py ' . $args)
 ?>
 
