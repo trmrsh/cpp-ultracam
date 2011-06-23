@@ -232,7 +232,7 @@ class Run(object):
         noid      -- make no effort to ID a target
 
         At the end there are a whole stack of attributes. Not all will 
-        be set, and if they are not they will be None. Some are specific
+        be set, and if they are not they will be 'None'. Some are specific
         to either ULTRACAM or ULTRASPEC. If calling this constructor 
         repeatedly, 'targets' should be updated with any found in Simbad as 
         indicated by the simbad flag.
@@ -266,6 +266,9 @@ class Run(object):
         ra         -- RA
         dec        -- Dec
         speed      -- readout speed
+        num_exp    -- number of exposures parameter from XML file
+        framesize  -- bytes per frame recorded in XML
+        headerwords-- number of words (2 bytes integers) used for timing info
         en_clr     -- clear enabled (ULTRASPEC)
         hv_gain    -- Avalanche gain setting (ULTRASPEC)
         output     -- which output (ULTRASPEC)
@@ -290,6 +293,7 @@ class Run(object):
         # strip out the important info
         self.observatory, telescope  = Run._get_observatory_status(dom)
         self.instrument, self.application, param = Run._get_instrument_status(dom)
+        self.framesize, self.headerwords = Run._get_data_status(dom)
         user = Run._get_user(dom)
         del dom
 
@@ -337,6 +341,7 @@ class Run(object):
         self.ra        = None
         self.dec       = None
         self.speed     = None
+        self.num_exp   = None
         self.en_clr    = None
         self.hv_gain   = None
         self.output    = None
@@ -380,6 +385,8 @@ class Run(object):
             elif self.poweroff:
                 self.target = 'Power off'
             else:
+
+                self.num_exp = param['NO_EXPOSURES'] if 'NO_EXPOSURES' in param else None
                 self.x_bin = param['X_BIN_FAC'] if 'X_BIN_FAC' in param else param['X_BIN']
                 self.y_bin = param['Y_BIN_FAC'] if 'Y_BIN_FAC' in param else param['Y_BIN']
 
@@ -401,17 +408,18 @@ class Run(object):
                 # Try to ID target with one of known position
                 if self.target is not None and noid is False:
 
-                    # Search through target entries.
-                    for target, entry in targets.iteritems():
-                        for ent in entry['match']:
-                            if (ent[1] and self.target == ent[0]) or \
-                                    (not ent[1] and ent[2].match(self.target)):
-                                if self.id is None:
-                                    self.id  = target
-                                    self.ra  = subs.d2hms(entry['ra'],2,':',2)
-                                    self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
-                                else:
-                                    sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
+                    if targets is not None:
+                        # Search through target entries.
+                        for target, entry in targets.iteritems():
+                            for ent in entry['match']:
+                                if (ent[1] and self.target == ent[0]) or \
+                                        (not ent[1] and ent[2].match(self.target)):
+                                    if self.id is None:
+                                        self.id  = target
+                                        self.ra  = subs.d2hms(entry['ra'],2,':',2)
+                                        self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
+                                    else:
+                                        sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
 
 
                     # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
@@ -620,7 +628,7 @@ class Run(object):
               sys.stderr.write('File = ' + self.fname + ', error initialising Run: ' + str(err) + '\n')
 
 # for debugging
-#              traceback.print_exc(file=sys.stdout)
+              traceback.print_exc(file=sys.stdout)
 
 
     # Series of one-off helper routines for ULTRACAM/ULTRASPEC XML
@@ -653,6 +661,18 @@ class Run(object):
             application = None
             param       = None
         return (instrument, application, param)
+
+    @staticmethod
+    def _get_data_status(dom):
+        try:
+            node        = dom.getElementsByTagName('data_status')[0]
+            framesize   = node.getAttribute('framesize')
+            headerwords = node.getElementsByTagName('header_status')[0].getAttribute('headerwords')
+        except Exception, err:
+            sys.stderr.write('Error reading data_status: ' + str(err) + '\n')
+            framsize    = None
+            headerwords = None
+        return (framesize, headerwords)
 
     @staticmethod
     def _get_user(dom):
@@ -938,16 +958,16 @@ class Run(object):
         """
         if self.is_power_onoff():
             return 0
-
-        if self.nframe is not None:
-            nbytes = 24            
-            for nx,ny in zip(self.nx,self.ny):
-                if nx is not None and ny is not None:
-                    nx,ny = int(nx),int(ny)
-                    nbytes += 4*nx*ny
-            return nbytes*int(self.nframe)
+        if self.framesize is not None:
+            return int(self.framesize)
         else:
-            return None
+            raise Exception('No framesize available to Run.size(self)')
+
+    def was_cleared(self):
+        """
+        Returns true if the frame was cleared at the start (which can affect whether the exposure time in constant)
+        """
+        return self.mode == '1-PCLR' or self.mode == 'FFCLR'
 
 def same_mode(run1, run2):
     """
@@ -981,3 +1001,115 @@ def th(data,type='cen'):
     """HTML table header entry"""
     return '<th class="' + type + '">' + str(data) + '</th>'
 
+def flist_stats(fnames, nrow, ncol, thresh):
+    """
+    This function computes the mean and RMS of the mean values of left and right halves of 
+    the CCDs in the frames listed in fnames. It returns 
+
+    (lmin,lmax,lmm,lrm,lgrad,rmin,rmax,rmm,rrm,rgrad)
+
+    where 
+
+    lmin  = the minimum left-hand mean values (1 per CCD)
+    lmax  = the maximum left-hand mean values     "
+    lmmm  = the mean of left-hand mean values     "
+    lrm   = the mean of left-hand RMS values      "
+    lgrad = gradient of left-hand mean values, counts/frame, (1 per CCD) 
+
+    and then the same for the right-hand side. Each of the above are themselves
+    arrays.
+    """
+
+    import numpy as np
+    from scipy import linalg
+    from trm import ucm
+
+    # Work out minimum and maximum means of each half of each CCD.
+    lmin = []
+    lmax = []
+    rmin = []
+    rmax = []
+    lmmn = []
+    rmmn = []
+    lrmn = []
+    rrmn = []
+    first = True
+
+    for fname in fnames:
+        ufile = ucm.rucm(fname)
+        mc = []
+        for nc in range(ufile.nccd()):
+            mw = []
+            rw = []
+            for nw in range(ufile.nwin(nc)):
+                if nw % 2 == 0:
+                    win = ufile.win(nc,nw)[nrow:,ncol:]
+                else:
+                    win = ufile.win(nc,nw)[nrow:,:-ncol]
+
+                # Collapse in Y- then X-directions, subtract result. This to get rid of gradients.
+                medy = np.median(win,0)
+                win -= medy
+                medx = np.median(win,1)
+                win -= np.c_[win.shape[1]*[medx]].transpose()
+
+                # Sigma-clipped mean
+                (rmean,rrms,cmean,crms,nrej,ncyc) = subs.sigma_reject(win, thresh, False)
+                mw.append(cmean+medx.mean()+medy.mean())
+                rw.append(crms)
+
+            lm   = np.array(mw[0::2])
+            rm   = np.array(mw[1::2])
+            lr   = np.array(rw[0::2]).mean()
+            rr   = np.array(rw[1::2]).mean()
+            lmn  = lm.min()
+            lmx  = lm.max()
+            rmn  = rm.min()
+            rmx  = rm.max()
+            
+            if first:
+                lmin.append(lmn)
+                lmax.append(lmx)
+                rmin.append(rmn)
+                rmax.append(rmx)
+                lrmn.append([])
+                rrmn.append([])
+                lmmn.append([])
+                rmmn.append([])
+            else:
+                lmin[nc] = min(lmn, lmin[nc])
+                lmax[nc] = max(lmx, lmax[nc])
+                rmin[nc] = min(rmn, rmin[nc])
+                rmax[nc] = max(rmx, rmax[nc])
+            lmmn[nc].append(lm.mean())
+            rmmn[nc].append(rm.mean())
+            lrmn[nc].append(lr)
+            rrmn[nc].append(rr)
+
+        first = False
+
+    lmin = np.array(lmin)
+    lmax = np.array(lmax)
+    rmin = np.array(rmin)
+    rmax = np.array(rmax)
+    lmmn = np.array(lmmn)
+    rmmn = np.array(rmmn)
+
+    lrm = np.array(lrmn).mean(1)
+    rrm = np.array(rrmn).mean(1)
+    lmm = lmmn.mean(1)
+    rmm = rmmn.mean(1)
+
+    # compute gradients
+    a = np.empty((len(fnames),2))
+    a[:,0] = 1
+    a[:,1] = np.arange(len(fnames))
+    lgrad = np.empty(ufile.nccd())
+    rgrad = np.empty(ufile.nccd())
+    for nc in range(ufile.nccd()):
+        xl, residues, rank, s = linalg.lstsq(a, lmmn[nc,:])
+        xr, residues, rank, s = linalg.lstsq(a, rmmn[nc,:])
+        lgrad[nc] = xl[1]
+        rgrad[nc] = xr[1]
+
+    return (lmin,lmax,lmm,lrm,lgrad,rmin,rmax,rmm,rrm,rgrad)
