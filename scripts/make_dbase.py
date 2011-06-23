@@ -56,6 +56,8 @@ nights  = []
 numbers = []
 targs   = []
 ids     = []
+exps    = []
+coms    = []
 
 for rdir in rdirs:
 
@@ -112,8 +114,12 @@ for rdir in rdirs:
                     runs.append(run.run)
                     nights.append(run.night)
                     numbers.append(run.number)
-                    targs.append(run.target)
-                    ids.append(run.id)
+                    targs.append(str(run.target.strip()))
+                    if len(run.target.strip()) > 50:
+                        print run.night,run.number,run.target
+                    ids.append(run.id.strip())
+                    exps.append(0. if run.expose is None else float(run.expose))
+                    coms.append(run.comment.strip())
  
             except Exception, err:
                 print 'XML error: ',err,'in',xml
@@ -130,6 +136,8 @@ nights  = np.array(nights)
 numbers = np.array(numbers)
 targs   = np.array(targs)
 ids     = np.array(ids)
+exps    = np.array(exps) / 60.
+coms    = np.array(coms)
 
 # Sort on RA
 isort   = np.argsort(sfield)
@@ -141,17 +149,21 @@ nights  = nights[isort]
 numbers = numbers[isort]
 targs   = targs[isort]
 ids     = ids[isort]
+exps    = exps[isort]
+coms    = coms[isort]
 
-# Construct fits file
-cra     = pyfits.Column(name='RA', format='D', array=ras)
-cdec    = pyfits.Column(name='Dec', format='D', array=decs)
+# Construct FITS file
+cra     = pyfits.Column(name='RA', format='D', unit='hours', array=ras)
+cdec    = pyfits.Column(name='Dec', format='D', unit='deg.', array=decs)
 crun    = pyfits.Column(name='Run', format='7A', array=runs)
 cnight  = pyfits.Column(name='Night', format='10A', array=nights)
 cnumber = pyfits.Column(name='Num', format='I', array=numbers)
-ctarg   = pyfits.Column(name='Target', format='20A', array=targs)
-cids    = pyfits.Column(name='ID', format='20A', array=ids)
+ctarg   = pyfits.Column(name='Target', format=str(targs.dtype.itemsize) + 'A', array=targs)
+cids    = pyfits.Column(name='ID', format=str(ids.dtype.itemsize) + 'A', array=ids)
+cexps   = pyfits.Column(name='Exposure', format='E', unit='mins', array=exps)
+ccoms   = pyfits.Column(name='Comment', format=str(coms.dtype.itemsize) + 'A', array=coms)
 
-cols   = pyfits.ColDefs([cra,cdec,crun,cnight,cnumber,ctarg,cids])
+cols    = pyfits.ColDefs([cra,cdec,crun,cnight,cnumber,ctarg,cids,cexps,ccoms])
 
 tbhdu = pyfits.new_table(cols)
 hdu   = pyfits.PrimaryHDU()
