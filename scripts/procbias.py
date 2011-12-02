@@ -52,11 +52,15 @@ Problems come in three varieties:
 
 parser = OptionParser(usage)
 parser.add_option("-r", "--redo", dest="redo", default=False, action="store_true",\
-                  help="recover data files from astronas if they are not found")
-parser.add_option("-c", "--clobber", dest="clobber", default=False, action="store_true",\
-                  help="clobber output ucm files")
+                  help="recover data files from astronas if they are not found in raw_data")
 parser.add_option("-k", "--keep", dest="keep", default=False, action="store_true",\
-                  help="keep the .dat files")
+                  help="keep the .dat files in the raw_data directories")
+parser.add_option("-p", "--pbias", dest="pbias", default=False, action="store_true",\
+                  help="clobber output ucm files if they contain 'Procbias' in their headers")
+parser.add_option("-o", "--other", dest="other", default=False, action="store_true",\
+                  help="clobber output ucm files if they don't contain 'Procbias' in their headers")
+parser.add_option("-c", "--clobber", dest="clobber", default=False, action="store_true",\
+                  help="clobber all output ucm files")
 
 (options, args) = parser.parse_args()
 if len(args) != 1:
@@ -66,8 +70,10 @@ if len(args) != 1:
 redo    = options.redo
 clobber = options.clobber
 keep    = options.keep
+pbias   = options.pbias
+other   = options.other
 
-import sys, re, subprocess
+import sys, re, subprocess, time
 import Ultra
 from trm import ucm
 
@@ -105,7 +111,7 @@ for line in fin:
 fin.close()
 
 if not len(biases):
-    print 'No bias names loaded from',sys.argv[1]
+    print 'No bias names loaded from',args[0]
     exit(1)
 
 print 'Loaded',len(biases),'names from',sys.argv[1],'\n'
@@ -127,14 +133,20 @@ for bias in biases:
         continue
 
     jnk  = os.path.join('raw_data', bias + '.jnk')
-    if not os.path.exists(jnk):
+    if os.path.exists(jnk):
         print 'WARNING: file =',jnk,'indicates that run is flagged as junk; run skipped.'
         continue
 
     ufile = os.path.join('derived_data', bias + '.ucm')
+    dufile = clobber
     if not clobber and os.path.exists(ufile):
-        print 'WARNING: ucm file =',ufile,'already exists; run skipped.'
-        continue
+        # read file
+        uf = ucm.rucm(ufile)
+        if (not other and not pbias) or (other and 'Procbias' in uf) or (pbias and 'Procbias' not in uf):
+            print 'WARNING: ucm file =',ufile,'already exists; run skipped.'
+            continue
+        else:
+            dufile = True
 
     # Search for .dat then .dat.gz; if redo=True, also look on astronas
     # gunzip if .dat.gz
@@ -236,8 +248,8 @@ for bias in biases:
     foptr.write('\n'.join(flist))
     foptr.close()
 
-    # Finally remove output ucm if clobber set and it exists
-    if os.path.exists(ufile) and clobber:
+    # Must now remove existing ucm file
+    if os.path.exists(ufile) and dufile:
         os.unlink(ufile)
 
     # combine the files
@@ -289,7 +301,7 @@ for bias in biases:
 
         m    = fcre.match(bias)
         pdir = m.group(1)
-
+        print 'making directory'
         if subprocess.Popen(['ssh', 'astronas', 'cd ultracam/raw_data; mkdir -p %s' % (pdir,)]).wait(): 
             print 'ERROR: failed to create containing directory',pdir,'on astronas'
             exit(1)
@@ -307,6 +319,7 @@ for bias in biases:
         
     # delete data file
     if not keep: 
+        time.sleep(10)
         os.unlink(data)
         if not retrieved:
             total += nbytes_total
