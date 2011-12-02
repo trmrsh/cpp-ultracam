@@ -73,4 +73,4 @@ for root, dirs, files in os.walk('.'):
                         else:
                             total += os.path.getsize(xml)
 
-print 'Transferred a total of',int(10.*float(total)/1024**2+0.5)/10.,'MB'
+print 'Transferred a total of',int(float(total)/1024**2+0.5),'MB'
