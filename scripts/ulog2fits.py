@@ -408,6 +408,8 @@ for nc in nccd:
         tbhdu.data.field('Y_' + snap)[:]      = y[nc][:,ap]
         tbhdu.data.field('XM_' + snap)[:]     = xm[nc][:,ap]
         tbhdu.data.field('YM_' + snap)[:]     = ym[nc][:,ap]
+        tbhdu.data.field('EXM_' + snap)[:]    = exm[nc][:,ap]
+        tbhdu.data.field('EYM_' + snap)[:]    = eym[nc][:,ap]
         tbhdu.data.field('Counts_' + snap)[:] = counts[nc][:,ap]
         tbhdu.data.field('Sigma_' + snap)[:]  = sigma[nc][:,ap]
         tbhdu.data.field('Sky_' + snap)[:]    = sky[nc][:,ap]
@@ -438,6 +440,7 @@ for nc in nccd:
 
 # finally write out the fits file!
 hdulist = pyfits.HDUList(hdus)
+hdulist.update_extend()
 hdulist.writeto(ufits, clobber=clobber)
 print '\nFinished.'
 
