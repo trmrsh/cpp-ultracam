@@ -44,6 +44,7 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{SAAO} for the UCT camera at SAAO, 
 !!emph{NOT} for NOT ALFOSC data,
 !!emph{ATC} for the ULTRASPEC multi-image FITS files from Derek Ives,
+!!emph{RATCAM} RATCAM on the LT
 !!emph{RISE} for Don Pollacco's camera for the LT,
 !!emph{ACAM} for the WHT's ACAM replacement for AUX,
 !!emph{SOFI} for split data from SOFI as produced by Steven Parsons,
@@ -54,6 +55,8 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{QSI} for a QSI532 CCD camera,
 !!emph{BUSCA} for the Calar Alto BUSCA camera (but only one CCD at a time). See !!ref{busca2ucm.html}{busca2ucm}
 for an attempt to combine the different BUSCA filters.
+!!emph{BASIC} minimal image only
+
 }
 !!arg{intout}{true for 2-byte integer output, false for floats. If you specify the integer format, ensure that
 you are not losing precision by so doing.}
@@ -136,9 +139,9 @@ int main(int argc, char* argv[]){
 	// READ THIS
 	// You need to decide on a name for your new format and add it to the following statement
 	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
-	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RISE" && format != "ACAM" && \
-	   format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && format != "FASTCAM" && 
-	   format != "QSI" && format != "BUSCA" && format != "EFOSC")
+	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RATCAM" && format != "RISE" && \
+	   format != "ACAM" && format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && \
+	   format != "FASTCAM" && format != "QSI" && format != "BUSCA" && format != "EFOSC")
 	  throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
 				      "JKT     --- 1m JKT on La Palma\n"
 				      "AUX     --- 4.2m WHT's Aux Port camera\n"
@@ -149,6 +152,7 @@ int main(int argc, char* argv[]){
 				      "SAAO    --- UCT camera data from SAAO\n"
 				      "NOT     --- NOT ALFOSC data\n"
 				      "ATC     --- Derek Ives' multi-image FITS \n"
+				      "RATCAM  --- 2m Liverpool Telescope RATCAM\n"
 				      "RISE    --- 2m Liverpool Telescope RISE\n"
 				      "ACAM    --- WHT's ACAM\n"
 				      "SOFI    --- IR data from SOFI/NTT\n"
@@ -770,6 +774,55 @@ int main(int argc, char* argv[]){
 			fits_get_errstatus(status, errmsg);
 			fits_close_file(fptr, &status);
 			throw Ultracam::Ultracam_Error("RISE 05: " + fits + ": " + errmsg);
+		    }
+		    Subs::Time ut_date(day, month, year, hour, minute, second);
+		    ut_date.add_second(exposure/2.);
+	  
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		}else if(format == "RATCAM"){
+
+		    char cbuff[256];
+
+		    // Read binning factors, time etc.
+		    fits_read_key(fptr,TINT,"CCDXBIN",&xbin,NULL,&status);
+		    fits_read_key(fptr,TINT,"CCDYBIN",&ybin,NULL,&status);		    
+		    
+		    if(fits_read_key(fptr,TSTRING,"DATE",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RATCAM 01: " + fits + ": " + errmsg);
+		    }
+		    int day, month, year;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error("RATCAM 02: failed to translate date = " + std::string(cbuff));
+		    istr.clear();
+	  
+		    if(fits_read_key(fptr,TSTRING,"UTSTART",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RATCAM 03: " + fits + ": " + errmsg);
+		    }
+		    int hour, minute;
+		    double second;
+		    istr.str(cbuff);
+		    istr >> hour >> c >> minute >> c >> second;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error("RATCAM 04: failed to translate time = " + std::string(cbuff));
+		    istr.clear();
+	  
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("RATCAM 05: " + fits + ": " + errmsg);
 		    }
 		    Subs::Time ut_date(day, month, year, hour, minute, second);
 		    ut_date.add_second(exposure/2.);
@@ -1596,6 +1649,45 @@ int main(int argc, char* argv[]){
 		    }else{
 			fits_close_file(fptr, &status);
 			throw Ultracam::Ultracam_Error(std::string("120: ") + fits + std::string(": HDU is not an image."));
+		    }
+	
+		    // Start reading from lower left
+		    fpixel[0] = fpixel[1] = 1;
+	  
+		    // Read the data in, row by row 
+		    for(long j=0; j<dims[1]; j++){
+			fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+			if(status){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status); 
+			    throw Ultracam::Ultracam_Error("121: " + fits + ": row " + Subs::str(j+1) + ". " + errmsg);
+			}
+			fpixel[1]++;
+		    }    
+
+		}else if(format == "RATCAM"){
+	  
+		    if(fits_movabs_hdu(fptr, 1, &hdutype, &status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("201: ") + fits + std::string(": ") + std::string(errmsg));
+		    }
+	  
+		    if(hdutype == IMAGE_HDU){
+			if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+			    fits_get_errstatus(status, errmsg);
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error(std::string("202: ") + fits + std::string(": ") + std::string(errmsg));
+			}
+			if(naxis == 2){
+			    data[0].push_back(Ultracam::Windata(1,1,dims[0],dims[1],xbin,ybin,2160,2048));
+			}else{
+			    fits_close_file(fptr, &status);
+			    throw Ultracam::Ultracam_Error(std::string("203: ") + fits + std::string(": naxis does not equal 2"));
+			}
+		    }else{
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error(std::string("204: ") + fits + std::string(": HDU is not an image."));
 		    }
 	
 		    // Start reading from lower left
