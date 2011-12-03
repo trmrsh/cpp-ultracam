@@ -6,7 +6,6 @@
 #include <fstream>
 #include <bitset>
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 #include "trm_subs.h"
 #include "trm_time.h"
