@@ -65,18 +65,23 @@ struct Blue_save {
 
 void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata, Ultracam::TimingInfo& timing){
 
-
     // In Feb 2010, format changed. Spot by testing for the version number, issue a warning
     int format;
-    if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
-	format = 1;
+    if(serverdata.instrument == "ULTRASPEC" && serverdata.version == -1){
+      // temporary fix for new ULTRASPEC stuff
+      format = 2;
+    }else if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
+      format = 1;
     }else if(serverdata.version == 100222){
-	format = 2;
+      format = 2;
+    }else if(serverdata.version == 110921){
+	// This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
+	format = 3;
     }else{
-	std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
-	std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
-	std::cerr << "Will assume post Feb 2010 format" << std::endl;
-	format = 2;
+      std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
+      std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
+      std::cerr << "Will assume post-Feb 2010, pre-Sep 2011 format #2" << std::endl;
+      format = 2;
     }
 
     // The raw data files are written on a little-endian (linux) machine. Bytes
@@ -128,7 +133,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	nnanosec = intread.i;
 	nnanosec = format == 1 ? intread.i : 100*intread.i;
 
-
         // number of satellites. -1 indicates no GPS, and thus times generated from
 	// when software loaded into kernel. Useful for relative times still.
 	if(LITTLE){
@@ -145,7 +149,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    reliable = false;
 	}
 
-    }else if(format == 2){
+    }else if(format == 2 ||  format == 3){
 
 	if(LITTLE){
 	    intread.c[0] = buffer[8];
@@ -162,7 +166,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	if(intread.ui*serverdata.time_units != serverdata.expose_time)
 	    std::cerr << "WARNING: XML expose time does not match time in timing header " 
 		      << intread.ui*serverdata.time_units << " vs " << serverdata.expose_time << std::endl;
-	
+
+	std::cerr << "intread.ui =" << intread.ui << std::endl;
+
 	// Number of seconds
 	if(LITTLE){
 	    intread.c[0] = buffer[12];
@@ -176,6 +182,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    intread.c[0] = buffer[15];
 	}
 	nsec = intread.ui;
+
+	std::cerr << "nsec = " << intread.ui << std::endl;
     
 	// number of nanoseconds
 	if(LITTLE){
@@ -248,7 +256,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
     // is the u-band junk data?
     // Changed from 3rd to 4th bit in Feb 2010 (Dave Atkinson)
-    bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3)) || (format == 2 && (buffer[0] & 1<<4))); 
+    bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3)) || 
+					       ((format == 2 || format == 3) && (buffer[0] & 1<<4))); 
 
     // Flag so that some things are only done once
     static bool first = true;
@@ -368,7 +377,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		}
 		year = intread.usi;
 
-	    }else if(format == 2){
+	    }else if(format == 2 || format == 3){
 		day_of_month  = 1;
 		month_of_year = 1;
 		year          = 1970;
@@ -433,7 +442,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    // We have the  right date, now just add in the fraction of the day
 		    gps_timestamp.add_second(double(nsec % Constants::IDAY) + double(nnanosec)/1.e9);
 
-		}else if(format == 2){
+		}else if(format == 2 || format == 3){
 
 		    // This format started in Feb 2010 before the NTT run with a new GPS thingy. 
 		    // nsec in this case represents the number of seconds from the start of 
@@ -988,7 +997,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     if(format == 1){
 	timing.reliable     = reliable && nsatellite > 2;
 	timing.nsatellite   = nsatellite;
-    }else if(format == 2){
+    }else if(format == 2 || format == 3){
 	timing.reliable      = reliable &&
 	    (tstamp & PCPS_SYNCD) && !(tstamp & PCPS_INVT) && !(tstamp & PCPS_ANT_FAIL) && !(tstamp & PCPS_FREER);      
 	timing.tstamp_status = tstamp;

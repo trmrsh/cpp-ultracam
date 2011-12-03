@@ -28,7 +28,6 @@
 // for cURL http software
 #include <string.h>
 #include <curl/curl.h>
-#include <curl/types.h>
 #include <curl/easy.h>
 
 // xerces stuff
@@ -450,10 +449,12 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	    header.set("Instrument.Speed",    new Subs::Hint(serverdata.l3data.speed,      "L3CCD speed setting; 0=slow,1=medium,2=fast"));
 	if(serverdata.l3data.led_flsh >= 0)
 	    header.set("Instrument.Led_Flsh", new Subs::Hint(serverdata.l3data.led_flsh,   "L3CCD led flash setting"));
-	if(serverdata.l3data.rd_time >= 0)
+	/*
+       	if(serverdata.l3data.rd_time >= 0)
 	    header.set("Instrument.Rd_Time",  new Subs::Hint(serverdata.l3data.rd_time,    "L3CCD parameter"));
 	if(serverdata.l3data.rs_time >= 0)
 	    header.set("Instrument.Rs_Time",  new Subs::Hint(serverdata.l3data.rs_time,    "L3CCD parameter"));
+	*/
     }
     header.set("Instrument.exp_delay", new Subs::Hfloat(uinfo.expose_time*uinfo.time_units, "Exposure delay (seconds)"));
 
@@ -666,7 +667,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			serverdata.readout_mode = Ultracam::ServerData::FULLFRAME_OVERSCAN;
 
 		    }else if(serverdata.instrument == "ULTRASPEC" && 
-			     name.find("ccd201_winbin_con") != std::string::npos){
+			     (name.find("ccd201_winbin_con") != std::string::npos ||
+			      name.find("ccd201_winbin_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::L3CCD_WINDOWS;
 
 		    }else{
@@ -686,7 +688,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
     bool found_exposure = false, found_gain_speed = false, found_number_of_exposures=false;
     bool found_xbin = false, found_ybin = false, found_v_ft_clk = false, found_gain = false; 
     bool found_hv_gain = false, found_en_clr = false, found_output = false, found_version = false;
-    bool found_rd_time = false, found_rs_time = false, found_led_flsh = false, found_speed = false;
+    //    bool found_rd_time = false, found_rs_time = false, found_led_flsh = false, found_speed = false;
+    bool found_led_flsh = false, found_speed = false;
     bool found_nblue = false;
     uinfo.nccd = 0;
 
@@ -785,6 +788,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		    istr.clear();
 		    found_output = true;
 
+		    /*
 		}else if(AttToString((DOMElement*)child->item(j), "name") == "RD_TIME" && serverdata.instrument == "ULTRASPEC"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
 		    istr >> serverdata.l3data.rd_time;
@@ -798,6 +802,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		    if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD RS_TIME parameter");
 		    istr.clear();
 		    found_rs_time = true;
+		    */
 
 		}else if(AttToString((DOMElement*)child->item(j), "name") == "SPEED" && serverdata.instrument == "ULTRASPEC"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
@@ -818,9 +823,11 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			throw Input_Error("parseXML error: two or more of VERSION and REVISION found.");
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
 		    istr >> serverdata.version;
-		    if(!istr) throw Input_Error("parseXML error: Could not translate VERSION/REVISION parameter");
+		    if(!istr)
+			std::cerr << "parseXML warning: Could not translate VERSION/REVISION parameter; will look for user-defined version" << std::endl;
+		    else
+			found_version = true;
 		    istr.clear();
-		    found_version = true;
 
 		}else if(AttToString((DOMElement*)child->item(j), "name") == "V_FT_CLK" && serverdata.instrument == "ULTRACAM"){
 		    istr.str(AttToString((DOMElement*)child->item(j), "value"));
@@ -970,8 +977,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 	if(!found_gain)    serverdata.l3data.gain = -1;
 	if(!found_hv_gain) throw Input_Error("parseXML error: could not find L3CCD parameter HV_GAIN.");
 	if(!found_output)  throw Input_Error("parseXML error: could not find L3CCD parameter OUTPUT.");
-	if(!found_rs_time) serverdata.l3data.rs_time   = -1;
-	if(!found_rd_time) serverdata.l3data.rd_time   = -1;
+	//	if(!found_rs_time) serverdata.l3data.rs_time   = -1;
+	//	if(!found_rd_time) serverdata.l3data.rd_time   = -1;
 	if(!found_speed)   serverdata.l3data.speed     = -1;
 	if(!found_led_flsh) serverdata.l3data.led_flsh = -1;
 	serverdata.nblue = 0;
