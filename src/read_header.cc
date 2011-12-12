@@ -167,8 +167,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    std::cerr << "WARNING: XML expose time does not match time in timing header " 
 		      << intread.ui*serverdata.time_units << " vs " << serverdata.expose_time << std::endl;
 
-	std::cerr << "intread.ui =" << intread.ui << std::endl;
-
 	// Number of seconds
 	if(LITTLE){
 	    intread.c[0] = buffer[12];
@@ -183,8 +181,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	}
 	nsec = intread.ui;
 
-	std::cerr << "nsec = " << intread.ui << std::endl;
-    
 	// number of nanoseconds
 	if(LITTLE){
 	    intread.c[0] = buffer[16];
