@@ -43,6 +43,7 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{EFOSC} for NTT EFOSC data,
 !!emph{SAAO} for the UCT camera at SAAO, 
 !!emph{NOT} for NOT ALFOSC data,
+!!emph{NOTP} for NOT ALFOSC polarimetric data,
 !!emph{ATC} for the ULTRASPEC multi-image FITS files from Derek Ives,
 !!emph{RATCAM} RATCAM on the LT
 !!emph{RISE} for Don Pollacco's camera for the LT,
@@ -51,7 +52,8 @@ you get a message about not opening SIMPLE it is probably thinking a genuine fit
 !!emph{ST7} for an SBIG ST-7 CCD camera,
 !!emph{ST10} for an SBIG ST-10 CCD camera,
 !!emph{IAC80} for the IAC80 telescope at Izana,
-!!emph{FASTCAM} for the Andor iXon DU-897 EMCCD camera used in FASTCAM (on the TCS, NOT, WHT and GRANTECAN), 
+!!emph{FASTCAM} for the Andor iXon DU-897 EMCCD camera used in FASTCAM 
+(on the TCS, NOT, WHT and GRANTECAN), 
 !!emph{QSI} for a QSI532 CCD camera,
 !!emph{BUSCA} for the Calar Alto BUSCA camera (but only one CCD at a time). See !!ref{busca2ucm.html}{busca2ucm}
 for an attempt to combine the different BUSCA filters.
@@ -141,7 +143,7 @@ int main(int argc, char* argv[]){
 	if(format != "JKT" && format != "AUX" && format != "FAULKES" && format != "DOLORES" && format != "FORS1" && \
 	   format != "SAAO" && format != "NOT" && format != "ATC" && format != "RATCAM" && format != "RISE" && \
 	   format != "ACAM" && format != "SOFI" && format != "ST7" && format != "ST10" && format != "IAC80" && \
-	   format != "FASTCAM" && format != "QSI" && format != "BUSCA" && format != "EFOSC")
+	   format != "FASTCAM" && format != "QSI" && format != "BUSCA" && format != "EFOSC" && format != "NOTP")
 	  throw Ultracam::Input_Error("Unrecognised format = " + format + ". Valid choices are:\n\n"
 				      "JKT     --- 1m JKT on La Palma\n"
 				      "AUX     --- 4.2m WHT's Aux Port camera\n"
@@ -151,6 +153,7 @@ int main(int argc, char* argv[]){
 				      "EFOSC   --- NTT EFOSC\n"
 				      "SAAO    --- UCT camera data from SAAO\n"
 				      "NOT     --- NOT ALFOSC data\n"
+				      "NOTP    --- NOT ALFOSC polarimetric data\n"
 				      "ATC     --- Derek Ives' multi-image FITS \n"
 				      "RATCAM  --- 2m Liverpool Telescope RATCAM\n"
 				      "RISE    --- 2m Liverpool Telescope RISE\n"
@@ -679,6 +682,72 @@ int main(int argc, char* argv[]){
 			throw Ultracam::Ultracam_Error("36: " + fits + ": " + errmsg);
 		    }
 		    if(fits_read_key(fptr,TINT,"CDELT2",&ybin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("37: " + fits + ": " + errmsg);
+		    }
+
+		    if(fits_read_key(fptr,TSTRING,"OBJECT",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("38: " + fits + ": " + errmsg);
+		    }
+		    data.set("Object", new Subs::Hstring(std::string(cbuff), "Object name"));
+
+		    if(fits_read_key(fptr,TSTRING,"DATE-OBS",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("39: " + fits + ": " + errmsg);
+		    }
+		    int day, month, year;
+		    std::string buff;
+		    std::istringstream istr(buff);
+		    istr.str(cbuff);
+		    char c;
+		    istr >> year >> c >> month >> c >> day;
+		    if(!istr)
+			throw Ultracam::Ultracam_Error(std::string("Failed to translate date = ") + std::string(cbuff));
+		    istr.clear();
+
+		    double hour;
+		    if(fits_read_key(fptr,TDOUBLE,"UT",&hour,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("40: " + fits + ": " + errmsg);
+		    }
+
+		    float exposure;
+		    if(fits_read_key(fptr,TFLOAT,"EXPTIME",&exposure,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("41: " + fits + ": " + errmsg);
+		    }
+		    Subs::Time ut_date(day, month, year, hour);
+		    ut_date.add_second(exposure/2.);
+	  
+		    // store time
+		    data.set("UT_date", new Subs::Htime(ut_date, "UTC at mid-eposure"));
+		    data.set("Exposure", new Subs::Hfloat(exposure, "Exposure time, seconds"));	  
+
+		    if(fits_read_key(fptr,TSTRING,"FILENAME",&cbuff,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			throw Ultracam::Ultracam_Error("42: " + fits + ": " + errmsg);
+		    }
+		    data.set("Filename", new Subs::Hstring(std::string(cbuff), "Original NOT/ALFOSC file name"));
+
+		}else if(format == "NOTP"){
+
+		    char cbuff[256];
+
+		    // Read binning factors, time etc.
+		    if(fits_read_key(fptr,TINT,"DETXBIN",&xbin,NULL,&status)){
+			fits_get_errstatus(status, errmsg);
+			fits_close_file(fptr, &status);
+			std::cerr << "status  = " << status << ", message = " << errmsg << std::endl;
+			throw Ultracam::Ultracam_Error("36: " + fits + ": " + errmsg);
+		    }
+		    if(fits_read_key(fptr,TINT,"DETYBIN",&ybin,NULL,&status)){
 			fits_get_errstatus(status, errmsg);
 			fits_close_file(fptr, &status);
 			throw Ultracam::Ultracam_Error("37: " + fits + ": " + errmsg);
@@ -1625,6 +1694,61 @@ int main(int argc, char* argv[]){
 			}
 			fpixel[1]++;
 		    }
+
+		}else if(format == "NOTP"){
+
+		  char cbuff[256];
+
+		  // Read and parse binning factors
+		  if(fits_read_key(fptr,TSTRING,"DETWIN1",&cbuff,NULL,&status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("NOTP 00: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+		  std::string fitsHead = cbuff;
+		  std::vector<std::string> binFacs;
+		  Tokenize(fitsHead,binFacs,"[]:,");
+		  int llx, lly;
+		  llx = Subs::string_to_int(binFacs[0]);
+		  lly = Subs::string_to_int(binFacs[2]);
+
+		  if(fits_movabs_hdu(fptr, 2, &hdutype, &status)){
+		    fits_get_errstatus(status, errmsg);
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error(std::string("NOTP 01: ") + fits + std::string(": ") + std::string(errmsg));
+		  }
+
+		  if(hdutype == IMAGE_HDU){
+		    if(fits_get_img_param(fptr, 2, &bitpix, &naxis, dims, &status)){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error("NOTP 02: " + fits + ": " + errmsg);
+		    }
+
+		    if(naxis == 2){
+		      data[0].push_back(Ultracam::Windata(llx,lly,dims[0],dims[1],xbin,ybin,2198,2052));
+		    }else{
+		      fits_close_file(fptr, &status);
+		      throw Ultracam::Ultracam_Error("NOTP 03: " + fits + ": naxis does not equal 2");
+		    }
+		  }else{
+		    fits_close_file(fptr, &status);
+		    throw Ultracam::Ultracam_Error("NOTP 04: " + fits + ": HDU is not an image.");
+		  }
+		  
+		  // Start reading from lower left
+		  fpixel[0] = fpixel[1] = 1;
+		  
+		  // Read the data in, row by row 
+		  for(long j=0; j<dims[1]; j++){
+		    fits_read_pix(fptr, TFLOAT, fpixel, dims[0], 0, data[0][0].row(j), &anynul, &status);
+		    if(status){
+		      fits_get_errstatus(status, errmsg);
+		      fits_close_file(fptr, &status); 
+		      throw Ultracam::Ultracam_Error("NOTP 05: " + fits + ": row " + Subs::str(j+1) + ". "  + errmsg);
+		    }
+		    fpixel[1]++;
+		  }
 
 		}else if(format == "RISE"){
 	  
