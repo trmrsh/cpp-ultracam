@@ -164,9 +164,14 @@ class Targets(dict):
                             (ra,dec,system) = subs.str2radec(rah + ' ' + ram + ' ' + ras + ' ' + decd + ' ' + decm + ' ' + decs)
                             target = target.strip().replace('~',' ')
 
+                            # add matches together when target name and positions agree
                             if target in self:
-                                raise Exception('Found target name = "' + target + '" more than once in ' + str(fnames))
-                            self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
+                                if ra != self[target]['ra'] or dec != self[target]['dec']:
+                                    raise Exception('Found target name = "' + target + '" more than once with different positions in ' + str(fnames))
+                                else:
+                                    self[target]['match'] += match
+                            else:
+                                self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
                     f.close()
                     print len(self),'targets after loading',fname
                 else:
