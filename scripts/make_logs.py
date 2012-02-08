@@ -22,13 +22,23 @@ etc. It also expects there to be a file called TARGETS with information
 of target positions and regular expressions for translating targets in
 """
 
-import os, sys, re
+import os, sys, re, argparse
 from xml.dom import Node
 from xml.dom.minidom import parse, parseString
 import trm.subs as subs
 #import traceback
 import Ultra
 import trm.simbad as simbad
+
+
+# arguments
+parser = argparse.ArgumentParser(description='Compiles web pages for ULTRACAM logs')
+
+# optional
+parser.add_argument('-a', dest='all', action="store_true", default=False,
+                   help='all pages are recreated. Default is only missing pages')
+# parse them
+args = parser.parse_args()
 
 # The main program
 
@@ -47,7 +57,8 @@ xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
 # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
 # that searches for a given target are only made once.
-sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K']
+sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K', 'Light Source', 'Fringe frame', 'Acquisition Practise', \
+             'Checking for light', 'Noise Test', 'Noise tests']
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
@@ -108,7 +119,7 @@ for rdir in rdirs:
 
         # Start off html log file for the night
         htlog = os.path.join(npath, ndir + '.htm')
-        if os.path.exists(htlog): continue
+        if os.path.exists(htlog) and not args.all: continue
 
         print 'Generating',htlog
         fh = open(htlog, 'w')
@@ -129,7 +140,7 @@ for rdir in rdirs:
                         targets[run.id]['match'].append((run.target, True))
                     else:
                         targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
-                        sims.append(run.id)
+                    sims.append(run.id)
                 elif run.id is None:
                     sskip.append(run.target)
 
@@ -147,7 +158,7 @@ for rdir in rdirs:
         fh.write('</body>\n</html>')
         fh.close()
 
-# Write out all 'exact' targets to disk to save future simbad lookups
+# Write out newly added / modified targets to disk to save future simbad lookups
 if len(sims):
 
     # These have to be appended to the AUTO_TARGETS file. So we read them in again

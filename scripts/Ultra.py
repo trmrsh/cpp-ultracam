@@ -138,7 +138,7 @@ class Targets(dict):
                 if os.path.isfile(fname):
                     f  = open(fname)
                     for line in f:
-                        if not line.startswith('#') and line[:1].isalnum():
+                        if not line.startswith('#') and not line.isspace():
                             tokens = line.strip().split()
                             if len(tokens) >= 9 and (len(tokens)-7) % 2 == 0:
                                 (target,rah,ram,ras,decd,decm,decs) = tokens[:7]
@@ -416,10 +416,13 @@ class Run(object):
                     if targets is not None:
                         # Search through target entries.
                         for target, entry in targets.iteritems():
+                            if self.id is None:
+                                unid = True
+                            else:
+                                unid = False
                             for ent in entry['match']:
-                                if (ent[1] and self.target == ent[0]) or \
-                                        (not ent[1] and ent[2].match(self.target)):
-                                    if self.id is None:
+                                if (ent[1] and self.target == ent[0]) or (not ent[1] and ent[2].match(self.target)):
+                                    if self.id is None or unid:
                                         self.id  = target
                                         self.ra  = subs.d2hms(entry['ra'],2,':',2)
                                         self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
@@ -439,8 +442,8 @@ class Run(object):
                         else:
                             name = qsim[0]['Name']
                             pos  = qsim[0]['Position']
-                            if name.startswith('V* '):
-                                name = name[3:]
+#                            if name.startswith('V* '):
+#                                name = name[3:]
                             name = name.strip()
                             name = re.sub(Run.RESPC, ' ', name)
                             print 'Matched with',name,pos
