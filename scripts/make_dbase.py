@@ -37,15 +37,14 @@ xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
 # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
 # that searches for a given target are only made once.
-sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K']
+fp    = open('SKIP_TARGETS')
+sskip = fp.readlines()
+sskip = [name.strip() for name in sskip if not name.startswith('#')]
+fp.close()
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
 rdirs.sort()
-
-# to keep track of those targets IDed from Simbad
-sims = []
-
 
 # Data to store for each run
 sfield  = []
@@ -102,7 +101,6 @@ for rdir in rdirs:
                         targets[run.id]['match'].append((run.target, True))
                     else:
                         targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
-                        sims.append(run.id)
                 elif run.id is None:
                     sskip.append(run.target)
 

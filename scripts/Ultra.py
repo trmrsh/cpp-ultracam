@@ -206,6 +206,56 @@ class Targets(dict):
             f.write('\n')
         f.close()
 
+    def tohtml(self, fname):
+        """
+        Write targets out to an html file (give full name)
+        """
+
+        # write in RA order
+        ras   = dict([(targ,entry['ra']) for targ, entry in self.iteritems()])
+        targs = sorted(ras, key=ras.get)
+
+        f = open(fname,'w')
+        f.write("""
+<html>
+<head>
+<title>Complete list of ULTRACAM targets</title>
+<link rel="stylesheet" type="text/css" href="ultracam_logs.css" />
+</head>
+<body>
+<h1>RA-ordered list of ULTRACAM targets</h1>
+
+<p> 
+This table shows the identifier name, position and matching strings used
+to attach coordinates to objects in the ULTRACAM database. Since ULTRACAM does
+not talk to telescopes, this is pretty much all we have to go on. If you spot
+problems please let me (trm) know about them. In the matches 'E' indicates an 
+exact match, while 'R' indicates a regular expression match. The positions are 
+all ICRS. Where you see "~" in the matching strings, they actually count as
+blanks.
+
+<p>
+You can search for runs on particular positions <a href="ulogs.php">here</a>.
+
+<p>
+<table>
+<tr><th>ID</th><th>RA</th><th>Dec</th><th>Matching strings</th></tr>
+""")
+
+        for targ in targs:
+            entry = self[targ]
+            ra  = subs.d2hms(entry['ra'],sep=' ') 
+            dec = subs.d2hms(entry['dec'],sep=' ',sign=True)
+            f.write('<tr><td>%s<td>%s</td><td>%s</td><td>' % (targ,ra,dec))
+            for ent in entry['match']:
+                f.write(' ' + ('E' if ent[1] else 'R') + ' ' + ent[0].replace(' ','~'))
+            f.write('</td></tr>\n')
+        f.write('</table>\n</body>\n</html>\n')
+
+        f.close()
+
+
+
 class Run(object):
     """
     This is the main class for reading and storing data on a per run basis,

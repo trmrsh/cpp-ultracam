@@ -57,8 +57,10 @@ xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
 # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
 # that searches for a given target are only made once.
-sskip = ['Pluto','GRB','32K','Test data', 'GPS LED', 'GRB or 32K', 'Light Source', 'Fringe frame', 'Acquisition Practise', \
-             'Checking for light', 'Noise Test', 'Noise tests']
+fp    = open('SKIP_TARGETS')
+sskip = fp.readlines()
+sskip = [name.strip() for name in sskip if not name.startswith('#')]
+fp.close()
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
@@ -91,6 +93,9 @@ for rdir in rdirs:
 </head>
 <body>
 """)
+
+    fg.write('<p>\n<a href="../all_targets.htm" target="dynamic">Target list</a><br>\n')
+    fg.write('<p>\n<a href="../ulogs.php" target="dynamic">Run search</a><br><hr>\n')
 
     for rd in rdirs:
         (year,month) = rd.split('-')
@@ -176,3 +181,5 @@ if len(sims):
     print 'Total of',len(sims),'targets identified by Simbad.'
     print 'Written to AUTO_TARGETS to save future lookups.'
 
+# write out all targets to an html file
+targets.tohtml('all_targets.htm')

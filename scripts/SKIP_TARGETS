@@ -1,0 +1,15 @@
+#
+# List of target names to skip for SIMBAD lookup
+#
+Pluto
+GRB
+32K
+Test data
+GPS LED
+GRB or 32K
+Light Source
+Fringe frame
+Acquisition Practise
+Checking for light
+Noise Test
+Noise tests
