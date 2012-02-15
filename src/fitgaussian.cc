@@ -4,7 +4,7 @@
 #include "trm_ultracam.h"
 #include "trm_windata.h"
 
-void fitgaussian_cof(const Windata& data, Windata& sigma, const Ultracam::Ppars& params, 
+void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
 		     int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha, 
 		     Subs::Buffer1D<double>& beta, double& chisq, int nvar);
 /**

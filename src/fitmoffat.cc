@@ -5,8 +5,9 @@
 #include "trm_windata.h"
 
 // function defined at the end
-void fitmoffat_cof(const Windata& data, Windata& sigma, const Ppars& params, int xlo, int xhi, int ylo, int yhi, 
-		   Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar);
+void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
+		   int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha, 
+		   Subs::Buffer1D<double>& beta, double& chisq, int nvar);
 
 /**
  * Uses the Levenburg-Marquardt method to fit a Moffat profile to a single Windata. 
