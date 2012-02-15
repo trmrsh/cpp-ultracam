@@ -4,6 +4,8 @@
 #include "trm_constants.h"
 #include "trm_ultracam.h"
 
+void sub_back(float* y, int i1, int i2);    
+
 /*! \file
   \brief Defines the findpos function
 */
@@ -53,8 +55,6 @@ void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny,
 		       double& xpos, double &ypos, float& ex, float& ey){
 
   try {
-    
-    void sub_back(float* y, int i1, int i2);
     
     // Check start position
     if(xstart <= -0.5 || xstart >= nx-0.5 || ystart <= -0.5 || ystart >= ny-0.5)

@@ -4,6 +4,10 @@
 #include "trm_ultracam.h"
 #include "trm_windata.h"
 
+// function defined at the end
+void fitmoffat_cof(const Windata& data, Windata& sigma, const Ppars& params, int xlo, int xhi, int ylo, int yhi, 
+		   Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar);
+
 /**
  * Uses the Levenburg-Marquardt method to fit a Moffat profile to a single Windata. 
  * Based upon mrqmin from Numerical Recipes
@@ -30,11 +34,6 @@
 
 void Ultracam::fitmoffat(const Ultracam::Windata& data, Ultracam::Windata& sigma, int xlo, int xhi, int ylo, int yhi, 
 			 Ultracam::Ppars& params, double& chisq, double& alambda, Subs::Buffer2D<double>& covar){
-
-  // function defined at the end
-  void fitmoffat_cof(const Windata& data, Windata& sigma, const Ppars& params, 
-		     int xlo, int xhi, int ylo, int yhi, 
-		     Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar);
 
   // Static parameters whose value must be preserved between calls. In the case of the arrays,
   // they must be allocated to the maximum number of parameters to prevent segmentation faults
