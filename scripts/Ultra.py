@@ -11,6 +11,7 @@ from xml.dom.minidom import parse, parseString
 import trm.subs as subs
 import trm.simbad as simbad
 import trm.sla as sla
+import urllib
 
 # couple of helper functions
 def cosd(deg):
@@ -69,7 +70,7 @@ class Log(object):
                                 self.target[num]  = m.group(1)
 
         except Exception, err:
-            sys.stderr.write('Night log problem:' + str(err) + '\n')
+           sys.stderr.write('Night log problem:' + str(err) + '\n')
 
 class Times(object):
     """
@@ -235,7 +236,9 @@ all ICRS. Where you see "~" in the matching strings, they actually count as
 blanks.
 
 <p>
-You can search for runs on particular positions <a href="ulogs.php">here</a>.
+You can search for runs on particular positions <a href="ulogs.php">here</a>. Clicking
+on the IDs should take you to a list of runs. If it returns no runs, try reducing the
+minimum run length.
 
 <p>
 <table>
@@ -244,9 +247,13 @@ You can search for runs on particular positions <a href="ulogs.php">here</a>.
 
         for targ in targs:
             entry = self[targ]
-            ra  = subs.d2hms(entry['ra'],sep=' ') 
-            dec = subs.d2hms(entry['dec'],sep=' ',sign=True)
-            f.write('<tr><td>%s<td>%s</td><td>%s</td><td>' % (targ,ra,dec))
+            rad  = entry['ra']
+            decd = entry['dec']
+            ra  = subs.d2hms(rad,sep=' ') 
+            dec = subs.d2hms(decd,sep=' ',sign=True)
+            req = urllib.urlencode({'slimits' : 'manual', 'target' : '', 'delta' : 2., 'RA1' : rad-0.01, 'RA2' : rad + 0.01, \
+                                        'Dec1' : decd - 0.01, 'Dec2' : decd + 0.01, 'emin' : 10.})
+            f.write('<tr><td><a href="ulogs.php?%s">%s<td>%s</td><td>%s</td><td>' % (req,targ,ra,dec))
             for ent in entry['match']:
                 f.write(' ' + ('E' if ent[1] else 'R') + ' ' + ent[0].replace(' ','~'))
             f.write('</td></tr>\n')
@@ -749,10 +756,14 @@ class Run(object):
             user = None
         return user
 
-    def html_start(self):
+    def html_start(self, full, previous, next):
         """
         Returns string for initial part of html file. This interacts with a css file
         defined early on.
+
+        full     -- True for full output
+        previous -- date of previous night of run (None for first night)
+        next      -- date of next night of run (None for last night)
         """
         
         inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USPC' else None
@@ -763,18 +774,35 @@ class Run(object):
             '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
             '<tr><td class="left">Instrument:</td>' + td(inst,'left') + '</tr>\n' + \
-            '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table>\n' + \
-            '<p>\n<table cellpadding=2>'
-        st += '<tr>\n' + th('Run<br>no.') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
-            th('Date<br>Start of run') + th('UT<br>start') + th('UT<br>end') + th('Amss<br>min') + th('Amss<br>max') + \
-            th('Dwell<br>sec.') + th('Sample<br>sec.') + th('Frame<br>no.') 
+            '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table><br>\n' 
+
+        if previous is not None:
+            st += '<a href="../' + previous + '/' + previous
+            if full:
+                st += '_full.html">previous night</a>'
+            else:
+                st += '_short.html">previous night</a>'
+            if next is None:
+                st += '<br>\n'
+            else:
+                st += ', '
+
+        if next is not None:
+            st += '<a href="../' + next + '/' + next
+            if full:
+                st += '_full.html">next night</a><br>'
+            else:
+                st += '_short.html">next night</a><br>'        
+
+        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
+            th('Date') + th('UT', colspan=2) + th('Dwell') + th('Sample') + th('Frame') + th('Airmass',colspan=2) 
 
         if self.instrument == 'UCM':
             st += th('Filts')
 
         st += th('Mode') + th('Speed') + th('Bin')
 
-        if self.instrument == 'UCM':
+        if self.instrument == 'UCM' and full:
             st += th('Size1') + th('XLl') + th('XR1') + th('YS1') 
             st += th('Size2') + th('XL2') + th('XR2') + th('YS2') 
             st += th('Size3') + th('XL2') + th('XR3') + th('YS3') 
@@ -786,12 +814,30 @@ class Run(object):
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
         
         st += th('ID') + th('PI') + th('Observers')
-        st += th('Run<br>no.') + th('Comment','left') + '</tr>\n'
+        st += th('Run') + th('Comment','left') + '</tr>\n'
+
+        st += '<tr>\n' + th('no.') + th('') + th('') + th('') + th('') + th('Start of run') + th('start') + \
+            th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
+
+        if self.instrument == 'UCM':
+            st += th('')
+
+        st += th('') + th('') + th('')
+
+        if self.instrument == 'UCM' and full:
+            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') 
+        elif self.instrument == 'USP':
+            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
+
+        st += th('') + th('') + th('') + th('no.') + th('') + '</tr>\n'
+
         return st
 
-    def html_table_row(self):
+    def html_table_row(self, full):
         """
         Returns a row of table data. Must be kept consistent with previous header routine
+        
+        full -- True for full output of windows sizes.
         """
 
         st  = '<tr>'
@@ -803,11 +849,11 @@ class Run(object):
         st += td(self.date)
         st += td(self.utstart)
         st += td(self.utend)
-        st += td(self.amassmin)
-        st += td(self.amassmax)
         st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
         st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
+        st += td(self.amassmin)
+        st += td(self.amassmax)
         if self.instrument == 'UCM':
             st += td(self.filters)
         st += td(self.mode)
@@ -819,7 +865,7 @@ class Run(object):
             st += td(self.hv_gain)
             st += td(self.xstart[0]) + td(self.ystart[0]) + td(self.nx[0]) + td(self.ny[0])
             st += td(self.xstart[1]) + td(self.ystart[1]) + td(self.nx[1]) + td(self.ny[1])
-        elif self.instrument == 'UCM':
+        elif self.instrument == 'UCM' and full:
             st += td2(self.nx[0], self.ny[0]) + td(self.xleft[0]) + td(self.xright[0]) + td(self.ystart[0])
             st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
             st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
@@ -1055,9 +1101,12 @@ def td2(data1, data2, type='cen'):
     else:
         return '<td class="' + type + '">' + str(data1) + 'x' + str(data2) + '</td>'
 
-def th(data,type='cen'):
+def th(data, type='cen', colspan=1):
     """HTML table header entry"""
-    return '<th class="' + type + '">' + str(data) + '</th>'
+    if colspan == 1:
+        return '<th class="' + type + '">' + str(data) + '</th>'
+    else:
+        return '<th class="' + type + '" colspan="' + str(colspan) + '">' + str(data) + '</th>'
 
 def flist_stats(fnames, nrow, ncol, thresh):
     """

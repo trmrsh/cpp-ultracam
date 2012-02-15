@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
 """
-Script to generate html web pages for ULTRACAM and ULTRASPEC. This is 
-to upgrade and replace the old perl-based ones.
+Script to generate html web pages for ULTRACAM and ULTRASPEC.
 
 It should be run in the 'logs' directory which has sub-directories of 
 the form '2005-11' (Nov 2005) which have a structure like so:
@@ -29,7 +28,6 @@ import trm.subs as subs
 #import traceback
 import Ultra
 import trm.simbad as simbad
-
 
 # arguments
 parser = argparse.ArgumentParser(description='Compiles web pages for ULTRACAM logs')
@@ -84,8 +82,8 @@ for rdir in rdirs:
     ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and ndir_re.match(x) is not None]
     ndirs.sort()
 
-    # Write a guide
-    fg = open(os.path.join(rdir, 'guide.htm'), 'w')
+    # Write guides for both full and truncated logs.
+    fg = open(os.path.join(rdir, 'guide_full.html'), 'w')
     fg.write("""
 <html>
 <head>
@@ -94,16 +92,40 @@ for rdir in rdirs:
 <body>
 """)
 
-    fg.write('<p>\n<a href="../all_targets.htm" target="dynamic">Target list</a><br>\n')
+    fg.write('<p>\n<a href="../all_targets.html" target="dynamic">Target list</a><br>\n')
     fg.write('<p>\n<a href="../ulogs.php" target="dynamic">Run search</a><br><hr>\n')
 
     for rd in rdirs:
         (year,month) = rd.split('-')
-        fg.write('<p>\n<a href="../' + rd + '/guide.htm">' + subs.int2month(int(month)) + ' ' + year + '</a><br>\n')
+        fg.write('<p>\n<a href="../' + rd + '/guide_full.html">' + subs.int2month(int(month)) + ' ' + year + '</a><br>\n')
         if rd == rdir:
             fg.write('<ul>\n')
             for ndir in ndirs:
-                fg.write('<li> <a href="' + ndir + '/' + ndir + '.htm' + '" target="dynamic">' + ndir + '</a></li>\n')
+                fg.write('<li> <a href="' + ndir + '/' + ndir + '_full.html' + '" target="dynamic">' + ndir + '</a></li>\n')
+            fg.write('</ul>\n')
+
+    fg.write('</body>\n</html>\n')
+    fg.close()
+
+    fg = open(os.path.join(rdir, 'guide_short.html'), 'w')
+    fg.write("""
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />
+</head>
+<body>
+""")
+
+    fg.write('<p>\n<a href="../all_targets.html" target="dynamic">Target list</a><br>\n')
+    fg.write('<p>\n<a href="../ulogs.php" target="dynamic">Run search</a><br><hr>\n')
+
+    for rd in rdirs:
+        (year,month) = rd.split('-')
+        fg.write('<p>\n<a href="../' + rd + '/guide_short.html">' + subs.int2month(int(month)) + ' ' + year + '</a><br>\n')
+        if rd == rdir:
+            fg.write('<ul>\n')
+            for ndir in ndirs:
+                fg.write('<li> <a href="' + ndir + '/' + ndir + '_short.html' + '" target="dynamic">' + ndir + '</a></li>\n')
             fg.write('</ul>\n')
 
     fg.write('</body>\n</html>\n')
@@ -112,7 +134,7 @@ for rdir in rdirs:
     runs  = []
     
     # now to the night-by-night files
-    for ndir in ndirs:
+    for inight,ndir in enumerate(ndirs):
 
         npath = os.path.join(rdir, ndir)
             
@@ -122,17 +144,28 @@ for rdir in rdirs:
         # Read timing data (does not matter if none exists, although a warning will be printed)
         times = Ultra.Times(os.path.join(npath, ndir + '.times'))
 
-        # Start off html log file for the night
-        htlog = os.path.join(npath, ndir + '.htm')
-        if os.path.exists(htlog) and not args.all: continue
+        # Start off html log files for the night
+        htlog_f = os.path.join(npath, ndir + '_full.html')
+        htlog_s = os.path.join(npath, ndir + '_short.html')
+        if os.path.exists(htlog_f) and os.path.exists(htlog_s) and not args.all: continue
 
-        print 'Generating',htlog
-        fh = open(htlog, 'w')
+        if not os.path.exists(htlog_f) or args.all: 
+            print 'Generating',htlog_f
+            fh_f = open(htlog_f, 'w')
+        else:
+            fh_f = None
+
+        if not os.path.exists(htlog_s) or args.all: 
+            print 'Generating',htlog_s
+            fh_s = open(htlog_s, 'w')
+        else:
+            fh_s = None
 
         # Read XML files for this night
         dpath = os.path.join(npath, 'data')
         xmls = [os.path.join(dpath,x) for x in os.listdir(dpath) if xml_re.match(x) is not None]
         xmls.sort()
+
         first = True
         expose = 0.
         for xml in xmls:
@@ -150,18 +183,29 @@ for rdir in rdirs:
                     sskip.append(run.target)
 
                 if first:
-                    fh.write('\n' + run.html_start() + '\n')
+                    previous = ndirs[inight-1] if inight > 0 else None
+                    next     = ndirs[inight+1] if inight < len(ndirs)-1 else None
+                    if fh_f: fh_f.write('\n' + run.html_start(True, previous, next) + '\n')
+                    if fh_s: fh_s.write('\n' + run.html_start(False, previous, next) + '\n')
                     first = False
-                fh.write('\n' + run.html_table_row() + '\n')            
+
+                if fh_f: fh_f.write('\n' + run.html_table_row(True) + '\n')            
+                if fh_s: fh_s.write('\n' + run.html_table_row(False) + '\n')
+            
                 expose += float(run.expose) if run.expose is not None and run.expose != ' ' else 0.
                 runs.append(run)
             except Exception, err:
                 print 'XML error: ',err,'in',xml
 
-        # Shut down html file
-        fh.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
-        fh.write('</body>\n</html>')
-        fh.close()
+        # Shut down html file(s)
+        if fh_f: 
+            fh_f.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
+            fh_f.write('</body>\n</html>')
+            fh_f.close()
+        if fh_s: 
+            fh_s.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
+            fh_s.write('</body>\n</html>')
+            fh_s.close()
 
 # Write out newly added / modified targets to disk to save future simbad lookups
 if len(sims):
@@ -182,4 +226,4 @@ if len(sims):
     print 'Written to AUTO_TARGETS to save future lookups.'
 
 # write out all targets to an html file
-targets.tohtml('all_targets.htm')
+targets.tohtml('all_targets.html')
