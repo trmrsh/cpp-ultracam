@@ -342,7 +342,9 @@ class Run(object):
         ny         -- number of pixels in Y, per pair ULTRACAM, per window ULTRASPEC
         comment    -- log file comment
         simbad     -- flag: True if target data came from Simbad.
+        nblue      -- Number of u-band co-adds.
         """
+
         self.fname     = xml
         self.telescope = telescope
         self.night     = night
@@ -417,6 +419,7 @@ class Run(object):
         self.pid       = ''
         self.pi        = ''
         self.simbad    = False
+        self.nblue     = param['NBLUE'] if 'NBLUE' in param else '1'
 
         try:
 
@@ -759,48 +762,67 @@ class Run(object):
     def html_start(self, full, previous, next):
         """
         Returns string for initial part of html file. This interacts with a css file
-        defined early on.
+        defined early on. Various extra parameters are needed to write in links to the
+        file.
 
         full     -- True for full output
         previous -- date of previous night of run (None for first night)
-        next      -- date of next night of run (None for last night)
+        next     -- date of next night of run (None for last night)
         """
         
         inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USPC' else None
 
+        # build up start with small table indicating the telescope and instrument
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="../../ultracam_logs.css" />\n' + \
+            '<link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />\n' + \
             '</head>\n<body>' + \
             '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
             '<tr><td class="left">Instrument:</td>' + td(inst,'left') + '</tr>\n' + \
             '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table><br>\n' 
 
+        # link to the opposite version of the log, i.e. to the full one if this is short, and vice versa
+        st += '<a href="' + self.night
+        if full:
+            st += '_short.html">Short log</a>, '
+        else:
+            st += '_full.html">Full log</a>, '
+
+        # now pointers to the previous and next nights. The words are always there to make for convenient
+        # clicking through runs, but they won't be high-lighted if there is no 'previous' or 'next'
         if previous is not None:
             st += '<a href="../' + previous + '/' + previous
             if full:
-                st += '_full.html">previous night</a>'
+                st += '_full.html">previous night</a>, '
             else:
-                st += '_short.html">previous night</a>'
-            if next is None:
-                st += '<br>\n'
-            else:
-                st += ', '
+                st += '_short.html">previous night</a>, '
+        else:
+            st  += 'previous night, '
 
         if next is not None:
             st += '<a href="../' + next + '/' + next
             if full:
-                st += '_full.html">next night</a><br>'
+                st += '_full.html">next night</a>.<br>'
             else:
-                st += '_short.html">next night</a><br>'        
+                st += '_short.html">next night</a>.<br>'
+        else:
+            st += 'next night.<br>'
 
-        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left') + th('Auto ID','left') + th('RA') + th('Dec') + \
-            th('Date') + th('UT', colspan=2) + th('Dwell') + th('Sample') + th('Frame') + th('Airmass',colspan=2) 
+        # Finally the main table
+
+        # First header line
+        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left') 
+        if full: st += th('Auto ID','left') 
+        st += th('RA') + th('Dec')
+
+        if full: st += th('Date') 
+
+        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + th('Frame') + th('Airmass',colspan=2) 
 
         if self.instrument == 'UCM':
             st += th('Filts')
 
-        st += th('Mode') + th('Speed') + th('Bin')
+        st += th('Mode') + th('Speed') + th('Bin') + th('Nb')
 
         if self.instrument == 'UCM' and full:
             st += th('Size1') + th('XLl') + th('XR1') + th('YS1') 
@@ -813,23 +835,32 @@ class Run(object):
             st += th('X1') + th('Y1') + th('NX1') + th('NY1')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
         
-        st += th('ID') + th('PI') + th('Observers')
+        st += th('ID') + th('PI') 
+        if full: st += th('Observers')
         st += th('Run') + th('Comment','left') + '</tr>\n'
 
-        st += '<tr>\n' + th('no.') + th('') + th('') + th('') + th('') + th('Start of run') + th('start') + \
-            th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
+        # Second header line
+        st += '<tr>\n' + th('no.') + th('') 
+        if full: st += th('') 
+        st += th('') + th('') 
+
+        if full: st+= th('Start of run') 
+
+        st += th('start') + th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
 
         if self.instrument == 'UCM':
             st += th('')
 
-        st += th('') + th('') + th('')
+        st += th('') + th('') + th('') + th('')
 
         if self.instrument == 'UCM' and full:
             st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') 
         elif self.instrument == 'USP':
             st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
 
-        st += th('') + th('') + th('') + th('no.') + th('') + '</tr>\n'
+        st += th('') + th('') 
+        if full: st += th('') 
+        st += th('no.') + th('') + '</tr>\n'
 
         return st
 
@@ -841,16 +872,31 @@ class Run(object):
         """
 
         st  = '<tr>'
-        st += td('%03d' % self.number)
+        if full:
+            st += td('<a href="../ucomment.php?wtype=full&date=%s&run=%s">%03d</a>' % (self.night,self.number,self.number))
+        else:
+            st += td('<a href="../ucomment.php?wtype=short&date=%s&run=%s">%03d</a>' % (self.night,self.number,self.number))
         st += td(self.target,'left')
-        st += td(self.id,'left')
-        st += td(self.ra)
-        st += td(self.dec)
-        st += td(self.date)
-        st += td(self.utstart)
-        st += td(self.utend)
-        st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
-        st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
+        if full: st += td(self.id,'left')
+        if full:
+            st += td(self.ra)
+            st += td(self.dec)
+        else:
+            st += td(None if self.ra is None else self.ra[:10])
+            st += td(None if self.dec is None else self.dec[:9])
+    
+        if full: 
+            st += td(self.date)
+            st += td(self.utstart)
+            st += td(self.utend)
+            st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
+            st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
+        else:
+            st += td(None if self.utstart is None else self.utstart[:-3])
+            st += td(None if self.utend   is None else self.utend[:-3])
+            st += td('%5.0f' % float(self.expose) if self.expose is not None else None, 'right')
+            st += td('%6.2f' % float(self.sample) if self.sample is not None else None, 'right')
+
         st += td(self.nframe, 'right')
         st += td(self.amassmin)
         st += td(self.amassmax)
@@ -859,6 +905,7 @@ class Run(object):
         st += td(self.mode)
         st += td(self.speed)
         st += td2(self.x_bin, self.y_bin)
+        st += td(self.nblue)
         if self.instrument == 'USP':
             st += td(self.en_clr)
             st += td(self.output)
@@ -870,7 +917,8 @@ class Run(object):
             st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
             st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
 
-        st += td(self.pid) + td(self.pi) + tdnw(self.observers.replace(' ', ''))
+        st += td(self.pid) + td(self.pi) 
+        if full: st += tdnw(self.observers.replace(' ', ''))
         st += td('%03d' % self.number)
         st += td(self.comment,'left')
         st += '</tr>'

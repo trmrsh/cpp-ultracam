@@ -101,7 +101,7 @@ for rdir in rdirs:
         if rd == rdir:
             fg.write('<ul>\n')
             for ndir in ndirs:
-                fg.write('<li> <a href="' + ndir + '/' + ndir + '_full.html' + '" target="dynamic">' + ndir + '</a></li>\n')
+                fg.write('<li> <a href="../' + ndir + '/' + ndir + '_full.html' + '" target="dynamic">' + ndir + '</a></li>\n')
             fg.write('</ul>\n')
 
     fg.write('</body>\n</html>\n')
@@ -125,7 +125,7 @@ for rdir in rdirs:
         if rd == rdir:
             fg.write('<ul>\n')
             for ndir in ndirs:
-                fg.write('<li> <a href="' + ndir + '/' + ndir + '_short.html' + '" target="dynamic">' + ndir + '</a></li>\n')
+                fg.write('<li> <a href="../' + ndir + '/' + ndir + '_short.html' + '" target="dynamic">' + ndir + '</a></li>\n')
             fg.write('</ul>\n')
 
     fg.write('</body>\n</html>\n')
@@ -199,11 +199,36 @@ for rdir in rdirs:
 
         # Shut down html file(s)
         if fh_f: 
-            fh_f.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
+            fh_f.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
+            fh_f.write("""
+<p>
+<table>
+<tr><th class="left">Nb</th><td>nblue, number of u-band co-adds</td></tr>
+<tr><th class="left">Auto ID</th><td>automated look-up of positions
+through a combination of string matching and SIMBAD lookups, this shows the identified object 
+name</td></tr>
+<tr><th class="left">Dwell</th><td>total time on target</td></tr>
+<tr><th class="left">Cycle</th><td>time from one exposure to the next</td></tr>
+<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the 
+data in this parameter.</td></tr>
+</table>
+
+""")
             fh_f.write('</body>\n</html>')
             fh_f.close()
         if fh_s: 
-            fh_s.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours\n')
+            fh_s.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
+            fh_s.write("""
+<p>
+<table>
+<tr><th class="left">Nb</th><td>nblue, number of u-band co-adds</td></tr>
+<tr><th class="left">Dwell</th><td>total time on target</td></tr>
+<tr><th class="left">Cycle</th><td>time from one exposure to the next</td></tr>
+<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the 
+data in this parameter.</td></tr>
+</table>
+
+""")
             fh_s.write('</body>\n</html>')
             fh_s.close()
 

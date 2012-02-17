@@ -9,10 +9,6 @@
 
 <h1>ULTRACAM interactive logs</h1>
 
-<p>
-This page is designed to help trace ULTRACAM runs, i.e. to answer burning
-questions such as <a title="ULTRACAM in-joke">"did we ever observe NN Ser?"</a>. 
-
 <?php 
 
 $slimits = htmlspecialchars($_REQUEST['slimits']);
