@@ -1,0 +1,74 @@
+<HTML>
+<HEAD>
+<TITLE>ULTRACAM data types</TITLE>
+</HEAD>
+
+<h1>ULTRACAM data types</h1>
+
+<p>
+The ULTRACAM comment form allows you to specify a "data type". This is to be
+taken in the sense thst you have for example been looking at what is indicated
+in the logs as a bias, but is in fact clearly a flat field. This is a common
+occurrence. The data type parameter allows you to flag up that is a flat. Here
+are the implied meanings of the possible types:
+
+<p>
+<table>
+
+<tr>
+<td><b>Unspecified</b></td>
+<td>
+Use this when you are not commenting on the specific nature of the data,
+but noting something else. e.g. "Satellite passes across target on frame 38"
+</td></tr>
+
+<tr><td><b>Junk</b></td>
+<td>The data of the run are junk and have no value at all. They can be 
+deleted without regret (be conservative: a peppered flat for instance is no
+  use as a flat but possibly interesting for understanding peppering. You might
+want to label it 'technical' instead.)</td>
+</tr>
+
+<tr><td><b>Good</b></td>
+<td>This is to indicate the data have been looked at and are basically OK.</td>
+</tr>
+
+<tr><td><b>Reduced</b></td>
+<td>The data of the run have been reduced. In this case try to specify a
+  location of the reduced data in the comments.</td>
+</tr>
+
+<tr><td><b>Acquisition</b></td>
+<td>The data represent target acquisition.</td>
+</tr>
+
+
+<tr><td><b>Bias</b></td>
+<td>The data are bias frames.</td>
+</tr>
+
+<tr><td><b>Dark</b></td>
+<td>The data are dark frames. Dark frames are very close to bias frames. The
+  main distinction is that dark frames have been allowed to accumulate counts.
+</td>
+</tr>
+
+<tr><td><b>Science</b></td>
+<td>The data are science frames. (Includes standard star data.) </td>
+</tr>
+
+<tr><td><b>Flat</b></td>
+<td>The data are flat fields.</td>
+</tr>
+
+<tr><td><b>Technical</b></td>
+<td>The data are usefule for testing purposes: noise characteristics, linearity
+etc.</td>
+</tr>
+</table>
+
+<address>
+Tom Marsh, Warwick
+</address>
+</body>
+</html>
