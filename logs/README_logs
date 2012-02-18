@@ -1,0 +1,19 @@
+The ULTRACAM data logs are now quite complex so I thought it would be worth
+detailing them and their construction.
+
+The basic structure of the logs follows the night-by-night structure of the
+data directories. See the README in /storage/astro2/phsaap/ULTRACAM
+
+Once new data are ingested, the script 'make_times.py' creates data files
+defining the start and end times of every run. Following this 'make_logs.py'
+generates html log files. Each run is linked to the php script 'ucomment.php'
+and through it to the Python script 'ucomment.py' to allow users to make
+comments. In order to automatically capture the names of users, I have
+introduced password access via htaccess, htpasswd. The comments are e-mailed
+to me, and then can be collated into a FITS file 'ultracam_comment.fits' using
+the script 'ucomment_proc.py'. 
+
+Ultimately I expect to link 'ucomment.py' to the database file so that old
+comments can be listed while making any new ones and also 'make_logs.py' 
+(or possibly 'Ultra.py') so that data flags can be defined in the static logs.
+

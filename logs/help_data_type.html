@@ -7,11 +7,14 @@
 <h1>ULTRACAM data types</h1>
 
 <p>
-The ULTRACAM comment form allows you to specify a "data type". This is to be
-taken in the sense thst you have for example been looking at what is indicated
-in the logs as a bias, but is in fact clearly a flat field. This is a common
-occurrence. The data type parameter allows you to flag up that is a flat. Here
-are the implied meanings of the possible types:
+The ULTRACAM comment form requires you to specify a "Data type". This is to be
+taken in the sense that you have, for example, been looking at what is indicated
+in the logs as a bias, but is in fact clearly a flat field, i.e. something is
+wrong and you would like to correct it. The data type parameter allows you to 
+flag up that is a flat and is intended in the end to feed back into the logs.
+
+<p>
+Here are the meanings of the possible types:
 
 <p>
 <table>
@@ -19,15 +22,15 @@ are the implied meanings of the possible types:
 <tr>
 <td><b>Unspecified</b></td>
 <td class="long">
-Use this when you are not commenting on the specific nature of the data,
-but noting something else. e.g. "Satellite passes across target on frame 38"
+Use this when you are <i>not</i> commenting on the specific nature of the data,
+but noting something else. e.g. "Satellite passes across target on frame 38",
+or "eclipse was 20 mins later than expected".
 </td></tr>
 
 <tr><td><b>Junk</b></td>
 <td class="long">The data of the run are junk and have no value at all. They can be 
-deleted without regret (be conservative: a peppered flat for instance is no
-  use as a flat but possibly interesting for understanding peppering. You might
-want to label it 'technical' instead.)</td>
+deleted without regret. Ultimately, this is exactly what I will do, so be
+  careful in applying this one.</td>
 </tr>
 
 <tr valign="top"><td><b>Good</b></td>
@@ -40,7 +43,7 @@ want to label it 'technical' instead.)</td>
 </tr>
 
 <tr><td><b>Acquisition</b></td>
-<td class="long">The data represent target acquisition.</td>
+<td class="long">The data represent a target acquisition.</td>
 </tr>
 
 

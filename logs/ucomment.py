@@ -146,8 +146,7 @@ def main(argv):
 <table>
 <tr><td class="left"><a href="help_data_type.html">Data type:</a></td> <td class="left">
 <select name="attribute" size=1 title="Defines a new attribute of the run for automated 
-classification. e.g. Choosing \'Junk\' indicates that the run is entirely useless 
-while \'Good\' is a verification that the data are OK. Click on data type for more help.">
+classification. Click 'Data type' for details.">
 """
   for att in ATTRIBUTES:
     print '<option>' + att
