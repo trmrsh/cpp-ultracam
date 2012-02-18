@@ -9,7 +9,7 @@ import re
 
 # tuple of attributes
 ATTRIBUTES = ('Unspecified','Junk','Good','Reduced',\
-              'Acquisition','Bias','Dark','Data','Flat','Technical')
+              'Acquisition','Bias','Dark','Science','Flat','Technical')
 
 def check_inputs(date, run):
 
@@ -101,7 +101,7 @@ def main(argv):
       # compose a message
       import smtplib
 
-      msg = 'From: t.r.marsh@warwick.ac.uk\r\n' + \
+      msg = 'From: no-reply@warwick.ac.uk\r\n' + \
           'To: tom.r.marsh@gmail.com\r\n' + \
           'Subject: ULTRACAM data comment submission\r\n\r\n' + \
           'User:\n' + user + '\n\n' + \
@@ -112,7 +112,7 @@ def main(argv):
 
       server = smtplib.SMTP('mail-relay.warwick.ac.uk')
 #      server.set_debuglevel(1)
-      reply = server.sendmail('t.r.marsh@warwick.ac.uk', 'tom.r.marsh@gmail.com', msg)
+      reply = server.sendmail('no-reply@warwick.ac.uk', 'tom.r.marsh@gmail.com', msg)
       server.quit()
 
       print '\n<br><br>\nAn e-mail has been sent.<br>\n\n'
@@ -144,10 +144,10 @@ def main(argv):
 
   print """
 <table>
-<tr><td class="left">Data type:</td> <td class="left">
+<tr><td class="left"><a href="help_data_type.html">Data type:</a></td> <td class="left">
 <select name="attribute" size=1 title="Defines a new attribute of the run for automated 
 classification. e.g. Choosing \'Junk\' indicates that the run is entirely useless 
-while \'Good\' is a verification that the data are OK.">
+while \'Good\' is a verification that the data are OK. Click on data type for more help.">
 """
   for att in ATTRIBUTES:
     print '<option>' + att
