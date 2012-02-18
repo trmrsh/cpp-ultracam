@@ -2,10 +2,11 @@
 
 # copies logs 
 
-rsync -avu --delete --exclude "index*.html" --include "*/" --include="20*[0-9]" --include "*.html" --include "*.png" \
---include "*.fits" --exclude "*" logs $WEB_PATH/ultracam/.
+rsync -avu --delete --exclude "index*.html" --exclude="help*.html" --include "*/" --include="20*[0-9]" \
+--include "*.html" --include "*.png" --include "*.fits" --exclude "*" logs $WEB_PATH/ultracam/.
 
-rsync -avuL --exclude "*/*/" --include "*/" --include "*.css" --include "*.php" --include "index*.html" --exclude "*" logs $WEB_PATH/ultracam/.
+rsync -avuL --exclude "*/*/" --include "*/" --include "*.css" --include "*.php" --include "index*.html" \
+--include="help*.html" --exclude "*" logs $WEB_PATH/ultracam/.
 
 # make the permissions right
 
