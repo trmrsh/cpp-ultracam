@@ -61,6 +61,18 @@ td.long {
     vertical-align: top;
     text-align: left;
     padding-right: 10px;
+    font: 12pt sans-serif;
+    white-space: normal;
+}
+
+td.bleft { 
+    color: #ffffa0;
+    vertical-align: top;
+    text-align: left;
+    white-space: nowrap;
+    padding-right: 10px;
+    font: 12pt sans-serif;
+    font-weight: bold;
 }
 
 th { 

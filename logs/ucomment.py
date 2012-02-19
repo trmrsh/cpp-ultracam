@@ -2,7 +2,20 @@
 # -*- coding: utf-8 -*-
 
 """
-script to generate a form for commenting on ULTRACAM runs.
+Script to generate a form for commenting on ULTRACAM runs. Rather horrible
+logic as follows:
+
+This should be called from the file ucomment.php which is little more than a
+wrapper.  The php file should be called the 'date', 'run', 'user' and 'wtype'
+fields set to avoid unecessary prompting. The 'attribute' field should not be
+set. This indicates that it is the first call to this python script.
+
+The script generates a form requiring a few entries from the user. This
+includes some javascript in the php wrapper script to hide/reveal a file
+upload option if the 'Reduced' option is selected. On submission the new
+fields are passed to ucomment.php again. This time the attribute field should
+be set and, if all checks on input fields are passed, the values are sent by
+email to me.
 """
 
 import re
@@ -48,21 +61,22 @@ def check_inputs(date, run):
 
 def main(argv):
 
-  # If called from ucomment.php, this will always have 6 arguments. 
-  # The != 6 case is for testing
-  if len(argv) != 6:
-    print 'ucomment.py was not correctly invoked. It needs 6 arguments.'
+  # If called from ucomment.php, this will always have 8 arguments. 
+  # The != 8 case is for testing
+  if len(argv) != 8:
+    print 'ucomment.py was not correctly invoked. It needs 8 arguments.'
     print len(argv),'were supplied.'
-    user, wtype, date, run, attribute, comment = \
-        'Tom Marsh', 'short', '2000-01-01', '23', 'Junk', 'Test message'
+    user, wtype, date, run, attribute, comment, ofile, tfile = \
+        'Tom Marsh', 'short', '2000-01-01', '23', 'Junk', 'Test message', '', ''
   else:
-    user, wtype, date, run, attribute, comment = argv
+    user, wtype, date, run, attribute, comment, ofile, tfile = argv
 
     if not check_inputs(date, run):
       return
 
-  # Check whether this is the first pass
+  # Check whether this is the first pass. If attribute is set, assume that it is not.
   if attribute != '':
+
     print '<h1>Data comment submission results</h1>\n\n<p>'
     ok = True
 
@@ -76,8 +90,12 @@ def main(argv):
       print 'You must enter a name.<br>'
       ok = False
 
-    # the attribute    
-    if attribute not in ATTRIBUTES:
+    # the attribute  
+    if attribute == 'Noselection':
+      print 'You must select an attribute; choose "Unspecified" if your comment is not'
+      print 'indicating a change of data attribute.'
+      ok = False
+    elif attribute not in ATTRIBUTES:
       print 'Data attribute = "' + attribute + '" is not recognised.<br>'
       ok = False
 
@@ -88,6 +106,11 @@ def main(argv):
     else:
       comment = re.sub('[ \n\r\t]+',' ',comment)
 
+    # the file, if any
+    if ofile != '' and not ofile.endswith('.fits.gz'):
+      print 'Only .fits.gz files can be uploaded.<br>'
+      ok = False
+
     if ok: 
       print 'Thank you for your submission:<br><br>'
       print '<table>'
@@ -96,23 +119,53 @@ def main(argv):
       print '<tr valign="top"><td class="left">Run:</td><td class="left">' + str(run) + '</td></tr>'
       print '<tr valign="top"><td class="left">Data type:</td><td class="left">' + attribute + '</td></tr>'
       print '<tr valign="top"><td class="left">Comment:</td><td class="left">' + comment + '</td></tr>'
+      if ofile == '':
+        print '<tr valign="top"><td class="left">Reduce log:</td><td class="left">None uploaded</td></tr>'
+      else:
+        print '<tr valign="top"><td class="left">Reduce log:</td><td class="left">' + ofile + '</td></tr>'
       print '</table>\n'
 
-      # compose a message
+      # compose message with an optional attachment
+      from email import Encoders
+      from email.MIMEMultipart import MIMEMultipart
+      from email.MIMEBase import MIMEBase
+      from email.MIMEText import MIMEText
+
+      msg = MIMEMultipart()
+      msg['From']    = 'no-reply@warwick.ac.uk'
+      msg['To']      = 'tom.r.marsh@gmail.com'
+      msg['Subject'] = 'ULTRACAM data comment submission'
+
+      msg.attach(MIMEText('User:\n' + user + '\n\n' + \
+                            'Date:\n' + date + '\n\n' + \
+                            'Run:\n' + run + '\n\n' + \
+                            'Data type:\n' + attribute + '\n\n' + \
+                            'File:\n' + ofile + '\n\n' + \
+                            'Comment:\n' + comment + '\n\n', 'plain'))
+ 
+      # Now read and pack the file
+      if ofile != '' and tfile != '': 
+        import os
+        if os.path.exists(tfile):
+          fp  = open(tfile, 'rb')
+          b   = fp.read()
+          fp.close()
+
+          part = MIMEBase('application', "octet-stream")
+          part.set_payload(b)
+          Encoders.encode_base64(part)
+          part.add_header('Content-Disposition', \
+                            'attachment; filename="%s"' % ofile)
+          msg.attach(part)
+        else:
+          print 'Cannot find temporary file =',tfile,'<br>'
+            
+      # send the message, inform the user.
       import smtplib
-
-      msg = 'From: no-reply@warwick.ac.uk\r\n' + \
-          'To: tom.r.marsh@gmail.com\r\n' + \
-          'Subject: ULTRACAM data comment submission\r\n\r\n' + \
-          'User:\n' + user + '\n\n' + \
-          'Date:\n' + date + '\n\n' + \
-          'Run:\n' + run + '\n\n' + \
-          'Data type:\n' + attribute + '\n\n' + \
-          'Comment:\n' + comment + '\n\n'
-
       server = smtplib.SMTP('mail-relay.warwick.ac.uk')
 #      server.set_debuglevel(1)
-      reply = server.sendmail('no-reply@warwick.ac.uk', 'tom.r.marsh@gmail.com', msg)
+      reply = server.sendmail('no-reply@warwick.ac.uk', \
+                              'tom.r.marsh@gmail.com', msg.as_string())
       server.quit()
 
       print '\n<br><br>\nAn e-mail has been sent.<br>\n\n'
@@ -127,40 +180,63 @@ def main(argv):
       print '<strong>Invalid form input; please try again.</strong>'
 
   else:
-    print '<h1>Comment on %s/run%03d from user = %s</h1>' % (date, int(run), user)
+    print '<h1>Comment on %s/run%03d</h1>' % (date, int(run),)
 
-  # Print the form
   print """
 <p><hr>
 
 <p>
-<form method="get" action="ucomment.php">
+<form method="post" action="ucomment.php" enctype="multipart/form-data" name="dcform"
+onsubmit="return validate();">
 """
-
   print '<input type="hidden" name="user" value="%s">'  % (user,)
   print '<input type="hidden" name="date" value="%s">'  % (date,)
   print '<input type="hidden" name="run" value="%s">'   % (run,)
   print '<input type="hidden" name="wtype" value="%s">' % (wtype,)
 
+  # this is the data attribute line
   print """
+<input type="hidden" name="MAX_FILE_SIZE" value="8000000" />
+
 <table>
-<tr><td class="left"><a href="help_data_type.html">Data type:</a></td> <td class="left">
-<select name="attribute" size=1 title="Defines a new attribute of the run for automated 
-classification. Click 'Data type' for details.">
+
+<tr>
+<td class="left"><a href="help_data_type.html">Data type:</a></td> 
+<td class="left">
+<select name="attribute" size=1 id="attsel" 
+title="Defines a new attribute of the run for automated classification. Click 'Data type' for details." 
+onchange="display(this);" />
 """
+  print '<option value="Noselection">' + ' -- select attribute --'
   for att in ATTRIBUTES:
-    print '<option>' + att
+    print '<option value="%s"> %s' % (att,att)
+
+  # coming up is a file upload option that should only be displayed if the 
+  # reduced option has been chosen. Finally there is arbitrary comment field.
 
   print """
 </select>
 </td></tr>
-<tr valign="top"><td class="left">Comment:</td>
+
+<tr id="fupload" valign="top" style="display: none;">
+<td class="left">Reduce log:</td>
 <td class="left">
-<textarea name="comment" rows="5" cols="40" wrap="hard" title="Paragraph breaks will be ignored. Keep comments short."></textarea>
+<input type="file" name="redfile" size="40" id="upload"
+title="Upload the reduce log file in .fits.gz format">
 </td></tr>
+
+<tr valign="top">
+<td class="left">Comment:</td>
+<td class="left">
+<textarea name="comment" rows="5" cols="40" wrap="hard" id="comment"
+title="Paragraph breaks will be ignored. Keep comments short.">
+</textarea>
+</td></tr>
+
 </table>
 <input type="submit" value="Submit">
 """
+
   print '<input type="button" value="Cancel" onClick="location.href=\'./%s/%s_%s.html\';">' % (date,date,wtype)
   print '</form>'
 

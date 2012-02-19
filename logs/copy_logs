@@ -13,3 +13,4 @@ rsync -avuL --exclude "*/*/" --include "*/" --include "*.css" --include "*.php" 
 cd $WEB_PATH/ultracam
 find logs -type d -exec \chmod 755 \{} \; 
 find logs -type f -exec \chmod 644 \{} \;
+find logs -name "*.py" -exec \chmod 755 \{} \;
