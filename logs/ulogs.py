@@ -186,8 +186,7 @@ def main(argv):
   print '<p>\n<hr>\n\n<h2>Matches:</h2>\n<p>'
 
   # read database file
-  hdu     = pyfits.open('http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/ultracam_dbase.fits')
-#  hdu     = pyfits.open('ultracam_dbase.fits')
+  hdu     = pyfits.open('http://deneb.astro.warwick.ac.uk/phsaap/python/ultracam_dbase.fits')
   table   = hdu[1].data
   ras     = table.field('RA')
   decs    = table.field('Dec')
@@ -221,13 +220,13 @@ def main(argv):
     if unique:
       for ra,dec,run,night,number,target,iden,expo,comm in \
             zip(ras[ok][uk],decs[ok][uk],runs[ok][uk],nights[ok][uk],numbers[ok][uk],targets[ok][uk],ids[ok][uk],exps[ok][uk],coms[ok][uk]):
-        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s_short.html" target="_blank">%s</a></td><td class="cen"> %s </td><td> %s </td><td> %s </td>' \
-            % (ra,dec,run,run,night,night,night,number,target,iden)
+        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s_short.html" target="_blank">%s</a></td><td class="cen"> %s </td><td> %s </td><td> %s </td>' \
+            % (ra,dec,run,night,night,night,number,target,iden)
         print '<td> %5.1f </td><td class="left"> %s </td></tr>' % (expo,comm)
     else:
       for ra,dec,run,night,number,target,iden,expo,comm in zip(ras[ok],decs[ok],runs[ok],nights[ok],numbers[ok],targets[ok],ids[ok],exps[ok],coms[ok]):
-        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s/%s_short.html" target="_blank">%s</a> </td><td class="cen"> %s </td><td> %s </td><td> %s </td>' \
-            % (ra,dec,run,run,night,night,night,number,target,iden)
+        print '<tr><td> %6.3f </td><td> %7.3f </td><td> %s </td><td> <a href="%s/%s_short.html" target="_blank">%s</a> </td><td class="cen"> %s </td><td> %s </td><td> %s </td>' \
+            % (ra,dec,run,night,night,night,number,target,iden)
         print '<td> %5.1f </td><td class="left"> %s </td></tr>' % (expo,comm)
     print '</table>'
   else:
