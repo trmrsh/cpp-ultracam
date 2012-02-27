@@ -11,9 +11,9 @@ and through it to the Python script 'ucomment.py' to allow users to make
 comments. In order to automatically capture the names of users, I have
 introduced password access via htaccess, htpasswd. The comments are e-mailed
 to me, and then can be collated into a FITS file 'ultracam_comment.fits' using
-the script 'ucomment_proc.py'. 
+the script 'ucomment_proc.py'. ucomment.py and php allow file uploading and
+include both client- and server-side checking, so they are closely linked
+together and care must be taken when editing them not to break this symbiosis.
 
-Ultimately I expect to link 'ucomment.py' to the database file so that old
-comments can be listed while making any new ones and also 'make_logs.py' 
-(or possibly 'Ultra.py') so that data flags can be defined in the static logs.
+Under development: ucomment_proc.py to process the emails.
 

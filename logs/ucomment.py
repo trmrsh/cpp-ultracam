@@ -182,20 +182,32 @@ def main(argv):
   else:
     print '<h1>Comment on %s/run%03d</h1>' % (date, int(run),)
 
-  print """
+  if user == 'ultracam':
+    print """
+<p><hr>
+
+<p>
+Dear ULTRACAM user, this link would normally take you to a form which would allow you to submit a comment on 
+a run, however the facility is not available under the generic access account 'ultracam'. If you are reducing 
+ultracam data and find the logs to be wrong in some way and therefore think that a comment is warranted, please 
+contact me for a specific account. I welcome such comments for improvement of the archive so would be more than 
+happy to set one up for you.
+"""
+  else:
+    print """
 <p><hr>
 
 <p>
 <form method="post" action="ucomment.php" enctype="multipart/form-data" name="dcform"
 onsubmit="return validate();">
 """
-  print '<input type="hidden" name="user" value="%s">'  % (user,)
-  print '<input type="hidden" name="date" value="%s">'  % (date,)
-  print '<input type="hidden" name="run" value="%s">'   % (run,)
-  print '<input type="hidden" name="wtype" value="%s">' % (wtype,)
+    print '<input type="hidden" name="user" value="%s">'  % (user,)
+    print '<input type="hidden" name="date" value="%s">'  % (date,)
+    print '<input type="hidden" name="run" value="%s">'   % (run,)
+    print '<input type="hidden" name="wtype" value="%s">' % (wtype,)
 
   # this is the data attribute line
-  print """
+    print """
 <input type="hidden" name="MAX_FILE_SIZE" value="8000000" />
 
 <table>
@@ -207,14 +219,14 @@ onsubmit="return validate();">
 title="Defines a new attribute of the run for automated classification. Click 'Data type' for details." 
 onchange="display(this);" />
 """
-  print '<option value="Noselection">' + ' -- select attribute --'
-  for att in ATTRIBUTES:
-    print '<option value="%s"> %s' % (att,att)
+    print '<option value="Noselection">' + ' -- select attribute --'
+    for att in ATTRIBUTES:
+      print '<option value="%s"> %s' % (att,att)
 
   # coming up is a file upload option that should only be displayed if the 
   # reduced option has been chosen. Finally there is arbitrary comment field.
 
-  print """
+    print """
 </select>
 </td></tr>
 
@@ -237,8 +249,8 @@ title="Paragraph breaks will be ignored. Keep comments short.">
 <input type="submit" value="Submit">
 """
 
-  print '<input type="button" value="Cancel" onClick="location.href=\'./%s/%s_%s.html\';">' % (date,date,wtype)
-  print '</form>'
+    print '<input type="button" value="Cancel" onClick="location.href=\'./%s/%s_%s.html\';">' % (date,date,wtype)
+    print '</form>'
 
 if __name__ == "__main__":
   import sys

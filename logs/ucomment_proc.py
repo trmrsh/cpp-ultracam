@@ -13,6 +13,10 @@ import pyfits
 import trm.subs as subs
 from trm import forms
 
+# top-level of where to store the database and any 
+# attached reduce files
+store = '/storage/astro2/phsaap/ultracam/logs'
+
 print '\nTime = ',time.ctime()
 
 # connect to imap server
@@ -56,6 +60,7 @@ when    = []
 dtype   = []
 run     = []
 user    = []
+stored  = []
 comment = []
 
 for num in data[0].split():
@@ -76,12 +81,40 @@ for num in data[0].split():
         elif part.get_content_type() == 'text/plain':
                 
             # this is where the fields entered get parsed, fixed and checked.
-            fields = forms.genparse(part, ('User', 'Date', 'Run', 'Data type', 'Comment') )
+            try:
+                fields = forms.genparse(part, ('User', 'Date', 'Run', 'Data type', 'File', 'Comment') )
+            except:
+                raise Exception('Could not parse message number ' + str(num))
+
             dtype.append(fields['Data type'])
             run.append(fields['Date'] + '/run%03d' %(int(fields['Run']),))
             user.append(fields['User'])
             comment.append(fields['Comment'])
-            
+            stored.append('')
+
+        elif part.get_content_maintype() == 'application' or part.get_content_maintype() == 'image':
+
+            # This section writes attachments to disk
+            filename = part.get_filename()
+            if not filename:
+                raise forms.FormError('Failed to find filename')
+            else:
+                fdir  = os.path.join(store, fields['Date'])
+                if not os.path.exists(fdir):
+                    raise Exception('Directory = ' + fdir + ' does not exist!')
+
+                sdir = os.path.join(fdir, reduced)
+                if not os.path.exists(sdir):
+                    os.mkdir(sdir)
+                    print 'Created directory =',sdir
+
+                fname = os.path.join(sdir, fields['User'] + '_' + filename)
+                sfp = open(fname, 'wb')
+                sfp.write(part.get_payload(decode=True))
+                sfp.close()
+                print 'Wrote attachment of message',num+1,'to',fname
+                stored[-1] = fname
+
         else:
             print 'Content type = ' + part.get_content_type() + ' not recognised.'
 
@@ -97,17 +130,18 @@ when    = np.array(when)
 dtype   = np.array(dtype)
 run     = np.array(run)
 user    = np.array(user)
+stored  = np.array(stored)
 comment = np.array(comment)
 
 # Sort on arrival time
 isort   = np.argsort(day)
 
 day     = day[isort]
-
 when    = when[isort]
 dtype   = dtype[isort]
 run     = run[isort]
 user    = user[isort]
+stored  = stored[isort]
 comment = comment[isort]
 
 # Construct FITS file
@@ -115,11 +149,12 @@ crun     = pyfits.Column(name='Run', format=str(run.dtype.itemsize) + 'A', array
 cdtype   = pyfits.Column(name='Dtype', format=str(dtype.dtype.itemsize) + 'A', array=dtype)
 cuser    = pyfits.Column(name='Username', format=str(user.dtype.itemsize) + 'A', array=user)
 cwhen    = pyfits.Column(name='Submitted', format=str(when.dtype.itemsize) + 'A', array=when)
+cstored  = pyfits.Column(name='Stored', format=str(stored.dtype.itemsize) + 'A', array=stored)
 ccomment = pyfits.Column(name='Comment', format=str(comment.dtype.itemsize) + 'A', array=comment)
 
-cols     = pyfits.ColDefs([crun,cdtype,cuser,cwhen,ccomment])
+cols     = pyfits.ColDefs([crun,cdtype,cuser,cstored,cwhen,ccomment])
 
-dbase = 'ultracam_comments.fits'
+dbase = os.path.join(store, 'ultracam_comments.fits')
 tbhdu = pyfits.new_table(cols)
 hdu   = pyfits.PrimaryHDU()
 hdul  = pyfits.HDUList([hdu, tbhdu])

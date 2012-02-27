@@ -1,12 +1,18 @@
 #!/bin/csh -fv
 
-# copies logs 
+# copies log stuff over
 
-rsync -avu --delete --exclude "index*.html" --exclude="help*.html" --include "*/" --include="20*[0-9]" \
---include "*.html" --include "*.png" --include "*.fits" --exclude "*" logs $WEB_PATH/ultracam/.
+# copy standard files over, bar a few special cases
+rsync -avu --delete --exclude="index*.html" --exclude="help*.html" --exclude="*.fits" --include="*/" --include="20*[0-9]" \
+--include "*.html" --include "*.png" --exclude "*" logs $WEB_PATH/ultracam/.
 
+# copy some links over. Can't do this for all because of extensive use of directory symlinks which we
+# want to leave alone
 rsync -avuL --exclude "*/*/" --include "*/" --include "*.css" --include "*.php" --include "index*.html" \
 --include="help*.html" --exclude "*" logs $WEB_PATH/ultracam/.
+
+# copy fits
+rsync -avu --include="*.fits" --exclude "*" logs/ $WEB_PATH/python/.
 
 # make the permissions right
 
