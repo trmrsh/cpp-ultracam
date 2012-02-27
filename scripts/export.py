@@ -206,30 +206,32 @@ f.write("""
 <p>
 Dear Ultracam/Ultraspec user,
 
-<p>
-you will find below a log of runs identified as either belonging to you or as calibration files
-compatible with your data. The log below is partial; see the
-<a href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/index.htm">data logs</a>
-for full information. The runs below were identified automatically according to header values and window 
-formats. It is possible that the headers could be in 
-error, so don't hesitate to contact us if you think there might be anything wrong. To help you download
-your data, here is a <a href="links.lis">list of links</a> that can be used as input for 'wget', e.g.
-<pre>
-wget --user=username --password=password -x -nH --cut-dirs=3 -i links.lis
-</pre>
-where links.lis is the name of the list of links that you have saved to disk
-and we will send you the username and password. However, <strong>do not
-immediately start this</strong> because it is highly likely that you can save
-yourself lots of time if you edit the list of links to avoid downloading files
-that you don't think that you will need (you can always pick them up later if
-you change your mind). There will typically be many more calibrations than are
-strictly needed, for instance because the routine searches over all nights for
-compatible frames and every unbinned full-frame run will be located for
-example. It tries to err on the inclusive side, but this means that there may
-well be many more files than you strictly need. Thus your first task should be
-to prune the <a href="links.lis">list of links</a>.
-In the list below file sizes are included so that you can judge this for yourself
-and links are given so that you can individually download files if need be.
+<p> you will find below a log of runs identified as either belonging to you or
+as calibration files compatible with your data. The log below is partial; see
+the <a
+href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/index.html">data
+logs</a> for full information (username ultracam, password blencathra). The
+runs below were identified automatically according to header values and window
+formats. It is possible that the headers could be in error, so don't hesitate
+to contact us if you think there might be anything wrong. To help you download
+your data, here is a <a href="links.lis">list of links</a> that can be used as
+input for 'wget', e.g.  
+<pre> 
+wget -x -nH --cut-dirs=3 -i links.lis 
+</pre> 
+where links.lis is the name of the list of
+links that you have saved to disk. However, <strong>do not immediately start this</strong> because it
+is highly likely that you can save yourself lots of time if you edit the list
+of links to avoid downloading files that you don't think that you will need
+(you can always pick them up later if you change your mind). There will
+typically be <strong>many</strong> more calibrations than you will strictly need, 
+for instance because the routine searches over all nights for compatible frames and every
+unbinned full-frame run will be located for example. It tries to err on the
+inclusive side, but this means that there may well be many more files than you
+require. Thus your first task should be to prune the <a
+href="links.lis">list of links</a>.  In the list below file sizes are included
+so that you can judge this for yourself and links are given so that you can
+individually download files if need be.
 
 <p>
 If you find that you need to repeat a download but want to avoid copying files that 
@@ -245,22 +247,34 @@ that points to the data file. You will need both to be able to use the data, and
 stored within the same directory. The XML files are small while the data files are large. 
 The <a href="links.lis">list of links</a> contains both the xml and data links.
 
-<p>
-Once you have downloaded what you want, also save this page to keep as a log. The blank lines separate different nights.
+<p> Once you have downloaded what you want, also save this page to keep as a
+log. The rules within the table separate runs from different nights.
 
 <p>
-<table cellpadding="2" cellspacing="2">
+<table cellpadding="2" cellspacing="2" rules="groups">
 
+<thead>
 <tr><th>Links<th>Size<br>(MB)</th><th>Night</th><th>Run</th><th>Target</th><th>Auto ID</th>
 <th>Date<br>Start of run</th><th>UT<br>start</th><th>UT<br>end</th>
 <th>Dwell<br>sec.</th><th>Sample<br>sec.</th><th>Frame<br>no.</th>
 <th>Filters</th><th>PID</th><th>PI</th><th>Comment</th></tr>
+</thead>
+
+<tbody>
 """)
 
 server = 'http://deneb.astro.warwick.ac.uk/phsaap/data/'
 
+nold = 'None'
+
 for run in runs:
     root = os.path.join(progid, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+
+    if nold == 'None':
+        nold = run.night
+    elif nold != run.night:
+        nold = run.night
+        f.write('</tbody>\n\n<tbody>\n')
 
     s  = '<tr><td><a href="' + server + root + '.xml' + '">X</a>, '
     s += '<a href="' + server + root + '.dat' + '">D</a></td>'
@@ -291,6 +305,7 @@ for run in runs:
     f.write(s)
 
 f.write("""
+</tbody>
 
 </table>
 </body>
