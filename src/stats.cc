@@ -45,11 +45,13 @@ up if you are not interested in it.}
 #include <sstream>
 #include <map>
 #include "trm_subs.h"
+#include "trm_format.h"
 #include "trm_input.h"
 #include "trm_frame.h"
 #include "trm_mccd.h"
 #include "trm_window.h"
 #include "trm_ultracam.h"
+
 
 int main(int argc, char* argv[]){
 
@@ -88,6 +90,7 @@ int main(int argc, char* argv[]){
     input.get_value("median", median, true, "do you want to compute the median too?");
 
     Ultracam::Image::Stats stats;
+    Subs::Format form;
 
     for(size_t nccd=0; nccd<data.size(); nccd++){
       stats = data[nccd].statistics(mwindow[nccd],sigma,median,false);
@@ -95,26 +98,26 @@ int main(int argc, char* argv[]){
       std::cout << "Total number of pixels    = " << stats.npoints << std::endl;
       input.add_to_global("stats_npoints", stats.npoints);
       if(stats.npoints){
-	std::cout << "Minimum                   = " << stats.min << std::endl;
+	std::cout << "Minimum                   = " << form(stats.min) << std::endl;
 	input.add_to_global("stats_min", stats.min);
-	std::cout << "Maximum                   = " << stats.max << std::endl;
+	std::cout << "Maximum                   = " << form(stats.max) << std::endl;
 	input.add_to_global("stats_max", stats.max);
-	std::cout << "Raw mean                  = " << stats.raw_mean << std::endl;
+	std::cout << "Raw mean                  = " << form(stats.raw_mean) << std::endl;
 	input.add_to_global("stats_raw_mean", stats.raw_mean);
 	if(stats.npoints > 1){
-	  std::cout << "Raw RMS                   = " << stats.raw_rms << std::endl;
+	  std::cout << "Raw RMS                   = " << form(stats.raw_rms) << std::endl;
 	  input.add_to_global("stats_raw_rms", stats.raw_mean);
 	}
 	std::cout << "Number of points rejected = " << stats.nrejected << std::endl;
 	input.add_to_global("stats_nrejected", stats.nrejected);
-	std::cout << "Clipped mean              = " << stats.clipped_mean << std::endl;
+	std::cout << "Clipped mean              = " << form(stats.clipped_mean) << std::endl;
 	input.add_to_global("stats_clipped_mean", stats.clipped_mean);
 	if(stats.npoints > stats.nrejected + 1){
-	  std::cout << "Clipped RMS               = " << stats.clipped_rms << std::endl;
+	  std::cout << "Clipped RMS               = " << form(stats.clipped_rms) << std::endl;
 	  input.add_to_global("stats_clipped_rms", stats.clipped_rms);
 	}
 	if(median){
-	  std::cout << "Median                    = " << stats.median << std::endl;
+	  std::cout << "Median                    = " << form(stats.median) << std::endl;
 	  input.add_to_global("stats_median", stats.median);
 	}
       }
