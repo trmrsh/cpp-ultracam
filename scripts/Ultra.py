@@ -134,52 +134,48 @@ class Targets(dict):
         These can come in any order.
         """
 
-        try:
-            for fname in fnames:
-                if os.path.isfile(fname):
-                    f  = open(fname)
-                    for line in f:
-                        if not line.startswith('#') and not line.isspace():
-                            tokens = line.strip().split()
-                            if len(tokens) >= 9 and (len(tokens)-7) % 2 == 0:
-                                (target,rah,ram,ras,decd,decm,decs) = tokens[:7]
-                                match = []
-                                for i in range(7, len(tokens), 2):
-                                    if tokens[i] == 'E':
-                                        exact = True
-                                    elif tokens[i] == 'R':
-                                        exact = False
-                                    else:
-                                        raise Exception('Invalid target line = ' + line + '; could not recognise match type = ' + tokens[i])
-                                        
-                                    if tokens[i+1] in match:
-                                        raise Exception('Repeated match expression in line = ' + line)
-
-                                    if exact:
-                                        match.append((tokens[i+1].replace('~',' '), exact))
-                                    else:
-                                        match.append((tokens[i+1], exact, re.compile(tokens[i+1])))
-                            else:
-                                raise Exception('Invalid target line = ' + line)
-
-                            (ra,dec,system) = subs.str2radec(rah + ' ' + ram + ' ' + ras + ' ' + decd + ' ' + decm + ' ' + decs)
-                            target = target.strip().replace('~',' ')
-
-                            # add matches together when target name and positions agree
-                            if target in self:
-                                if ra != self[target]['ra'] or dec != self[target]['dec']:
-                                    raise Exception('Found target name = "' + target + '" more than once with different positions in ' + str(fnames))
+        for fname in fnames:
+            if os.path.isfile(fname):
+                f  = open(fname)
+                for line in f:
+                    if not line.startswith('#') and not line.isspace():
+                        tokens = line.strip().split()
+                        if len(tokens) >= 9 and (len(tokens)-7) % 2 == 0:
+                            (target,rah,ram,ras,decd,decm,decs) = tokens[:7]
+                            match = []
+                            for i in range(7, len(tokens), 2):
+                                if tokens[i] == 'E':
+                                    exact = True
+                                elif tokens[i] == 'R':
+                                    exact = False
                                 else:
-                                    self[target]['match'] += match
+                                    raise Exception('Invalid target line = ' + line + '; could not recognise match type = ' + tokens[i])
+                                        
+                                if tokens[i+1] in match:
+                                    raise Exception('Repeated match expression in line = ' + line)
+
+                                if exact:
+                                    match.append((tokens[i+1].replace('~',' '), exact))
+                                else:
+                                    match.append((tokens[i+1], exact, re.compile(tokens[i+1])))
+                        else:
+                            raise Exception('Invalid target line = ' + line)
+
+                        (ra,dec,system) = subs.str2radec(rah + ' ' + ram + ' ' + ras + ' ' + decd + ' ' + decm + ' ' + decs)
+                        target = target.strip().replace('~',' ')
+
+                        # add matches together when target name and positions agree
+                        if target in self:
+                            if ra != self[target]['ra'] or dec != self[target]['dec']:
+                                raise Exception('Found target name = "' + target + '" more than once with different positions in ' + str(fnames))
                             else:
-                                self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
-                    f.close()
-                    print len(self),'targets after loading',fname
-                else:
-                    print 'No targets loaded from',fname,'as it does not exist.'
-        except Exception, err:
-            sys.stderr.write('Target data problem: ' + str(err) + '\n')
-            if line is not None: sys.stderr.write('Line: ' + line + '\n')
+                                self[target]['match'] += match
+                        else:
+                            self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
+                f.close()
+                print len(self),'targets after loading',fname
+            else:
+                print 'No targets loaded from',fname,'as it does not exist.'
 
     def write(self, fname):
         """
@@ -1268,3 +1264,93 @@ def flist_stats(fnames, nrow, ncol, thresh):
         rgrad[nc] = xr[1]
 
     return (lmin,lmax,lmm,lrm,lgrad,rmin,rmax,rmm,rrm,rgrad)
+
+def load_runs(rdir, ldir=None):
+    """
+    Loads all runs of a given run (YYYY-MM). It does this by winding through
+    all available night directories.
+    
+    rdir  -- the run directory (YYYY-MM format)
+    ldir  -- directory containing logs where it is also expected that there 
+             will be SKIP_TARGETS, TARGETS, AUTO_TARGETS to help with loading
+             target data. If None an attempt will be made to access the 
+             directory using the environment variable ULTRACAM_LOGS
+    """
+
+    if ldir is None:
+        ldir = os.environ['ULTRACAM_LOGS']
+
+    dtest = re.compile('^\d\d\d\d-\d\d$')
+    if dtest.match(rdir):
+        rundir = os.path.join(ldir, rdir)
+    else:
+        raise Exception('load_runs: run = ' + rdir + ' does not have the form YYYY-MM')
+
+    # Try to find the telescope.
+    try:
+        f = open(os.path.join(rundir, 'telescope'))
+        telescope = f.readline().rstrip()
+        f.close()
+        print 'Run directory =',rdir,', telescope =',telescope
+    except Exception, err:
+        telescope = None
+        print 'Run directory =',rdir,',',err
+
+    # get a list of night-by-night directories
+    ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
+    ndirs.sort()
+
+    # now read the directories loading the formats of all files of the form 'run[0-9][0-9][0-9].xml'
+    # also see if there are equivalent '.dat' and '.times' files present from which to get comments
+
+    first = True
+    xtest = re.compile('run[0-9][0-9][0-9]\.xml')
+    form  = {}
+
+    # read target data
+    targets = Targets(os.path.join(ldir, 'TARGETS'), os.path.join(ldir, 'AUTO_TARGETS'))
+
+    # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
+    # that searches for a given target are only made once.
+    fp    = open(os.path.join(ldir,'SKIP_TARGETS'))
+    sskip = fp.readlines()
+    sskip = [name.strip() for name in sskip if not name.startswith('#')]
+    fp.close()
+    print len(sskip),'names to skip after loading',os.path.join(ldir,'SKIP_TARGETS')
+
+    runs = []
+    for ndir in ndirs:
+
+        # path to night-by-night directory
+        npath = os.path.join(rundir, ndir)
+
+        # Read night log (does not matter if none exists, although a warning will be printed)
+        nlog = Log(os.path.join(npath, ndir + '.dat'))
+
+        # Read timing data (does not matter if none exists, although a warning will be printed)
+        times = Times(os.path.join(npath, ndir + '.times'))
+
+        # get list of xml files
+        dpath = os.path.join(npath, 'data')
+        xmls = [os.path.join(dpath, xml) for xml in os.listdir(dpath) if xtest.match(xml)]
+        for xml in xmls:
+            try:
+                run = Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
+
+                # update targets to reduce simbad lookups
+                if run.simbad:
+                    if run.id in targets:
+                        targets[run.id]['match'].append((run.target, True))
+                    else:
+                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
+                elif run.id is None:
+                    sskip.append(run.target)
+
+                # store all but power ons
+                if run.is_not_power_onoff():
+                    runs.append(run)
+
+            except Exception, err:
+                print 'XML error: ',err,'in',xml
+
+    return runs

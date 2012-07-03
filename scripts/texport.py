@@ -1,19 +1,18 @@
 #!/usr/bin/env python
 
 # !!begin
-# !!title    export
+# !!title    texport
 # !!author   T.R. Marsh
-# !!created  10 July 2007
-# !!revised  16 Feb 2011
-# !!root     export
-# !!index    export
-# !!descr    makes all runs compatible with a particular run ID available for download
+# !!created  12 June 2012
+# !!root     texport
+# !!index    texport
+# !!descr    makes all runs compatible with a given target available for download
 # !!class    Scripts
 # !!css      style.css
-# !!head1    export makes all runs compatible with a particular run ID available for download
+# !!head1    texport makes all runs compatible with a particular run ID available for download
 #
-# !!emph{export} searches an ultracam run directory for all ULTRACAM runs compatible
-# with a specified run ID and then creates a set of directories and hard linked files
+# !!emph{texport} searches through an ultracam run directory for all ULTRACAM runs compatible
+# with a specified target and then creates a set of directories and hard linked files
 # connected to those it identifies. The script is quite restrictive about where it can
 # be run to guard against irritating pollution with hard links. If you try it from the 
 # wrong directory it will let you know. [NB. This is not a general user script.] The script
@@ -22,17 +21,18 @@
 #
 # !!head2 Invocation
 #
-# export rundir progid
+# texport rundir edir target
 #
 # !!head2 Arguments
 #
 # !!table
 #
 # !!arg{rundir}{The run in question, identified by a string of the form YYYY-MM, e.g. 2006-03}
-# !!arg{progid}{String identifying the data, i.e. a programme ID code. A regular expression match is applied so with
-# some fiddling you should be able to allow for mistakes. This will also be used to define the top-level directory
-# where the data will be stored.}
-#
+# !!arg{edir}{Data export directory. This will be a sub-directory of the
+#  directory from where the script is run.}
+# !!arg{target}{String identifying the target (enclose in quotes if it has blanks). This will be treated
+# as a regular expression to allow flexible matching. The matching will be made to the formal ID name of the
+# target which should be more consistent than the name given at the telescope.}
 # !!table
 #
 # !!end
@@ -42,23 +42,24 @@ import Ultra
 import trm.subs as subs
 
 fwd = '/storage/astro2/www/phsaap/data'
+
 wd = os.getcwd()    
 if wd != fwd:
     print 'You must run this script from ' + fwd
     print 'The export directory must be a sub-directory of this one'
+    exit(1)
 
-if len(sys.argv) != 3:
-    print 'usage: rundir progid'
+if len(sys.argv) != 4:
+    print 'usage: rundir edir target'
     exit(1)
 
 # name the arguments
-rdir   = sys.argv[1]
-progid = sys.argv[2]
+rdir, edir, target   = sys.argv[1:4]
 
-idtest = re.compile(progid)
+uroot   = '/storage/astro2/phsaap/ultracam'
 
-log_dir = '/storage/astro2/phsaap/ultracam/logs'
-raw_dir = '/storage/astro2/phsaap/ultracam/raw_data'
+log_dir = os.environ['ULTRACAM_LOGS']
+raw_dir = os.environ['ULTRACAM_RAW']
 
 dtest = re.compile('^\d\d\d\d-\d\d$')
 if dtest.match(rdir):
@@ -67,27 +68,27 @@ else:
     print 'Run = ' + rdir + ' does not have the form YYYY-MM'
     exit(1)
 
-if os.path.exists(progid) and not os.path.isdir(progid):
-    print progid,'exists but is not a directory; please fix.'
+if os.path.exists(edir) and not os.path.isdir(edir):
+    print edit,'exists but is not a directory; please fix.'
     exit(1)
-elif not os.path.exists(progid):
-    os.makedirs(progid)
-    print 'Created directory =',progid
+elif not os.path.exists(edir):
+    os.makedirs(edir)
+    print 'Created directory =',edir
 
-# get a list of night-by-night directories
-ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
-ndirs.sort()
-
+# load all runs of the given run
 runs = Ultra.load_runs(rdir)
                 
 print 'Read',len(runs),'runs.'
 
-# look for all runs which match the supplied identifier
+# look for all runs which match the supplied target
+tre = re.compile(target)
 matches = {}
 for i,run in enumerate(runs):
-    if run.pid is None or idtest.match(run.pid):
+    if run.id is not None and tre.search(run.id):
         matches[run.night + ('%03d' % run.number)] = i
+        print 'Match found: night =',run.night,', number =',run.number,', target =',run.target
 
+# copy these
 science = dict(matches)
 
 # look for all calibrations that match the runs located
@@ -103,20 +104,24 @@ keys.sort()
 # Chop down runs
 runs = [runs[matches[key]] for key in keys]
 
-# Create export directory names and then create the directories
-edirs = [os.path.join(progid, rdir, night) for night in ndirs]
+# get a list of night-by-night directories
+ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
+ndirs.sort()
 
-for edir in edirs:
-    if not os.path.exists(edir):
-        os.makedirs(edir)
+# Create export directory names and then create the directories
+edirs = [os.path.join(edir, rdir, night) for night in ndirs]
+
+for ed in edirs:
+    if not os.path.exists(ed):
+        os.makedirs(ed)
  
 # Create hard links 
 for run in runs:
     r = 'run' + ('%03d' % (run.number,))
     source_xml = os.path.join(raw_dir, run.night, r + '.xml')
     source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-    link_xml   = os.path.join(progid, rdir, run.night, r  + '.xml')
-    link_dat   = os.path.join(progid, rdir, run.night, r + '.dat')
+    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
 
     if os.path.exists(source_xml):
         if os.path.exists(link_xml):
@@ -131,10 +136,10 @@ for run in runs:
             os.link(source_dat, link_dat)
 
 # Write out a log file
-f = open(os.path.join(progid, 'index.html'), 'w')
+f = open(os.path.join(edir, 'index.html'), 'w')
 
 f.write("""
-<html>
+<html>q
 <head>
 <title>ULTRACAM/ULTRASPEC log</title>
 <link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />
@@ -142,21 +147,19 @@ f.write("""
 <body>
 """)
 
-f.write('<h1>Log file of run identified by matching to ID = %s</h1>' % progid)
+f.write('<h1>Log file of run identified by matching to target = %s</h1>' % target)
 
 f.write("""
 
 <p>
-Dear Ultracam/Ultraspec user,
-
-<p> you will find below a log of runs identified as either belonging to you or
-as calibration files compatible with your data. The log below is partial; see
-the <a
-href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/index.html">data
+You will find below a log of runs identified as matching the target name supplied
+above (as a regular expression) along with all compatible calibration frames. 
+The log below is partial; see the 
+<a href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/index.html">data
 logs</a> for full information (username ultracam, password blencathra). The
 runs below were identified automatically according to header values and window
 formats. It is possible that the headers could be in error, so don't hesitate
-to contact us if you think there might be anything wrong. To help you download
+to contact me if you think there might be anything wrong. To help you download
 your data, here is a <a href="links.lis">list of links</a> that can be used as
 input for 'wget', e.g.  
 <pre> 
@@ -179,10 +182,6 @@ individually download files if need be.
 <p>
 If you find that you need to repeat a download but want to avoid copying files that 
 you already have, then you should check out the '-nc' option of 'wget'.
-
-<p>
-If you think you need extinction coefficients but do not have the data to determine them, 
-again contact us.
 
 <p>
 For each file below there is a link 'X' that points to the equivalent .xml header file and 'D' 
@@ -211,7 +210,7 @@ server = 'http://deneb.astro.warwick.ac.uk/phsaap/data/'
 nold = 'None'
 
 for run in runs:
-    root = os.path.join(progid, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(edir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
 
     if nold == 'None':
         nold = run.night
@@ -257,10 +256,10 @@ f.write("""
 f.close()
 
 # Write out wget targets
-f = open(os.path.join(progid, 'links.lis'), 'w')
+f = open(os.path.join(edir, 'links.lis'), 'w')
 
 for run in runs:
-    root = os.path.join(progid, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(edir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
     f.write(server + root + '.xml\n')
     f.write(server + root + '.dat\n')
 f.close()
