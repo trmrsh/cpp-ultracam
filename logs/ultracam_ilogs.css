@@ -18,6 +18,10 @@ table {
     border-left:1px solid #655500; 
 }
 
+table.yell { 
+    color : #ffffc0;
+}
+
 td { 
     vertical-align: top;
     text-align: center;
@@ -55,8 +59,19 @@ td.format {
     white-space: nowrap;
 }
 
+td.comment { 
+    vertical-align: top;
+    text-align: left;
+    padding-right: 10px;
+}
+
 th { 
     vertical-align:top;
+}
+
+th.left { 
+    vertical-align:top;
+    text-align: left;
 }
 
 /* links */

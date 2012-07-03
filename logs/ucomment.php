@@ -75,7 +75,7 @@ $comment   = '"' . htmlspecialchars($_REQUEST['comment']) .'"';
 $ofile     = '"' . $_FILES['redfile']['name'] . '"';
 $tfile     = '"' . $_FILES['redfile']['tmp_name'] . '"';
 
-system('./ucomment.py ' . $user . ' ' .$wtype . ' ' . $date 
+system('../../python/ucomment.py ' . $user . ' ' .$wtype . ' ' . $date 
    . ' ' . $run . ' ' . $attribute . ' ' . $comment . ' ' . 
    $ofile . ' ' . $tfile);
 

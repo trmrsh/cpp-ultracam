@@ -15,7 +15,7 @@ from trm import forms
 
 # top-level of where to store the database and any 
 # attached reduce files
-store = '/storage/astro2/phsaap/ultracam/logs'
+store = '/storage/astro2/www/phsaap/python'
 
 print '\nTime = ',time.ctime()
 

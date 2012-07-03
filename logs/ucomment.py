@@ -19,6 +19,7 @@ email to me.
 """
 
 import re
+import pyfits
 
 # tuple of attributes
 ATTRIBUTES = ('Unspecified','Junk','Good','Reduced',\
@@ -194,6 +195,60 @@ contact me for a specific account. I welcome such comments for improvement of th
 happy to set one up for you.
 """
   else:
+
+    # OK, now in first time part. The first thing we try to do is find any old comments
+
+    try:
+      hdu      = pyfits.open('http://deneb.astro.warwick.ac.uk/phsaap/python/ultracam_comments.fits')
+      table    = hdu[1].data
+      runs     = table.field('Run')
+      dtypes   = table.field('Dtype')
+      users    = table.field('Username')
+      files    = table.field('Stored')
+      times    = table.field('Submitted')
+      comments = table.field('Comment')
+      hdu.close()
+
+      run = '%s/run%03d' % (date, int(run),)
+      ok = runs == run
+      dtypes   = dtypes[ok]
+      users    = users[ok]
+      files    = files[ok]
+      times    = times[ok]
+      comments = comments[ok]
+
+      if len(dtypes):
+        if len(dtypes) == 1:
+          print 'There is one comment already on this run:\n'
+        else:
+          print 'There are',len(dtypes),'comments already on this run:\n'
+
+        print """
+
+<p>
+<table class="yell" cellpadding="5" cellspacing="5">
+<tr>
+<th>#</th>
+<th class="left">Submission time</th><th>Type</th><th>Username</th><th>File</th><th class="left">Comment</th>
+</tr>
+"""
+        for n, time, dtype, user, fname, comment in zip(range(1,len(times)+1), times, dtypes, users, files, comments):
+          print '<tr>\n<td>' + str(n) +'</td><td>' + time + '</td><td>' + dtype + '</td><td>' + user +  \
+              '</td>'
+          if fname == '':
+            print '<td class="undef"></td>'
+          else:
+            print '<td>' + fname + '</td>'
+          print '<td class="comment">' + comment + '</td>\n</tr>\n'
+        print '</table>\n'
+
+      else:
+        print 'No comments on this run were found.\n'
+      
+
+    except:
+      print 'No comments database file found.\n'
+
     print """
 <p><hr>
 
