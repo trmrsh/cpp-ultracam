@@ -74,7 +74,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
       format = 1;
     }else if(serverdata.version == 100222){
       format = 2;
-    }else if(serverdata.version == 110921){
+    }else if(serverdata.version == 110921 or serverdata.version == 111205){
 	// This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
 	format = 3;
     }else{
@@ -310,6 +310,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     const Subs::Time timestamp_change2(1,Subs::Date::Jan,2005); 
     const Subs::Time timestamp_change3(1,Subs::Date::Mar,2010); 
 
+    const Subs::Time ultraspec_change1(21,Subs::Date::Sep,2011); 
+
     if(format == 1 && nsatellite == -1){
 
 	gps_timestamp.set(1,Subs::Date::Jan,2000,0,0,0.);
@@ -519,8 +521,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     const double CDS_TIME_CDD    = 10.;    // microseconds
     const double SWITCH_TIME     = 1.2;    // microseconds
 
-    // Ultraspec timing parameter from Naidu. Frame transfer time is fixed.
-    const double USPEC_FT_TIME = 0.0067196; // seconds
+    // Ultraspec timing parameters from Naidu for old version, Vik for post
+    // 21/09/2011 version. Frame transfer time is fixed.
+    const double USPEC_FT_TIME = gps_timestamp < ultraspec_change1 ? 0.0067196 : 0.0149818;
 
     double cds_time = 10.;
     if(first){
@@ -947,35 +950,80 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	// Avoid accumulation of timestamps.
 	if(gps_times.size() > 2) gps_times.pop_back(); 
 
-	// Two sequences:
-	// Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
-	// Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
-	// 
-	// Non-clear the total accumulation time is read+ft apart
-	// from first frame.
+	// Two options according to whether we are pre or post
+	// the 21/09/2011 change
 
-	ut_date = gps_times[0];
+	if(gps_timestamp < ultraspec_change1){
+	    // Pre 21/09/2011
 
-	if(serverdata.l3data.en_clr || frame_number == 1){
+	    // Two sequences:
+	    // Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
+	    // Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
+	    // 
+	    // Non-clear the total accumulation time is read+ft apart
+	    // from first frame.
 
-	    ut_date.add_second(-serverdata.expose_time/2.);
-	    exposure_time = serverdata.expose_time;
+	    ut_date = gps_times[0];
 
-	}else if(gps_times.size() > 1){
+	    if(serverdata.l3data.en_clr || frame_number == 1){
 
-	    double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
-	    ut_date.add_second(-texp/2.);
-	    exposure_time = texp;
+		ut_date.add_second(-serverdata.expose_time/2.);
+		exposure_time = serverdata.expose_time;
+
+	    }else if(gps_times.size() > 1){
+		
+		double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+		ut_date.add_second(-texp/2.);
+		exposure_time = texp;
+
+	    }else{
+
+		// Could be improved with an estimate of the read time
+		ut_date.add_second(-serverdata.expose_time/2.);
+		exposure_time = serverdata.expose_time;
+		if(reliable){
+		    reason = "too few stored timestamps";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    reliable = false;
+		}
+	    }
 
 	}else{
 
-	    // Could be improved with an estimate of the read time
-	    ut_date.add_second(-serverdata.expose_time/2.);
-	    exposure_time = serverdata.expose_time;
-	    if(reliable){
-		reason = "too few stored timestamps";
-		std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
-		reliable = false;
+	    // Post 21/09/2011:
+
+	    // Clear sequence:   CLR|EXP|FT|TS|READ|CLR|EXP|FT|TS|READ|CLR|EXP|FT|TS|READ|
+	    //                      |E1 |              |E2 |              |E3 |
+
+	    // Noclear sequence: CLR|EXP|FT|TS|READ|EXP|FT|TS|READ|EXP|FT|TS|READ|
+	    //                      |E1 |     |   E2   |     |   E3   |
+                    
+	    // Non-clear the total accumulation time is read+ft apart
+	    // from first frame.
+
+	    ut_date = gps_times[0];
+
+	    if(serverdata.l3data.en_clr || frame_number == 1){
+
+		ut_date.add_second(-serverdata.expose_time/2.-USPEC_FT_TIME);
+		exposure_time = serverdata.expose_time;
+
+	    }else if(gps_times.size() > 1){
+		
+		double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+		ut_date.add_second(-texp/2.-USPEC_FT_TIME);
+		exposure_time = texp;
+
+	    }else{
+
+		// Could be improved with an estimate of the read time
+		ut_date.add_second(-serverdata.expose_time/2.-USPEC_FT_TIME);
+		exposure_time = serverdata.expose_time;
+		if(reliable){
+		    reason = "too few stored timestamps";
+		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    reliable = false;
+		}
 	    }
 	}
     }
