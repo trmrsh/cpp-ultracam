@@ -20,7 +20,6 @@ import Ultra
 
 #import traceback
 
-
 # The main program
 
 # Basic aim is to read as many xml and data files as possible. Errors
