@@ -75,8 +75,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else if(serverdata.version == 100222){
       format = 2;
     }else if(serverdata.version == 110921 or serverdata.version == 111205){
-	// This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
-	format = 3;
+      // This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
+      format = 3;
     }else{
       std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
       std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
