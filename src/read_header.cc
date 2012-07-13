@@ -45,7 +45,7 @@
 // little structure to save data relevant to the blue co-add option
 struct Blue_save { 
     Blue_save(const Subs::Time& time, float expose, bool reliable){
-	this->time     = time;
+        this->time     = time;
 	this->expose   = expose;
 	this->reliable = reliable;
     }
@@ -68,22 +68,22 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // In Feb 2010, format changed. Spot by testing for the version number, issue a warning
     int format;
     if(serverdata.instrument == "ULTRASPEC" && serverdata.version == -1){
-      // temporary fix for new ULTRASPEC stuff
-      format = 2;
+        // temporary fix for new ULTRASPEC stuff
+        format = 2;
     }else if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
-      format = 1;
+        format = 1;
     }else if(serverdata.version == 100222){
-      format = 2;
+        format = 2;
     }else if(serverdata.version == 110921 or serverdata.version == 111205){
-      // This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
-      format = 3;
+        // This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
+        format = 3;
     }else{
-      std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
-      std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
-      std::cerr << "Will assume post-Feb 2010, pre-Sep 2011 format #2" << std::endl;
-      format = 2;
+        std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
+        std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
+        std::cerr << "Will assume post-Feb 2010, pre-Sep 2011 format #2" << std::endl;
+        format = 2;
     }
-
+    
     // The raw data files are written on a little-endian (linux) machine. Bytes
     // must be swapped if reading on big-endian machines such as Macs
     const bool LITTLE = Subs::is_little_endian();
@@ -151,7 +151,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
     }else if(format == 2 ||  format == 3){
 
-	if(LITTLE){
+        if(LITTLE){
 	    intread.c[0] = buffer[8];
 	    intread.c[1] = buffer[9];
 	    intread.c[2] = buffer[10];
@@ -183,7 +183,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
 	// number of nanoseconds
 	if(LITTLE){
-	    intread.c[0] = buffer[16];
+            intread.c[0] = buffer[16];
 	    intread.c[1] = buffer[17];
 	    intread.c[2] = buffer[18];
 	    intread.c[3] = buffer[19];
@@ -227,12 +227,12 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	}
 
 	/*
-	if(tstamp & PCPS_DL_ENB)   std::cerr << "Daylight saving enabled" << std::endl;
-	if(tstamp & PCPS_DL_ANN)   std::cerr << "Change in daylight saving announced" << std::endl;
-	if(tstamp & PCPS_UTC)      std::cerr << "Special UTC firmware installed" << std::endl;
-	if(tstamp & PCPS_LS_ANN)   std::cerr << "Leap second announced" << std::endl;
-	if(tstamp & PCPS_IFTM)     std::cerr << "Current time set via PC" << std::endl;
-	if(tstamp & PCPS_LS_ENB)   std::cerr << "Current second is a leap second" << std::endl;
+          if(tstamp & PCPS_DL_ENB)   std::cerr << "Daylight saving enabled" << std::endl;
+          if(tstamp & PCPS_DL_ANN)   std::cerr << "Change in daylight saving announced" << std::endl;
+          if(tstamp & PCPS_UTC)      std::cerr << "Special UTC firmware installed" << std::endl;
+          if(tstamp & PCPS_LS_ANN)   std::cerr << "Leap second announced" << std::endl;
+          if(tstamp & PCPS_IFTM)     std::cerr << "Current time set via PC" << std::endl;
+          if(tstamp & PCPS_LS_ENB)   std::cerr << "Current second is a leap second" << std::endl;
 	*/
     }
 
@@ -950,82 +950,46 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	// Avoid accumulation of timestamps.
 	if(gps_times.size() > 2) gps_times.pop_back(); 
 
-	// Two options according to whether we are pre or post
-	// the 21/09/2011 change
+        // 13/07/2012. I believe the readout sequences to be as
+        // follows:
+        //
+        // Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
+        // Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
+        // 
+        // On non-clear mode, the accumulation time is from the start
+        // of the read until the end of "exp" (the user-defined exposure delay)
+        //
+	// At one point I thought that post-21/09/2011 the order of TS and FT had
+        // reversed and I had two options. From July 2012, when Dave Atkinson 
+        // corrected this, we are back to the simpler code which makes no
+        // distinction between pre- and post-21/09/2011. The only difference now
+        // is the frame-transfer time.
 
-	if(gps_timestamp < ultraspec_change1){
-	    // Pre 21/09/2011
+        ut_date = gps_times[0];
 
-	    // Two sequences:
-	    // Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
-	    // Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
-	    // 
-	    // Non-clear the total accumulation time is read+ft apart
-	    // from first frame.
+        if(serverdata.l3data.en_clr || frame_number == 1){
 
-	    ut_date = gps_times[0];
-
-	    if(serverdata.l3data.en_clr || frame_number == 1){
-
-		ut_date.add_second(-serverdata.expose_time/2.);
-		exposure_time = serverdata.expose_time;
-
-	    }else if(gps_times.size() > 1){
-		
-		double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
-		ut_date.add_second(-texp/2.);
-		exposure_time = texp;
-
-	    }else{
-
-		// Could be improved with an estimate of the read time
-		ut_date.add_second(-serverdata.expose_time/2.);
-		exposure_time = serverdata.expose_time;
-		if(reliable){
-		    reason = "too few stored timestamps";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
-		    reliable = false;
-		}
-	    }
-
-	}else{
-
-	    // Post 21/09/2011:
-
-	    // Clear sequence:   CLR|EXP|FT|TS|READ|CLR|EXP|FT|TS|READ|CLR|EXP|FT|TS|READ|
-	    //                      |E1 |              |E2 |              |E3 |
-
-	    // Noclear sequence: CLR|EXP|FT|TS|READ|EXP|FT|TS|READ|EXP|FT|TS|READ|
-	    //                      |E1 |     |   E2   |     |   E3   |
-                    
-	    // Non-clear the total accumulation time is read+ft apart
-	    // from first frame.
-
-	    ut_date = gps_times[0];
-
-	    if(serverdata.l3data.en_clr || frame_number == 1){
-
-		ut_date.add_second(-serverdata.expose_time/2.-USPEC_FT_TIME);
-		exposure_time = serverdata.expose_time;
-
-	    }else if(gps_times.size() > 1){
-		
-		double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
-		ut_date.add_second(-texp/2.-USPEC_FT_TIME);
-		exposure_time = texp;
-
-	    }else{
-
-		// Could be improved with an estimate of the read time
-		ut_date.add_second(-serverdata.expose_time/2.-USPEC_FT_TIME);
-		exposure_time = serverdata.expose_time;
-		if(reliable){
-		    reason = "too few stored timestamps";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
-		    reliable = false;
-		}
-	    }
-	}
+            ut_date.add_second(-serverdata.expose_time/2.);
+            exposure_time = serverdata.expose_time;
+            
+        }else if(gps_times.size() > 1){
+            
+            double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+            ut_date.add_second(-texp/2.);
+            exposure_time = texp;
+            
+        }else{
+            
+            // Could be improved with an estimate of the read time
+            ut_date.add_second(-serverdata.expose_time/2.);
+            exposure_time = serverdata.expose_time;
+            if(reliable){
+                reason = "too few stored timestamps";
+                std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+                reliable = false;
+            }
+        }
+        
     }
   
     // Save old values
