@@ -312,16 +312,16 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
     if(serverdata.headerwords == 16){
 
-	if(uinfo.user_info && uinfo.revision != 100222 && uinfo.revision != 111205){
+	if(uinfo.user_info && uinfo.revision != 100222 && uinfo.revision != 111205 && uinfo.revision != 120716){
 	    if(uinfo.revision == -1){
-		std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 or 111205 versions" << std::endl;
+		std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 / 111205 /120716 versions" << std::endl;
 	    }else{
-		std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222 or 111205 was expected" << std::endl;
+		std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222, 111205 or 120716 was expected" << std::endl;
 		std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error" << std::endl;
 	    }
 	}
 
-	if(!uinfo.user_info && serverdata.version != 100222 && serverdata.version != 111205){
+	if(!uinfo.user_info && serverdata.version != 100222 && serverdata.version != 111205 && serverdata.version != 120716){
 	    std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
             serverdata.version = 100222;
         }

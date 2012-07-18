@@ -74,7 +74,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         format = 1;
     }else if(serverdata.version == 100222){
         format = 2;
-    }else if(serverdata.version == 110921 or serverdata.version == 111205){
+    }else if(serverdata.version == 110921 || serverdata.version == 111205 || serverdata.version == 120716){
         // This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
         format = 3;
     }else{
