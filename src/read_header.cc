@@ -72,11 +72,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         format = 2;
     }else if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
         format = 1;
-    }else if(serverdata.version == 100222){
+    }else if(serverdata.version == 100222 || serverdata.version == 110921 || serverdata.version == 111205 || serverdata.version == 120716 || serverdata.version == 120813){
         format = 2;
-    }else if(serverdata.version == 110921 || serverdata.version == 111205 || serverdata.version == 120716){
-        // This dates from late 2011 as a result of changes made for the Thai ULTRASPEC camera.
-        format = 3;
     }else{
         std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
         std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
@@ -149,7 +146,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    reliable = false;
 	}
 
-    }else if(format == 2 ||  format == 3){
+    }else if(format == 2){
 
         if(LITTLE){
 	    intread.c[0] = buffer[8];
@@ -253,7 +250,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // is the u-band junk data?
     // Changed from 3rd to 4th bit in Feb 2010 (Dave Atkinson)
     bool bad_blue = (serverdata.nblue > 1) && ((format == 1 && (buffer[0] & 1<<3)) || 
-					       ((format == 2 || format == 3) && (buffer[0] & 1<<4))); 
+					       (format == 2 && (buffer[0] & 1<<4))); 
 
     // Flag so that some things are only done once
     static bool first = true;
@@ -375,7 +372,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		}
 		year = intread.usi;
 
-	    }else if(format == 2 || format == 3){
+	    }else if(format == 2){
 		day_of_month  = 1;
 		month_of_year = 1;
 		year          = 1970;
@@ -440,7 +437,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    // We have the  right date, now just add in the fraction of the day
 		    gps_timestamp.add_second(double(nsec % Constants::IDAY) + double(nnanosec)/1.e9);
 
-		}else if(format == 2 || format == 3){
+		}else if(format == 2){
 
 		    // This format started in Feb 2010 before the NTT run with a new GPS thingy. 
 		    // nsec in this case represents the number of seconds from the start of 
@@ -1005,7 +1002,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     if(format == 1){
 	timing.reliable     = reliable && nsatellite > 2;
 	timing.nsatellite   = nsatellite;
-    }else if(format == 2 || format == 3){
+    }else if(format == 2){
 	timing.reliable      = reliable &&
 	    (tstamp & PCPS_SYNCD) && !(tstamp & PCPS_INVT) && !(tstamp & PCPS_ANT_FAIL) && !(tstamp & PCPS_FREER);      
 	timing.tstamp_status = tstamp;

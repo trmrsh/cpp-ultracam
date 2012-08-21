@@ -244,8 +244,15 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 		    }
 		    std::cerr << "parseXML: ULTRACAM file" << std::endl;
 		}else{
+                    // August 2012 Dave changed the time units to 0.1 millisec (had been 1) for Thai/ULTRASPEC
+		    if(found_user && serverdata.headerwords == 16 && uinfo.revision >= 120813){
+			std::cerr << "parseXML warning: version >= 120813; will assume 0.1 millisecond time exposure delay steps, valid as of August 2012" << std::endl;
+                        uinfo.time_units = 0.0001;
+                    }else{
+			std::cerr << "parseXML warning: version < 120813; will assume 1 millisecond time exposure delay steps, valid as of August 2012" << std::endl;
+                        uinfo.time_units = 0.001;
+                    }
 		    std::cerr << "parseXML: ULTRASPEC file" << std::endl;
-		    uinfo.time_units = 0.001;
 		}
 	  
 		if(!found_filesave_status)
@@ -312,19 +319,21 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
     if(serverdata.headerwords == 16){
 
-	if(uinfo.user_info && uinfo.revision != 100222 && uinfo.revision != 111205 && uinfo.revision != 120716){
-	    if(uinfo.revision == -1){
-		std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 / 111205 /120716 versions" << std::endl;
-	    }else{
-		std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " but from headerwords = 16, version = 100222, 111205 or 120716 was expected" << std::endl;
-		std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error" << std::endl;
-	    }
-	}
-
-	if(!uinfo.user_info && serverdata.version != 100222 && serverdata.version != 111205 && serverdata.version != 120716){
-	    std::cerr << "parseXML warning: headerwords = 16 is assumed to imply that we are working with 100222 version" << std::endl;
-            serverdata.version = 100222;
+        const int NRECOG = 4;
+        const int RECOG[NRECOG] = {100222, 111205, 120716, 120813};
+        bool ok = false;
+        int vfound = uinfo.user_info ? uinfo.revision : serverdata.version;
+        for(int i=0; i<NRECOG; i++){
+            if( vfound == RECOG[i]){
+                ok = true;
+                break;
+            }
         }
+        if(!ok){
+            std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << " was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
+            std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
+            serverdata.version = 100222;
+	}
 
 	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is now hard-wired into the code. In DSP
         //  this is set to 0x8C0000, but I store simply as an unsigned char with value 140
@@ -333,7 +342,9 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	    serverdata.v_ft_clk  = 140;
 	    serverdata.which_run = Ultracam::ServerData::OTHERS;
 	}
+
     }else if(uinfo.user_info){
+
 	if(serverdata.version != -1 && uinfo.revision != serverdata.version){
 	    std::cerr << "parseXML warning: user revision number = " << uinfo.revision << " does not match preset revision = " << serverdata.version << std::endl;
 	    std::cerr << "parseXML warning: the user revision number will be preferred but this could indicate a problem" << std::endl;
