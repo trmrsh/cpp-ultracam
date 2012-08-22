@@ -249,7 +249,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 			std::cerr << "parseXML warning: version >= 120813; will assume 0.1 millisecond time exposure delay steps, valid as of August 2012" << std::endl;
                         uinfo.time_units = 0.0001;
                     }else{
-			std::cerr << "parseXML warning: version < 120813; will assume 1 millisecond time exposure delay steps, valid as of August 2012" << std::endl;
+			std::cerr << "parseXML warning: version < 120813; will assume 1 millisecond time exposure delay steps, valid prior to August 2012" << std::endl;
                         uinfo.time_units = 0.001;
                     }
 		    std::cerr << "parseXML: ULTRASPEC file" << std::endl;
@@ -331,8 +331,13 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
         }
         if(!ok){
             std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << " was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
-            std::cerr << "parseXML warning: 100222 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
-            serverdata.version = 100222;
+            if(vfound > 120813){
+                std::cerr << "parseXML warning: 120813 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
+                serverdata.version = 120813;
+            }else{
+                std::cerr << "parseXML warning: 100222 will be used, but this is probably a programming error so watch out for timing issues." << std::endl;
+                serverdata.version = 100222;
+            }
 	}
 
 	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is now hard-wired into the code. In DSP
