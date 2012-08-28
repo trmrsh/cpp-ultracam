@@ -495,7 +495,10 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "Two-windows-with-clear mode"));
 
     }else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS){
-	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "L3CCD mode"));
+	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "L3CCD standard mode"));
+
+    }else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
+	header.set("Instrument.Readout_Mode_Flag", new Subs::Hint(serverdata.readout_mode, "L3CCD drift mode"));
 
     }else{
 	throw Input_Error("parseXML error: no readout mode identified.");
@@ -688,6 +691,10 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			     (name.find("ccd201_winbin_con") != std::string::npos ||
 			      name.find("ccd201_winbin_cfg") != std::string::npos)){
 			serverdata.readout_mode = Ultracam::ServerData::L3CCD_WINDOWS;
+
+		    }else if(serverdata.instrument == "ULTRASPEC" && 
+			     (name.find("ccd201_driftscan_cfg") != std::string::npos)){
+			serverdata.readout_mode = Ultracam::ServerData::L3CCD_DRIFT;
 
 		    }else{
 			throw Input_Error("parseXML error: unrecognised application & readout mode = [" + name + "]");
