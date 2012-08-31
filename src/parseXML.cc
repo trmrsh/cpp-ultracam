@@ -929,7 +929,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			}
 		    }
 
-		}else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS){
+		}else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS ||
+			 serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
 
 		    // wind through windows
 		    for(int n=0; n<NMAX; n++){
@@ -963,14 +964,20 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 			    if(!istr) throw Input_Error("parseXML error: Could not translate X size");
 			    istr.clear();
 			    xSize[n] = xSize_;
-		    
+
 			}else if(AttToString((DOMElement*)child->item(j), "name") == y_size){
 			    istr.str(AttToString((DOMElement*)child->item(j), "value"));
 			    istr >> ySize_;
 			    if(!istr) throw Input_Error("parseXML error: Could not translate Y size");
 			    istr.clear();
 			    ySize[n] = ySize_;
+
 			}
+		    }
+		    if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
+			// just 2 windows with the same ystart and size
+			yStart[1] = yStart[0];
+			ySize[1]  = ySize[0];
 		    }
 		}
 
@@ -998,7 +1005,12 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 	if(!found_nblue) serverdata.nblue = 0;
 
     }else if(serverdata.instrument == "ULTRASPEC"){
-	if(!found_en_clr)  throw Input_Error("parseXML error: could not find L3CCD parameter EN_CLR.");
+	if(!found_en_clr){
+	    if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS)
+		throw Input_Error("parseXML error: could not find L3CCD parameter EN_CLR.");
+	    else
+		serverdata.l3data.en_clr = false;
+	}		
 	if(!found_gain)    serverdata.l3data.gain = -1;
 	if(!found_hv_gain) throw Input_Error("parseXML error: could not find L3CCD parameter HV_GAIN.");
 	if(!found_output)  throw Input_Error("parseXML error: could not find L3CCD parameter OUTPUT.");
@@ -1066,7 +1078,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 	if(xlStart.size() != size_t(last))
 	    throw Input_Error("parseXML error: number of windows differs from numbers of window parameters found.");
 
-    }else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS){
+    }else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS ||
+	     serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
 
 	typedef std::map<int, int>::const_iterator CI;
 	CI xStart_it, yStart_it, xSize_it, ySize_it;
@@ -1093,6 +1106,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		}else{
 		    wind.llx = std::max(1, 1074 - xStart_it->second - xSize_it->second*uinfo.xbin);
 		}
+		std::cerr << "nchop = " << nchop << std::endl;
 		serverdata.l3data.nchop.push_back(nchop);
 
 		wind.lly = yStart_it->second;

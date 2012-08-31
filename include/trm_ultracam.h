@@ -795,7 +795,8 @@ namespace Ultracam {
 	  WINDOWS,            /**< 2, 4 or 6 Windows mode */
 	  DRIFT,              /**< Drift mode */
 	  WINDOWS_CLEAR,      /**< 2 windows mode with a clear at the start of each exposure */
-	  L3CCD_WINDOWS,      /**< Single L3CCD application, 1/2 windows, full frame etc. */
+	  L3CCD_WINDOWS,      /**< Standard L3CCD application, 1/2 windows, full frame etc. */
+	  L3CCD_DRIFT,        /**< L3CCD drift application, 2 windows */
       } readout_mode;
       
       //! Y binning factor, needed for computation of drift-mode times
