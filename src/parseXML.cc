@@ -242,7 +242,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 			std::cerr << "# parseXML warning: did NOT find 'user' XML element; will assume 1.0 millisecond time exposure delay steps, as valid before January 2005" << std::endl;
 			uinfo.time_units = 0.001;
 		    }
-		    std::cerr << "parseXML: ULTRACAM file" << std::endl;
+		    std::cerr << "parseXML warning: ULTRACAM file" << std::endl;
 		}else{
                     // August 2012 Dave changed the time units to 0.1 millisec (had been 1) for Thai/ULTRASPEC
 		    if(found_user && serverdata.headerwords == 16 && uinfo.revision >= 120813){
@@ -252,7 +252,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 			std::cerr << "parseXML warning: version < 120813; will assume 1 millisecond time exposure delay steps, valid prior to August 2012" << std::endl;
                         uinfo.time_units = 0.001;
                     }
-		    std::cerr << "parseXML: ULTRASPEC file" << std::endl;
+		    std::cerr << "parseXML warning: ULTRASPEC file" << std::endl;
 		}
 	  
 		if(!found_filesave_status)
@@ -329,7 +329,10 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
                 break;
             }
         }
-        if(!ok){
+
+	if(ok){
+	    serverdata.version = vfound;
+	}else{
             std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << " was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
             if(vfound > 120813){
                 std::cerr << "parseXML warning: 120813 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
@@ -340,8 +343,9 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
             }
 	}
 
-	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is now hard-wired into the code. In DSP
-        //  this is set to 0x8C0000, but I store simply as an unsigned char with value 140
+	// Since March 2010, in 6-windows mode the V_FT_CLK parameter has had to go, so it is 
+	// now hard-wired into the code. In DSP this is set to 0x8C0000, but I store simply as 
+	// an unsigned char with value 140
 	if(serverdata.application == "appl7_window3pair_cfg"){
 	    std::cerr << "parseXML warning: 6-windows mode post-Mar 2010 identified; v_ft_clk byte (needed for precise times) will be set = 140" << std::endl;
 	    serverdata.v_ft_clk  = 140;
@@ -366,6 +370,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	    std::cerr << "parseXML warning: If this is important, contact Tom Marsh." << std::endl;
 	}
     }
+
+    std::cerr << "parseXML warning: version number = " << serverdata.version << std::endl;
 
     // Reversed readout in the X-direction for the avalanche readout of the L3CCD requires
     // a correction to the llx value (as well as a re-ordering handled by de_multiplex)
@@ -639,8 +645,6 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		    std::string name = AttToString((DOMElement*)child->item(j), "name");
 		    serverdata.application = name;
 		    
-		    std::cerr << "name = " << name << std::endl;
- 
 		    // 250 settings from updates of July 2003
 		    // ap5b is a two window mode with a clear that allows faster accurately exposed
 		    // frames. Change made 19/08/2004

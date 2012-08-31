@@ -75,7 +75,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else if(serverdata.version == 100222 || serverdata.version == 110921 || serverdata.version == 111205 || serverdata.version == 120716 || serverdata.version == 120813){
         format = 2;
     }else{
-        std::cerr << "WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
+        std::cerr << "Ultracam::read_header WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
         std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
         std::cerr << "Will assume post-Feb 2010, pre-Sep 2011 format #2" << std::endl;
         format = 2;
@@ -142,7 +142,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	nsatellite = int(intread.si);
 	if(nsatellite <= 2){
 	    reason = "too few = " + Subs::str(nsatellite) +  " satellites";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
 
@@ -161,7 +161,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	}
 
 	if(intread.ui*serverdata.time_units != serverdata.expose_time)
-	    std::cerr << "WARNING: XML expose time does not match time in timing header " 
+	    std::cerr << "Ultracam::read_header WARNING: XML expose time does not match time in timing header " 
 		      << intread.ui*serverdata.time_units << " vs " << serverdata.expose_time << std::endl;
 
 	// Number of seconds
@@ -204,22 +204,22 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	// Report timing information. Report a single problem.
 	if(reliable && (tstamp & PCPS_ANT_FAIL)){
 	    reason = "GPS antenna failure";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
 	if(reliable && (tstamp & PCPS_INVT)){
 	    reason = "GPS battery disconnected";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;	
+	    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;	
 	    reliable = false;
 	}
 	if(reliable && !(tstamp & PCPS_SYNCD)){
 	    reason = "GPS clock not yet synced since power up";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
 	if(reliable && (tstamp & PCPS_FREER)){
 	    reason = "GPS receiver has not verified its position"; 
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+	    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 	    reliable = false;
 	}
 
@@ -315,7 +315,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
 	if(first){
-	    std::cerr << "WARNING: no satellites, so the date unknown. In this case the timing settings cannot" << std::endl;
+	    std::cerr << "Ultracam::read_header WARNING: no satellites, so the date unknown. In this case the timing settings cannot" << std::endl;
 	    std::cerr << "be determined. Values for > July 2003 will be used by default. If this is not right" << std::endl;
 	    std::cerr << "and timing matters for these data, please contact Vik Dhillon or Tom Marsh." << std::endl;
 	}
@@ -377,7 +377,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		month_of_year = 1;
 		year          = 1970;
 	    }else{
-		std::cerr << "WARNING: could not recognize format = " << format << " when trying to establish date in read_header" << std::endl;
+		std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish date in read_header" << std::endl;
 	    }
       
 	    // hack for partial fix with day and month ok but not year
@@ -446,7 +446,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
 		}else{
-		    std::cerr << "WARNING: could not recognize format = " << format << " when trying to establish GPS time in read_header" << std::endl;
+		    std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish GPS time in read_header" << std::endl;
 		}
 
 		// Set the vertical clock time. Have to account for the change of
@@ -475,7 +475,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // the time. Extra % 7 added 14/05/2005 to cope with changes made before May 2005 VLT run
 
     if((gps_timestamp.int_day_of_week() + 1) % 7 == int((nsec / Constants::IDAY) % 7)){
-	std::cerr << "WARNING: Midnight bug detected and corrected *****." << std::endl;
+	std::cerr << "Ultracam::read_header WARNING: Midnight bug detected and corrected *****." << std::endl;
 	gps_timestamp.add_day(1);
     }
 
@@ -626,7 +626,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date.add_second(-frame_transfer-readout_time-serverdata.expose_time/2.);
 		if(reliable){
 		    reason = "cannot establish an accurate time without previous GPS timestamp";
-		    std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+		    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason  << std::endl;
 		    reliable = false;
 		}
 
@@ -751,7 +751,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    exposure_time    = texp;
 		    if(reliable){
 			reason = "cannot establish an accurate time without previous GPS timestamp";
-			std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+			std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 			reliable = false;
 		    }
 		}
@@ -776,7 +776,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		ut_date.add_second(-frame_transfer-readout_time-exposure_time/2.);
 		if(reliable){
 		    reason = "cannot establish an accurate time for first frame in this mode";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+		    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 		    reliable = false;
 		}
 	
@@ -801,7 +801,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    exposure_time = texp;
 		    if(reliable){
 			reason = "cannot establish an accurate time without at least 2 prior timestamps";
-			std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+			std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason  << std::endl;
 			reliable = false;
 		    }
 	  
@@ -814,7 +814,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    exposure_time = texp;
 		    if(reliable){
 			reason = "cannot establish an accurate time without at least a prior timestamp";
-			std::cerr << "WARNING, time unreliable: " << reason  << std::endl;
+			std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason  << std::endl;
 			reliable = false;
 		    }
 		}
@@ -901,7 +901,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		exposure_time    = serverdata.expose_time;
 		if(reliable){
 		    reason = "too few stored timestamps";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
 		    reliable = false;
 		}
 	    }
@@ -925,7 +925,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		exposure_time = texp;
 		if(reliable){
 		    reason = "too few stored timestamps";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+		    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
 		    reliable = false;
 		}
 
@@ -936,7 +936,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		exposure_time    = serverdata.expose_time;
 		if(reliable){
 		    reason = "too few stored timestamps";
-		    std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+		    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
 		    reliable = false;
 		}
 	    }
@@ -982,7 +982,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
             exposure_time = serverdata.expose_time;
             if(reliable){
                 reason = "too few stored timestamps";
-                std::cerr << "WARNING, time unreliable: " << reason << std::endl; 
+                std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
                 reliable = false;
             }
         }
