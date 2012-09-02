@@ -1,7 +1,5 @@
 /**
- * Plots defects, for use after a call to plot_images. This program differs
- * from several others in that it will plot all defects of ALL CCDs even
- * when only one CCD is being plotted.
+ * Plots defects, for use after a call to plot_images. 
  * \param defect Multiple defect file
  * \param x1 left plot limit
  * \param x2 right plot limit
@@ -9,7 +7,8 @@
  * \param y2 upper plot limit
  * \param all true to plot all CCDs
  * \param stackdirn  stacking direction for multi-ccd plots: either 'X' or 'Y'
- * \param nccd the CCD number to plot if not all.
+ * \param nccd the CCD number to plot the defects of if not all. 0 will show all, in which
+ * case their relative coordinates should have been transformed, see rtplot
  */
 
 #include <string>
@@ -42,13 +41,19 @@ void Ultracam::plot_defects(const Mdefect& defect, float x1, float x2, float y1,
       cpgwnad(x1,x2,y1,y2);
       pgline(defect[ic]);
     }
+
   }else{
 
-    // We plot all defects which should have been transformed onto the correct coordinates
-    for(size_t ic=0; ic<defect.size(); ic++){
-      cpgsci(colour[ic]);
-      pgline(defect[ic]);
-    }
+      // We plot all defects which should have been transformed onto the correct coordinates
+      if(nccd == 0){
+	  for(size_t ic=0; ic<defect.size(); ic++){
+	      cpgsci(colour[ic]);
+	      pgline(defect[ic]);
+	  }
+      }else{
+	  cpgsci(colour[nccd-1]);
+	  pgline(defect[nccd-1]);
+      }
   }
 }
 

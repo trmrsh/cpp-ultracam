@@ -10,7 +10,15 @@
  * \param severity How bad the defect is
  */
 Ultracam::Defect::Defect(float x, float y, how_bad severity) : 
-  x1_(x), y1_(y), x2_(x), y2_(y), severity_(severity) {} 
+    x1_(x), y1_(y), x2_(x), y2_(y), severity_(severity), cps_(-1) {} 
+
+/** Constructs a hot pixel defect
+ * \param x        X position of defect
+ * \param y        Y position of defect
+ * \param cps      counts per second
+ */
+Ultracam::Defect::Defect(float x, float y, int cps) : 
+    x1_(x), y1_(y), x2_(x), y2_(y), severity_(Ultracam::Defect::MODERATE), cps_(cps) {} 
 
 /** Constructs a line defect
  * \param x1   X position of one end of line defect
@@ -20,7 +28,7 @@ Ultracam::Defect::Defect(float x, float y, how_bad severity) :
  * \param severity How bad the defect is
  */
 Ultracam::Defect::Defect(float x1, float y1, float x2, float y2, how_bad severity)
-  : x1_(x1), y1_(y1), x2_(x2), y2_(y2), severity_(severity) {} 
+    : x1_(x1), y1_(y1), x2_(x2), y2_(y2), severity_(severity), cps_(-1) {} 
   
 /** This function returns a number that increases with the distance from
  * the coordinates entered as its arguments. This can be used to work out
@@ -95,23 +103,27 @@ float Ultracam::Defect::bad_value(int ix, int iy, float low, float high) const {
 void Ultracam::pgline(const Ultracam::Defect& defect) {
   cpgsave();
   int ptype = 17;
+      
   if(defect.effect() == Ultracam::Defect::MODERATE){
-    cpgslw(2);
-    cpgsls(2);
-    cpgsch(1);
-    ptype = 17;
+      cpgslw(2);
+      cpgsls(2);
+      cpgsch(1);
+      ptype = 17;
   }else if(defect.effect() == Ultracam::Defect::DISASTER){
-    cpgslw(4);
-    cpgsls(1);
-    cpgsch(1.5);
-    ptype = 18;
+      cpgslw(4);
+      cpgsls(1);
+      cpgsch(1.5);
+      ptype = 18;
   }
-
+  
   if(defect.is_a_pixel()){
-    cpgpt1(defect.x1(),defect.y1(),ptype);
+      cpgpt1(defect.x1(),defect.y1(),ptype);
+  }else if(defect.is_a_hot_pixel()){
+      cpgpt1(defect.x1(),defect.y1(),1);
+      cpgptxt(defect.x1(),defect.y1(),0,0,Subs::str(defect.how_hot()).c_str());
   }else{
-    cpgmove(defect.x1(),defect.y1());
-    cpgdraw(defect.x2(),defect.y2());
+      cpgmove(defect.x1(),defect.y1());
+      cpgdraw(defect.x2(),defect.y2());
   }
   cpgunsa();
 }
@@ -123,25 +135,30 @@ void Ultracam::pgptxt(const Ultracam::Defect& defect, const std::string& lab){}
 // 1-line ASCII output/input
 
 std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Defect& obj){
-  s << "defect type = ";
-  if(obj.is_a_pixel()){
-    s << "pixel located at x,y = " << obj.x1() << ", " << obj.y1();
-  }else{
-    s << "line extending from x,y = " << obj.x1() << ", " << obj.y1() 
-      << " to x,y = " << obj.x2() << ", " << obj.y2();
-  }
-  if(obj.effect() == Ultracam::Defect::MODERATE){
-    s << ", severity = moderate";
-  }else if(obj.effect() == Ultracam::Defect::DISASTER){
-    s << ", severity = disaster";
-  }
-  return s;
+    s << "defect type = ";
+    if(obj.is_a_pixel()){
+	s << "pixel located at x,y = " << obj.x1() << ", " << obj.y1();
+    }else if(obj.is_a_hot_pixel()){
+	s << "hot pixel located at x,y = " << obj.x1() << ", " << obj.y1();
+    }else{
+	s << "line extending from x,y = " << obj.x1() << ", " << obj.y1() 
+	  << " to x,y = " << obj.x2() << ", " << obj.y2();
+    }
+    if(obj.is_a_hot_pixel()){
+	s << ", counts/sec = " << obj.how_hot();
+    }else if(obj.effect() == Ultracam::Defect::MODERATE){
+	s << ", severity = moderate";
+    }else if(obj.effect() == Ultracam::Defect::DISASTER){
+	s << ", severity = disaster";
+    }
+    return s;
 }
 
 std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
   char ch;
   std::string dtype, stype;
   float x1, x2, y1, y2;
+  int cps = -1;
 
   while(s.get(ch) && ch != '=');
   if(!s || !(s >> dtype))
@@ -152,22 +169,33 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (2)");
   
   if(dtype == "line"){
-    while(s.get(ch) && ch != '=');
-    if(!s || !(s >> x2) || !s.get(ch) || !(s >> y2)) 
-      throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3)");
+      while(s.get(ch) && ch != '=');
+      if(!s || !(s >> x2) || !s.get(ch) || !(s >> y2)) 
+	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3)");
+  }else if(dtype == "hot"){
+      while(s.get(ch) && ch != '=');
+      if(!s || !(s >> cps)) 
+	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3.5)");
   }else if(dtype != "pixel"){
-    throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (4)");
+      throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (4)");
   }
 
-  while(s.get(ch) && ch != '=');
-  if(!s || !(s >> stype))
-    throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (5)");
-  if(stype == "moderate"){
-    obj.severity_ = Ultracam::Defect::MODERATE;
-  }else if(stype == "disaster"){
-    obj.severity_ = Ultracam::Defect::DISASTER;
+  if(dtype == "hot"){
+      obj.severity_ = Ultracam::Defect::MODERATE;
+      obj.cps_      = cps;
   }else{
-    throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (6)");
+      while(s.get(ch) && ch != '=');
+
+      if(!s || !(s >> stype))
+	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (5)");
+      if(stype == "moderate"){
+	  obj.severity_ = Ultracam::Defect::MODERATE;
+      }else if(stype == "disaster"){
+	  obj.severity_ = Ultracam::Defect::DISASTER;
+      }else{
+	  throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (6)");
+      }
+      obj.cps_ = -1;
   }
   
   obj.x1_ = x1;
@@ -179,6 +207,7 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
     obj.x2_ = x1;
     obj.y2_ = y1;
   }
+
   return s;
 }
 
@@ -186,7 +215,7 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
  * This function checks that two Ultracam::Defects do not clash in any way, as
  * one must know when adding Ultracam::Defects to a group. It is in fact a dummy
  * function because no restrictions are placed upon overlap of Ultracam::Defects.
- * Nevertheless, its is required for compatibility with other objects when
+ * Nevertheless, it is required for compatibility with other objects when
  * grouped under the CCD class.
  * \param obj1 first defect
  * \param obj2 second defect

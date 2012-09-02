@@ -769,7 +769,7 @@ int main(int argc, char* argv[]){
 				}
 
 				// Plot any CCD defects
-				if(def) Ultracam::plot_defects(defect, x1, x2, y1, y2, allccds, stackdirn, nccd);	   	  
+				if(def) Ultracam::plot_defects(defect, x1, x2, y1, y2, allccds, stackdirn, 0);	   	  
 	  
 				// Setup windows section
 				if(setup) Ultracam::plot_setupwins(setwin, data.size(), x1, x2, y1, y2, allccds, stackdirn, nccd, ultraspec);

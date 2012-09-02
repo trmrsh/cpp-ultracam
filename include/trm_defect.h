@@ -32,10 +32,13 @@ namespace Ultracam {
     enum how_bad {MODERATE, DISASTER};
 
     //! Default constructor.
-    Defect() : x1_(0), y1_(0), x2_(0), y2_(0), severity_(MODERATE) {} 
+    Defect() : x1_(0), y1_(0), x2_(0), y2_(0), severity_(MODERATE), cps_(-1) {} 
 
     //! Pixel defect constructor
     Defect(float x, float y, how_bad severity);
+
+    //! Hot pixel defect constructor
+    Defect(float x, float y, int cps);
 
     //! Line defect constructor
     Defect(float x1, float y1, float x2, float y2, how_bad severity);
@@ -61,8 +64,14 @@ namespace Ultracam {
     //! Returns severity
     how_bad effect() const {return severity_;}
 
+    //! Returns hotness of a hot pixel
+    int how_hot() const {return cps_;}
+
     //! Is it a pixel defect?
-    bool is_a_pixel() const {return (x1_ == x2_ && y1_ == y2_);}
+    bool is_a_pixel() const {return (x1_ == x2_ && y1_ == y2_ && cps_ == -1);}
+
+    //! Is it a hot pixel?
+    bool is_a_hot_pixel() const {return cps_ > -1;}
 
     //! Value to set a bad pixel 
     float bad_value(int ix, int iy, float low, float high) const;
@@ -80,6 +89,7 @@ namespace Ultracam {
 
     float x1_, y1_, x2_, y2_;
     how_bad severity_;
+    int cps_;
 
   };
 
