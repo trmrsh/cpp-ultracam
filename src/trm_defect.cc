@@ -119,8 +119,16 @@ void Ultracam::pgline(const Ultracam::Defect& defect) {
   if(defect.is_a_pixel()){
       cpgpt1(defect.x1(),defect.y1(),ptype);
   }else if(defect.is_a_hot_pixel()){
-      cpgpt1(defect.x1(),defect.y1(),1);
-      cpgptxt(defect.x1(),defect.y1(),0,0,Subs::str(defect.how_hot()).c_str());
+      // only plot if within the world limits of the current window
+      float x1, x2, y1, y2;
+      cpgqwin(&x1, &x2, &y1, &y2);
+      if(x2 < x1) std::swap(x1,x2);
+      if(y2 < y1) std::swap(y1,y2);
+      if(defect.x1() >= x1 && defect.x1() <= x2 && 
+	 defect.y1() >= y1 && defect.y1() <= y2){
+	  cpgpt1(defect.x1(),defect.y1(),1);
+	  cpgptxt(defect.x1(),defect.y1(),0,0,Subs::str(defect.how_hot()).c_str());
+      }
   }else{
       cpgmove(defect.x1(),defect.y1());
       cpgdraw(defect.x2(),defect.y2());
