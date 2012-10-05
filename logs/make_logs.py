@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+usage = \
 """
 Script to generate html web pages for ULTRACAM and ULTRASPEC.
 
@@ -18,7 +19,7 @@ the form '2005-11' (Nov 2005) which have a structure like so:
     data      -- run .dat and .xml files
 
 etc. It also expects there to be a file called TARGETS with information
-of target positions and regular expressions for translating targets in
+of target positions and regular expressions for translating targets in.
 """
 
 import os, sys, re, argparse
@@ -31,6 +32,9 @@ import trm.simbad as simbad
 
 # arguments
 parser = argparse.ArgumentParser(description='Compiles web pages for ULTRACAM logs')
+
+parser.add_argument('-r', dest='rdir', default=None, 
+                   help='name of run directory (all will be searched otherwise)')
 
 # optional
 parser.add_argument('-a', dest='all', action="store_true", default=False,
@@ -61,7 +65,16 @@ sskip = [name.strip() for name in sskip if not name.startswith('#')]
 fp.close()
 
 # Create a list directories of runs to search through
-rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
+if args.rdir:
+    if not os.path.isdir(args.rdir):
+        print args.rdir,'is not a directory or does not exist'
+        exit(1)
+    if not rdir_re.match(args.rdir):
+        print args.rdir,'dies not have the required YYYY-MM format'
+        exit(1)
+    rdirs = [args.rdir,]
+else:
+    rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
 rdirs.sort()
 
 # to keep track of those targets IDed from Simbad
