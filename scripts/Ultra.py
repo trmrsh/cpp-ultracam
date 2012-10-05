@@ -503,22 +503,24 @@ class Run(object):
                             name = name.strip()
                             name = re.sub(Run.RESPC, ' ', name)
                             print 'Matched with',name,pos
-                            ms = pos.find('-')
-                            if ms > -1:
-                                self.id  = name
-                                self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
-                                self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
-                                self.simbad = True
-                            else:
-                                mp = pos.find('+')
-                                if mp > -1:
-                                    self.id  = name
-                                    self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
-                                    self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
+                            try:
+                                ms = pos.find('-')
+                                if ms > -1:
+                                    self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
+                                    self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
                                     self.simbad = True
+                                    self.id  = name
                                 else:
-                                    sys.stderr.write('Could not parse the SIMBAD position\n')
-
+                                    mp = pos.find('+')
+                                    if mp > -1:
+                                        self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
+                                        self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
+                                        self.simbad = True
+                                        self.id  = name
+                                    else:
+                                        raise ValueError()
+                            except ValueError, err:
+                                sys.stderr.write('Failed to parse target = ' + name + ', position = ' + pos + '\n')
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -1058,7 +1060,7 @@ class Run(object):
                  self.target == "Test/skyflat" or self.target == "Sky flats" or \
                  self.target == "twilight" or self.target == "Sky Flat" or self.target == "Tungsten flat" or \
                  self.target == "Sky_flats" or self.target == "Sky Flats" or self.target == "Twilight Flats" or \
-                 self.target == "flats" or self.target == "Dome flat")
+                 self.target == "flats" or self.target == "Dome flat" or self.target == "flat")
 
     def is_dark(self):
         """
