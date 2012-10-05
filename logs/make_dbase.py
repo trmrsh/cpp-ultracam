@@ -10,13 +10,16 @@ It should be run in the 'logs' directory which has sub-directories of
 the form '2005-11' (Nov 2005) which have a structure like so. 
 
 """
-
 import os, sys, re, pyfits
 from xml.dom import Node
 from xml.dom.minidom import parse, parseString
 import numpy as np
 from trm import subs, simbad
 import Ultra
+
+if os.path.exists('ultracam_dbase.fits'):
+    print 'ultracam_dbase.fits already exists. You must delete it first'
+    exit(1)
 
 #import traceback
 
