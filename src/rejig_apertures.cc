@@ -82,33 +82,31 @@ void Ultracam::rejig_apertures(const Frame& data, const Frame& dvar, const Subs:
 
 	for(size_t nccd=0; nccd<Reduce::aperture_master.size(); nccd++){ 
       
-	    if(nccd != 2 || !blue_is_bad){
-		if(Reduce::extraction_control.find(nccd) != Reduce::extraction_control.end()){
+            if(Reduce::extraction_control.find(nccd) != Reduce::extraction_control.end()){
 
-		    ap_ok = (Reduce::extraction_control[nccd].aperture_type     == Reduce::FIXED &&
-			     Reduce::extraction_control[nccd].extraction_method == Reduce::NORMAL);
+                ap_ok = (Reduce::extraction_control[nccd].aperture_type     == Reduce::FIXED &&
+                         Reduce::extraction_control[nccd].extraction_method == Reduce::NORMAL);
 		
-		    for(size_t naper=0; naper<Reduce::aperture_master[nccd].size(); naper++){
-			app = &Reduce::aperture_master[nccd][naper];
-			if(app->ref()) ap_ok = true;
-			if(app->linked()){
-			    bool link_found = false;
-			    for(size_t naper1=0; naper1<Reduce::aperture_master[nccd].size(); naper1++){
-				app1 = &Reduce::aperture_master[nccd][naper1];
-				if(!app1->linked() && app1->xref() == app->xref() && app1->yref() == app->yref()){
-				    aperture_link[nccd][naper] = naper1;
-				    link_found = true;
-				    break;
-				}		
-			    }
-			    if(!link_found) 
-				throw Ultracam_Error("Ultracam::rejig_apertures: no master aperture found for linked aperture " + Subs::str(naper+1) + " of CCD " + Subs::str(nccd+1));
-			}
+                for(size_t naper=0; naper<Reduce::aperture_master[nccd].size(); naper++){
+                    app = &Reduce::aperture_master[nccd][naper];
+                    if(app->ref()) ap_ok = true;
+                    if(app->linked()){
+                        bool link_found = false;
+                        for(size_t naper1=0; naper1<Reduce::aperture_master[nccd].size(); naper1++){
+                            app1 = &Reduce::aperture_master[nccd][naper1];
+                            if(!app1->linked() && app1->xref() == app->xref() && app1->yref() == app->yref()){
+                                aperture_link[nccd][naper] = naper1;
+                                link_found = true;
+                                break;
+                            }		
+                        }
+                        if(!link_found) 
+                            throw Ultracam_Error("Ultracam::rejig_apertures: no master aperture found for linked aperture " + Subs::str(naper+1) + " of CCD " + Subs::str(nccd+1));
+                    }
 		    }
-		    if(!ap_ok) 
-			throw Ultracam_Error("Ultracam::rejig_apertures: no reference aperture found for CCD " + Subs::str(nccd+1) + " even though profile fitting required.");
-		}
-	    }
+                if(!ap_ok) 
+                    throw Ultracam_Error("Ultracam::rejig_apertures: no reference aperture found for CCD " + Subs::str(nccd+1) + " even though profile fitting required.");
+            }
 	}
 
 	// Make sure errors structure has correct sizes and initialize to zero
