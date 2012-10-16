@@ -102,6 +102,7 @@ $(ALIASES):
 	@echo "alias dummy     'perl $(progdir)/dummy.pl'"         >> $(ALIASES)
 	@echo 'alias extract_times $(progdir)/extract_times.csh'   >> $(ALIASES)
 	@echo "alias fmatch    'python $(progdir)/fmatch.py'"      >> $(ALIASES)
+	@echo "alias grms      'python $(progdir)/grms.py'"        >> $(ALIASES)
 	@echo "alias hotpix    'python $(progdir)/hotpix.py'"      >> $(ALIASES)
 	@echo "alias l3gain    'perl $(progdir)/l3gain.pl'"        >> $(ALIASES)
 	@echo 'alias makebias  $(progdir)/makebias.csh'            >> $(ALIASES)
