@@ -84,14 +84,16 @@ in order to be able to do anything with the data.
 Once you have the data the first thing is to see if you can plot some of it. 
 fire up the software and try out the command
 \href{\ultracam/rtplot.html}{rtplot}. You may need to point it at the right
-source of data the first time you use it; look at the help.
+source of data the first time you use it; look at the help. If it hangs,
+ctrl-C, and then re-run specifying ``prompt'' on the command line. It is
+probably looking for a non-existent server; you will want the ``local'' option.
 
 Having done this to a few files, you might want to
 \href{\ultracam/grab.html}{grab} a few files which you can then look at in more
 detail with \href{\ultracam/plot.html}{plot} or
 \href{\ultracam/cplot.html}{cplot}. The files are stored as files
 with the extension '.ucm'. For instance you might end up with 'run034\_001.ucm',
-'run034\_002.ucm' etc. Ecah of these contains all three CCDs plus some header
+'run034\_002.ucm' etc. Each of these contains all three CCDs plus some header
 info. Try the program \href{\ultracam/uinfo.html}{uinfo} to get a little basic
 data on a ucm file. The image display facilities in the pipeline software are
 crude by comparison with 'ds9' or 'gaia'; it has not been my intent to replicate
@@ -108,12 +110,15 @@ on apertures (section~\ref{sec:apertures}).
 Almost the first thing you should do is to create a mean bias
 frame. With the two readouts/CCD of ULTRACAM the different bias levels
 can make it hard to view images easily, so you will typically want to
-remove the bias level fairly early on. Find a bias run, check the
+remove the bias level fairly early on. Some frequently used commands, 
+such as \href{\ultracam/rtplot.html}{rtplot} allow you to do so on the fly,
+but you still need to supply a bias frame. Find a bias run, check the
 comments to see that things were OK and then
 \href{\ultracam/grab.html}{grab} the entire run. Make a list
 containing all the names of the resulting ucm files (e.g. 'ls
 run034*.ucm > bias.lis') and apply the program
-\href{\ultracam/combine.html}{combine}. It is much better to use the
+\href{\ultracam/combine.html}{combine}. In the case of biases, it is much
+better to use the
 clipped mean method of combination rather than the median which
 suffers from digitisation noise. You should use the 'bias' adjustment
 to allow for variable bias levels. Note that you should select a bias
@@ -128,13 +133,17 @@ re-format manually before running it.
 are incorrect immediately after a power-on. See
 section~\ref{prob:bias} for more details.
 
+You may have to make separate bias frames for your flat-fields and your data. 
+Look at \href{\ultracam/makebias.html}{makebias} for a single command to
+create a bias from a run. This will save you from grabbing, combining and
+deleting intermediate files.
+
 \subsection{Making dark frames}
 
 The ULTRACAM chips run at $-40\,$C and have non-negligible dark
 current, especially for exposures longer than a few seconds. Although
 the mean dark current is less than 1 count per second, there are
-various 'hot pixels' which can be far higher than this (the worst of
-all is at 423, 902 on CCD and counts at hundreds per second). Look at
+various 'hot pixels' which can be far higher than this. Look at
 your data with \href{\ultracam/rtplot.html}{rtplot} and see if you can
 see obvious hot pixels. If you can then you might want to make a dark
 frame. To do so you need a dark run, preferably taken during the night
@@ -154,7 +163,7 @@ ULTRACAM flats are typically taken as a long sequence at the start and end of
 the night. The small deadtime of ULTRACAM is of great advantage and means that
 we do not bother changing the exposure time as a rule. Typically the flats start
 or end saturated in 2 or 3 of the chips, with the u' CCD being the least
-sensitive and therefore coming out or going into saturation las of all. One
+sensitive and therefore coming out or going into saturation last of all. One
 wants to median these for cosmic rays but this cannot be done directly because
 of the changing mean level. On the other hand simply taking the median after
 dividing out the mean level overweights low signal flats. Thus the routine
@@ -177,7 +186,13 @@ not to be relied upon. I always delete it after I have downloaded a run using
 
 Finally you should be aware of the \warn{peppering problem}
 (section~\ref{prob:peppering}). This limits the frames that you can
-use reliably to well below the normal 65535 saturation level.
+use reliably to well below the normal 65535 saturation level. The script
+\href{\ultracam/grms.html}{grms} has been created to make it easier to spot
+peppering. It only does not matter for bias frames.
+
+Be very careful with flat fields: if there are stars, they can leave traces if
+you don't median them out sufficiently so experiment with varying the group
+size if you have problems. \warnn{Always} look at the result!
 
 \subsection{Making bad pixel frames}
 
