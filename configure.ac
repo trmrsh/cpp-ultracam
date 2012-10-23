@@ -46,7 +46,7 @@ AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR(cannot find the pcre C++ librar
 
 AC_CHECK_LIB([xerces-c], [main], [], AC_MSG_ERROR(cannot find the xerces-c library))
 
-AC_CHECK_LIB([csla], [slaPm], [], AC_MSG_ERROR(cannot find the sla C library))
+AC_CHECK_LIB([csla], [main], [], AC_MSG_ERROR(cannot find the sla C library))
 
 AC_CHECK_LIB([cfitsio], [main], [], AC_MSG_ERROR(cannot find the cfitsio library))
 
