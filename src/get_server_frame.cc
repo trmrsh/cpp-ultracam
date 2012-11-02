@@ -457,7 +457,9 @@ bool Ultracam::get_server_frame(char source, const std::string& url, Frame& data
     if(demultiplex){
 	if(serverdata.instrument == "ULTRACAM"){
 	    Ultracam::de_multiplex_ultracam(buffer.memory+headerskip, data);
-	}else{
+	}else if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
+	    Ultracam::de_multiplex_ultraspec_drift(buffer.memory+headerskip, data, serverdata.l3data.nchop);
+        }else{
 	    Ultracam::de_multiplex_ultraspec(buffer.memory+headerskip, data, serverdata.l3data.nchop);
 	}
     }

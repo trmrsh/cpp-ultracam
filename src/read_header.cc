@@ -944,15 +944,16 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
     }else if(serverdata.instrument == "ULTRASPEC"){
 
-	// Avoid accumulation of timestamps.
-	if(gps_times.size() > 2) gps_times.pop_back(); 
+	// Avoid excessive accumulation of timestamps.
+	if(gps_times.size() > 3) gps_times.pop_back(); 
 
-        // 13/07/2012. I believe the readout sequences to be as
+        // 13/07/2012. I did believe the readout sequences to be as
         // follows:
         //
         // Clear mode: CLR|EXP|TS|FT|READ|CLR|EXP|TS|FT|READ ..
         // Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
-        // 
+        //
+        //  
         // On non-clear mode, the accumulation time is from the start
         // of the read until the end of "exp" (the user-defined exposure delay)
         //
@@ -961,32 +962,79 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         // corrected this, we are back to the simpler code which makes no
         // distinction between pre- and post-21/09/2011. The only difference now
         // is the frame-transfer time.
+        //
+        // 02/11/12: more work from Vik seems to show that in fact
+        // it is like this (ULTRACAM style):
+        //
+        // Non-clear:  CLR|EXP|FT|READ|TS|EXP|FT|READ|TS| ..
+        // 
 
         ut_date = gps_times[0];
 
-        if(serverdata.l3data.en_clr || frame_number == 1){
+        if(gps_timestamp < ultraspec_change1){
 
-            ut_date.add_second(-serverdata.expose_time/2.);
-            exposure_time = serverdata.expose_time;
-            
-        }else if(gps_times.size() > 1){
-            
-            double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
-            ut_date.add_second(-texp/2.);
-            exposure_time = texp;
-            
+            if(serverdata.l3data.en_clr || frame_number == 1){
+                
+                ut_date.add_second(-serverdata.expose_time/2.);
+                exposure_time = serverdata.expose_time;
+                
+            }else if(gps_times.size() > 1){
+                
+                double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+                ut_date.add_second(-texp/2.);
+                exposure_time = texp;
+                
+            }else{
+                
+                // Could be improved with an estimate of the read time
+                ut_date.add_second(-serverdata.expose_time/2.);
+                exposure_time = serverdata.expose_time;
+                if(reliable){
+                    reason = "too few stored timestamps";
+                    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
+                    reliable = false;
+                }
+            }
+
         }else{
-            
-            // Could be improved with an estimate of the read time
-            ut_date.add_second(-serverdata.expose_time/2.);
-            exposure_time = serverdata.expose_time;
-            if(reliable){
-                reason = "too few stored timestamps";
-                std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
-                reliable = false;
+            // OK this is the post 21 Sep 2011 system which we think goes as
+            // Non-clear:  CLR|EXP|FT|READ|TS|EXP|FT|READ|TS| ..
+
+            // We need in this case to backtrack two frames
+            if(gps_times.size() > 2){
+	  
+                // If the stored parameters result from the previous calls then we can get a good time.
+                double texp = gps_times[1] - gps_times[2] - USPEC_FT_TIME;
+                ut_date = gps_times[1];
+                ut_date.add_second(serverdata.expose_time-texp/2.);
+                exposure_time = texp;
+
+            }else if(gps_times.size() == 2){
+
+                // Only one back, use difference of most recent as estimate for one before
+                // probably not too bad, but must call it unreliable
+                double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
+                ut_date = gps_times[1];
+                ut_date.add_second(serverdata.expose_time-texp/2.);
+                exposure_time = texp;
+                if(reliable){
+                    reason = "cannot establish an accurate time without at least 2 prior timestamps";
+                    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason  << std::endl;
+                    reliable = false;
+                }
+	  
+            }else{
+	  
+                // Could be improved with an estimate of the read time
+                ut_date.add_second(-serverdata.expose_time/2.-serverdata.expose_time);
+                exposure_time = serverdata.expose_time;
+                if(reliable){
+                    reason = "too few stored timestamps";
+                    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
+                    reliable = false;
+                }
             }
         }
-        
     }
   
     // Save old values

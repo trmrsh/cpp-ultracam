@@ -921,6 +921,9 @@ namespace Ultracam {
   //! De-multiplexes raw ULTRASPEC data
   void de_multiplex_ultraspec(char *buffer, Frame& data, const std::vector<int>& nchop);
 
+  //! De-multiplexes raw ULTRASPEC drift-mode data
+  void de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std::vector<int>& nchop);
+
   //! Interprets time from raw header
   void read_header(char* buffer, const Ultracam::ServerData& serverdata, Ultracam::TimingInfo& timing);
 
