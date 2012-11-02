@@ -31,7 +31,7 @@
 # !!arg{rundir}{The run in question, identified by a string of the form YYYY-MM, e.g. 2006-03}
 # !!arg{progid}{String identifying the data, i.e. a programme ID code. A regular expression match is applied so with
 # some fiddling you should be able to allow for mistakes. This will also be used to define the top-level directory
-# where the data will be stored.}
+# where the data will be stored. Any forward slashes in it will be converted to dashes.}
 #
 # !!table
 #
@@ -67,12 +67,13 @@ else:
     print 'Run = ' + rdir + ' does not have the form YYYY-MM'
     exit(1)
 
-if os.path.exists(progid) and not os.path.isdir(progid):
-    print progid,'exists but is not a directory; please fix.'
+progdir = progid.replace('/','-')
+if os.path.exists(progdir) and not os.path.isdir(progdir):
+    print progdir,'exists but is not a directory; please fix.'
     exit(1)
-elif not os.path.exists(progid):
-    os.makedirs(progid)
-    print 'Created directory =',progid
+elif not os.path.exists(progdir):
+    os.makedirs(progdir)
+    print 'Created directory =',progdir
 
 # get a list of night-by-night directories
 ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
@@ -104,7 +105,7 @@ keys.sort()
 runs = [runs[matches[key]] for key in keys]
 
 # Create export directory names and then create the directories
-edirs = [os.path.join(progid, rdir, night) for night in ndirs]
+edirs = [os.path.join(progdir, rdir, night) for night in ndirs]
 
 for edir in edirs:
     if not os.path.exists(edir):
@@ -115,8 +116,8 @@ for run in runs:
     r = 'run' + ('%03d' % (run.number,))
     source_xml = os.path.join(raw_dir, run.night, r + '.xml')
     source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-    link_xml   = os.path.join(progid, rdir, run.night, r  + '.xml')
-    link_dat   = os.path.join(progid, rdir, run.night, r + '.dat')
+    link_xml   = os.path.join(progdir, rdir, run.night, r  + '.xml')
+    link_dat   = os.path.join(progdir, rdir, run.night, r + '.dat')
 
     if os.path.exists(source_xml):
         if os.path.exists(link_xml):
@@ -131,7 +132,7 @@ for run in runs:
             os.link(source_dat, link_dat)
 
 # Write out a log file
-f = open(os.path.join(progid, 'index.html'), 'w')
+f = open(os.path.join(progdir, 'index.html'), 'w')
 
 f.write("""
 <html>
@@ -153,11 +154,11 @@ Dear Ultracam/Ultraspec user,
 as calibration files compatible with your data. The log below is partial; see
 the <a
 href="http://deneb.astro.warwick.ac.uk/phsaap/ultracam/logs/index.html">data
-logs</a> for full information (username ultracam, password blencathra). The
+logs</a> for full information (username: ultracam, password: blencathra). The
 runs below were identified automatically according to header values and window
 formats. It is possible that the headers could be in error, so don't hesitate
-to contact us if you think there might be anything wrong. To help you download
-your data, here is a <a href="links.lis">list of links</a> that can be used as
+to contact us if you think there might be anything wrong. You can click on individual files below
+or. possibly better, here is a <a href="links.lis">list of links</a> that can be used as
 input for 'wget', e.g.  
 <pre> 
 wget -x -nH --cut-dirs=3 -i links.lis 
@@ -168,21 +169,14 @@ is highly likely that you can save yourself lots of time if you edit the list
 of links to avoid downloading files that you don't think that you will need
 (you can always pick them up later if you change your mind). There will
 typically be <strong>many</strong> more calibrations than you will strictly need, 
-for instance because the routine searches over all nights for compatible frames and every
-unbinned full-frame run will be located for example. It tries to err on the
-inclusive side, but this means that there may well be many more files than you
-require. Thus your first task should be to prune the <a
-href="links.lis">list of links</a>.  In the list below file sizes are included
-so that you can judge this for yourself and links are given so that you can
-individually download files if need be.
+because the routine searches over all nights for compatible frames. Thus your 
+first task after you have downloaded it should be to prune the <a href="links.lis">list of links</a>.
+In the list below file sizes are included so that you can judge this for yourself and links are given 
+so that you can individually download files if need be.
 
 <p>
 If you find that you need to repeat a download but want to avoid copying files that 
 you already have, then you should check out the '-nc' option of 'wget'.
-
-<p>
-If you think you need extinction coefficients but do not have the data to determine them, 
-again contact us.
 
 <p>
 For each file below there is a link 'X' that points to the equivalent .xml header file and 'D' 
@@ -191,7 +185,9 @@ stored within the same directory. The XML files are small while the data files a
 The <a href="links.lis">list of links</a> contains both the xml and data links.
 
 <p> Once you have downloaded what you want, also save this page to keep as a
-log. The rules within the table separate runs from different nights.
+log. The rules within the table separate runs from different nights. Please let me know when 
+you are done so that I can remove this page since it is not password protected.
+
 
 <p>
 <table cellpadding="2" cellspacing="2" rules="groups">
@@ -211,7 +207,7 @@ server = 'http://deneb.astro.warwick.ac.uk/phsaap/data/'
 nold = 'None'
 
 for run in runs:
-    root = os.path.join(progid, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(progdir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
 
     if nold == 'None':
         nold = run.night
@@ -257,10 +253,10 @@ f.write("""
 f.close()
 
 # Write out wget targets
-f = open(os.path.join(progid, 'links.lis'), 'w')
+f = open(os.path.join(progdir, 'links.lis'), 'w')
 
 for run in runs:
-    root = os.path.join(progid, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(progdir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
     f.write(server + root + '.xml\n')
     f.write(server + root + '.dat\n')
 f.close()
