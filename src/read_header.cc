@@ -255,6 +255,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // Flag so that some things are only done once
     static bool first = true;
     static Subs::Format form(8);
+    static int nwins;
 
     // Now translate date info. All a bit complicated owing to various
     // bugs in the system early on. Date has no meaning when nsat=-1
@@ -826,8 +827,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	// The trickiest of them all, but essentially boils down to
 	// an nwins-1 shifted version of the case above
 
-	static int nwins;
-
 	// Calculate these just once
 	if(first){
 
@@ -942,7 +941,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }
 	}
 
-    }else if(serverdata.instrument == "ULTRASPEC"){
+    }else if(serverdata.instrument == "ULTRASPEC" && serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS){
 
 	// Avoid excessive accumulation of timestamps.
 	if(gps_times.size() > 3) gps_times.pop_back(); 
@@ -997,8 +996,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
             }
 
         }else{
+
             // OK this is the post 21 Sep 2011 system which we think goes as
             // Non-clear:  CLR|EXP|FT|READ|TS|EXP|FT|READ|TS| ..
+            // Clear:      CLR|EXP|FT|READ|CLR|TS|EXP|FT|READ|CLR|TS| ..
 
             // We need in this case to backtrack two frames
             if(gps_times.size() > 2){
@@ -1035,6 +1036,51 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                 }
             }
         }
+
+    }else if(serverdata.instrument == "ULTRASPEC" && serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
+
+	if(first){
+	    int ybin = serverdata.ybin;
+	    int ny = ybin*serverdata.window[0].ny;
+	    nwins  = int(((1037. / ny) + 1.)/2.);
+	    frame_transfer = USPEC_FT_TIME;
+	}
+
+	// Never need more than nwins+2 times
+	if(int(gps_times.size()) > nwins+2) gps_times.pop_back(); 
+
+	// Non-standard mode
+
+	if(int(gps_times.size()) > nwins+1){
+
+	    double texp = gps_times[nwins] - gps_times[nwins+1] - frame_transfer;
+	    ut_date = gps_times[nwins];
+	    ut_date.add_second(serverdata.expose_time-texp/2.);
+	    exposure_time = texp;
+	    
+	}else if(int(gps_times.size()) == nwins+1){
+	    
+	    double texp = gps_times[nwins-1] - gps_times[nwins] - frame_transfer;
+	    ut_date = gps_times[nwins];
+	    ut_date.add_second(serverdata.expose_time-texp/2.);
+	    exposure_time = texp;
+	    if(reliable){
+		reason = "too few stored timestamps";
+		std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
+		reliable = false;
+	    }
+	    
+	}else{
+	  
+	    // Set to silly value for easy checking
+	    ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+	    exposure_time    = serverdata.expose_time;
+	    if(reliable){
+		reason = "too few stored timestamps";
+		std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl; 
+		reliable = false;
+	    }
+	}
     }
   
     // Save old values
