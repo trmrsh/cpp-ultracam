@@ -110,8 +110,7 @@ void Ultracam::plot_setupwins(const std::string& setwin, int numccd, float x1, f
 		if(xbin < 1 || ybin < 1)
 		    throw Ultracam_Error("invalid binning factors = " + Subs::str(xbin) + ", " + Subs::str(ybin) + " from server.");
 
-		if((!ultraspec && nwin != 2 && nwin != 4 && nwin != 6)  || 
-		   (ultraspec && nwin != 1 && nwin != 2))
+		if((!ultraspec && nwin != 2 && nwin != 4 && nwin != 6)  || (ultraspec && (nwin < 1 || nwin > 4)))
 		    throw Ultracam_Error("invalid number of windows = " + Subs::str(nwin) + " from server.");
 	      
 		for(int nw=0; nw<nwin; nw++){
