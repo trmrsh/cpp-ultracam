@@ -953,7 +953,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         // Non-clear:  CLR|EXP|TS|FT|READ|EXP|TS|FT|READ ..
         //
         //  
-        // On non-clear mode, the accumulation time is from the start
+        // In non-clear mode, the accumulation time is from the start
         // of the read until the end of "exp" (the user-defined exposure delay)
         //
 	// At one point I thought that post-21/09/2011 the order of TS and FT had
@@ -965,13 +965,13 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         // 02/11/12: more work from Vik seems to show that in fact
         // it is like this (ULTRACAM style):
         //
-        // Non-clear:  CLR|EXP|FT|READ|TS|EXP|FT|READ|TS| ..
-        // 
+        // Non-clear:  CLR|EXP1|FT1|RD1|TS1|EXP2|FT2|RD2|TS2| ..
+        // Clear-mode: CLR|EXP1|FT1|RD1|TS1|CLR|EXP2|FT2|RD2|TS2|CLR|EXP3|FT3|RD3|TS3
 
-        ut_date = gps_times[0];
 
         if(gps_timestamp < ultraspec_change1){
 
+            ut_date = gps_times[0];
             if(serverdata.l3data.en_clr || frame_number == 1){
                 
                 ut_date.add_second(-serverdata.expose_time/2.);
@@ -997,23 +997,39 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 
         }else{
 
-            // OK this is the post 21 Sep 2011 system which we think goes as
-            // Non-clear:  CLR|EXP|FT|READ|TS|EXP|FT|READ|TS| ..
-            // Clear:      CLR|EXP|FT|READ|CLR|TS|EXP|FT|READ|CLR|TS| ..
+            // OK this is the post 21 Sep 2011 system which we think goes as:
+            //
+            // Non-clear:  CLR|EXP1|FT1|RD1|TS1|EXP2|FT2|RD2|TS2| ..
+            // Clear-mode: CLR|EXP1|FT1|RD1|TS1|CLR|EXP2|FT2|RD2|TS2|CLR|EXP3|FT3|RD3|TS3
 
-            // We need in this case to backtrack two frames
-            if(gps_times.size() > 2){
-	  
-                // If the stored parameters result from the previous calls then we can get a good time.
+            if(serverdata.l3data.en_clr || frame_number == 1){
+                // Special case for the first frame or if clears are enabled.
+                exposure_time = serverdata.expose_time;
+                if(gps_times.size() == 1){
+                    ut_date = gps_times[0];
+                    ut_date.add_second(-USPEC_FT_TIME-serverdata.expose_time/2.);
+                    if(reliable){
+                        reason = "cannot establish an accurate time without at least 1 prior timestamp";
+                        std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason  << std::endl;
+                        reliable = false;
+                    }
+                }else{
+                    const double USPEC_CLR_TIME = 0.; // needs infor from Vik
+                    ut_date = gps_times[1];
+                    ut_date.add_second(USPEC_CLR_TIME+serverdata.expose_time/2.);
+                }
+
+                // Now for non-clear mode
+            }else if(gps_times.size() > 2){
+                // Can backtrack two frames to get a good exposure time.
                 double texp = gps_times[1] - gps_times[2] - USPEC_FT_TIME;
                 ut_date = gps_times[1];
                 ut_date.add_second(serverdata.expose_time-texp/2.);
                 exposure_time = texp;
 
             }else if(gps_times.size() == 2){
-
-                // Only one back, use difference of most recent as estimate for one before
-                // probably not too bad, but must call it unreliable
+                // Can only back up one, so estimate of exposure time is actually based on the exposure following
+                // the one of interest. Probably not too bad, but technically unreliable as a time.
                 double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
                 ut_date = gps_times[1];
                 ut_date.add_second(serverdata.expose_time-texp/2.);
@@ -1025,8 +1041,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                 }
 	  
             }else{
-	  
-                // Could be improved with an estimate of the read time
+                // Only one time
+                ut_date = gps_times[0];
                 ut_date.add_second(-serverdata.expose_time/2.-serverdata.expose_time);
                 exposure_time = serverdata.expose_time;
                 if(reliable){
