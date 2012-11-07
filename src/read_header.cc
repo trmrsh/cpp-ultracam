@@ -510,23 +510,28 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // gps_times[n] is the n-th previous timestamp to the current one
     gps_times.push_front(gps_timestamp);
 
-    // Timing parameters from Vik
-    //  const double INVERSION_DELAY = 110.;   // microseconds
-    const double VCLOCK_STORAGE  = vclock_frame;   // microseconds
-    const double HCLOCK          = 0.48;   // microseconds
-    const double CDS_TIME_FDD    = 2.2;    // microseconds
-    const double CDS_TIME_FBB    = 4.4;    // microseconds
-    const double CDS_TIME_CDD    = 10.;    // microseconds
-    const double SWITCH_TIME     = 1.2;    // microseconds
+    // ULTRACAM Timing parameters from Vik
+    // const double INVERSION_DELAY = 110.;       // microseconds
+    const double VCLOCK_STORAGE  = vclock_frame;  // microseconds
+    const double HCLOCK          = 0.48;          // microseconds
+    const double CDS_TIME_FDD    = 2.2;           // microseconds
+    const double CDS_TIME_FBB    = 4.4;           // microseconds
+    const double CDS_TIME_CDD    = 10.;           // microseconds
+    const double SWITCH_TIME     = 1.2;           // microseconds
 
     // Ultraspec timing parameters from Naidu for old version, Vik for post
-    // 21/09/2011 version. Frame transfer time is fixed.
-    const double USPEC_FT_TIME = gps_timestamp < ultraspec_change1 ? 0.0067196 : 0.0149818;
+    // 21/09/2011 version. Full frame transfer time is fixed.
+    const double USPEC_FT_TIME = gps_timestamp < ultraspec_change1 ? 0.0067196 : 0.0149818; // seconds
 
-    // these for drift mode using equation = USPEC_FT_ROW*(y1size+y1start-1.)+USPEC_FT_OFF
-    const double USPEC_FT_ROW  = 14.4e-6;
-    const double USPEC_FT_OFF  = 49.e-6;
- 
+    // These for drift mode using equation = USPEC_FT_ROW*(y1size+y1start-1.)+USPEC_FT_OFF
+    // these number match the post-21/09/11 value above. there was no drift mode before this
+    // date. information from Vik Nov 2012.
+    const double USPEC_FT_ROW   = 14.4e-6; // seconds
+    const double USPEC_FT_OFF   = 49.e-6; // seconds
+
+    // time taken to clear the chip (post-21/09/11), closely related to the full trame transfer tim
+    // from message from Vik of 04/11/12
+    const double USPEC_CLR_TIME = 0.0154758;  // seconds 
     double cds_time = 10.;
     if(first){
 	if(serverdata.instrument == "ULTRACAM"){
@@ -1018,7 +1023,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                         reliable = false;
                     }
                 }else{
-                    const double USPEC_CLR_TIME = 0.; // needs infor from Vik
                     ut_date = gps_times[1];
                     ut_date.add_second(USPEC_CLR_TIME+serverdata.expose_time/2.);
                 }
@@ -1060,11 +1064,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else if(serverdata.instrument == "ULTRASPEC" && serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
 
 	if(first){
-	    int ybin   = serverdata.ybin;
-	    int ny     = ybin*serverdata.window[0].ny;
-	    int ystart = serverdata.window[0].lly;
-
-	    nwins  = int(((1037. / ny) + 1.)/2.);
+	    int ybin       = serverdata.ybin;
+	    int ny         = ybin*serverdata.window[0].ny;
+	    int ystart     = serverdata.window[0].lly;
+	    nwins          = int(((1037. / ny) + 1.)/2.);
 	    frame_transfer = USPEC_FT_ROW*(ystart+ny-1.)+USPEC_FT_OFF;
 	}
 
