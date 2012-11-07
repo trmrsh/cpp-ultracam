@@ -175,7 +175,7 @@ void Ultracam::plot_setupwins(const std::string& setwin, int numccd, float x1, f
 	    throw Ultracam_Error("no window definitions found");
 
 	}else if((!ultraspec && wins.size() != 2 && wins.size() != 4 && wins.size() != 6)  || 
-		 (ultraspec && wins.size() != 1 && wins.size() != 2)){
+		 (ultraspec && (wins.size() < 1 || wins.size() > 4))){
 	    throw Ultracam_Error("invalid number of windows = " + Subs::str(wins.size()));
 
 	}else{
