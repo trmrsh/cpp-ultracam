@@ -529,9 +529,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     const double USPEC_FT_ROW   = 14.4e-6; // seconds
     const double USPEC_FT_OFF   = 49.e-6; // seconds
 
-    // time taken to clear the chip (post-21/09/11), closely related to the full trame transfer tim
-    // from message from Vik of 04/11/12
-    const double USPEC_CLR_TIME = 0.0154758;  // seconds 
+    // time taken to clear the chip (post-21/09/11), closely related to the full trame transfer time
+    // from message from Vik of 04/11/12m plus correction of 07/11
+    const double USPEC_CLR_TIME = 0.0309516;  // seconds 
     double cds_time = 10.;
     if(first){
 	if(serverdata.instrument == "ULTRACAM"){
