@@ -523,6 +523,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // 21/09/2011 version. Frame transfer time is fixed.
     const double USPEC_FT_TIME = gps_timestamp < ultraspec_change1 ? 0.0067196 : 0.0149818;
 
+    // these for drift mode using equation = USPEC_FT_ROW*(y1size+y1start-1.)+USPEC_FT_OFF
+    const double USPEC_FT_ROW  = 14.4e-6;
+    const double USPEC_FT_OFF  = 49.e-6;
+ 
     double cds_time = 10.;
     if(first){
 	if(serverdata.instrument == "ULTRACAM"){
@@ -1056,10 +1060,12 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else if(serverdata.instrument == "ULTRASPEC" && serverdata.readout_mode == Ultracam::ServerData::L3CCD_DRIFT){
 
 	if(first){
-	    int ybin = serverdata.ybin;
-	    int ny = ybin*serverdata.window[0].ny;
+	    int ybin   = serverdata.ybin;
+	    int ny     = ybin*serverdata.window[0].ny;
+	    int ystart = serverdata.window[0].lly;
+
 	    nwins  = int(((1037. / ny) + 1.)/2.);
-	    frame_transfer = USPEC_FT_TIME;
+	    frame_transfer = USPEC_FT_ROW*(ystart+ny-1.)+USPEC_FT_OFF;
 	}
 
 	// Never need more than nwins+2 times
