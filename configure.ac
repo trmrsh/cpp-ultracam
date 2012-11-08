@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([ultracam], [9.7])
+AC_INIT([ultracam], [9.8])
 
 AC_CONFIG_SRCDIR([src/reduce.cc])
 
