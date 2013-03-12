@@ -446,18 +446,18 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
 
         // Must deal with window pairs now.
 	size_t nwin1 = 0, nwin2 = 1;
-	int NX1 = data[0][nwin1].nx();
-	int NX2 = data[0][nwin2].nx();
+	const int NX1 = data[0][nwin1].nx();
+	const int NX2 = data[0][nwin2].nx();
 	register int iy  = 0;
         register int ix = 0;
 
         // At the start we are dealing with the first window
-        register int NX     = NX1;
-        size_t nwin   = nwin1;
-        bool   first  = true;
+        register int NX = NX1;
+        size_t nwin     = nwin1;
+        bool   first    = true;
 
 	// Advance buffer pointer if trimming enabled. The outer factors of 2 come from 2 bytes for each pixel.
-	if(TRIM){
+ 	if(TRIM){
 	    ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
 	    ip += 2*NCOL;
 	}
@@ -493,20 +493,7 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
                     first = true;
                     nwin  = nwin1;
                     iy++;
-                    if(iy == data[0][nwin].ny()){
-                        nwin1++;
-                        nwin2++;
-
-                        // Finished
-                        if(nwin2 >= data[0].size()) break;
-	  	  
-                        iy     = 0;
-                        NX1    = data[0][nwin1].nx();
-                        NX2    = data[0][nwin2].nx();
-	  
-                        // skip lower rows 
-                        if(TRIM) ip += 2*(NX+nchop[nwin]+2*NCOL)*NROW;
-                    }
+                    if(iy == data[0][nwin].ny()) break
                     NX    = NX1;
                 }
 	
@@ -521,8 +508,8 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
     }else{
 
       	size_t nwin1 = 0, nwin2 = 1;
-	int NX1 = data[0][nwin1].nx();
-	int NX2 = data[0][nwin2].nx();
+	const int NX1 = data[0][nwin1].nx();
+	const int NX2 = data[0][nwin2].nx();
 	register int iy  = 0;
 
         // At the start we are dealing with the first window
@@ -534,7 +521,7 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
 
 	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
 	if(TRIM){
-	    ip += 2*(NX+nchop[nwin]+2*NCOL)*NROW;
+	    ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
 	    ip += 2*NCOL;
 	}
       
@@ -567,20 +554,7 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
                     first = true;
                     nwin  = nwin1;
                     iy++;
-                    if(iy == data[0][nwin].ny()){
-                        nwin1++;
-                        nwin2++;
-
-                        // Finished
-                        if(nwin2 >= data[0].size()) break;
-	  	  
-                        iy     = 0;
-                        NX1    = data[0][nwin1].nx();
-                        NX2    = data[0][nwin2].nx();
-	  
-                        // skip lower rows 
-                        if(TRIM) ip += 2*(NX+nchop[nwin]+2*NCOL)*NROW;
-                    }
+                    if(iy == data[0][nwin].ny()) break;
                     NX    = NX1;
 		}
 
