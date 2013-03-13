@@ -158,8 +158,8 @@ void Ultracam::rejig_apertures(const Frame& data, const Frame& dvar, const Subs:
     }
   
     float xstart, ystart, fwhm_x, fwhm_y, ex, ey, shift, max_shift;
-    float read, gain, offset_x, offset_y, xref, yref;
-    int hwidth_x, hwidth_y, nref, nref_check;
+    float offset_x, offset_y;
+    int hwidth_x, hwidth_y, nref;
     double xpos, ypos;
 
     if(Reduce::aperture_reposition_mode == Reduce::STATIC){
@@ -432,8 +432,6 @@ void Ultracam::rejig_apertures(const Frame& data, const Frame& dvar, const Subs:
 	  
 			// First deal with reference targets, if there are any.
 			double wgt, sumw = 0.;
-			nref_check = 0;
-			xref = yref = 0.f;
 			for(size_t naper=0; naper<aperture[nccd].size(); naper++){
 			    app = &aperture[nccd][naper];
 			    if(app->valid() && app->ref()){
@@ -545,10 +543,9 @@ void Ultracam::rejig_apertures(const Frame& data, const Frame& dvar, const Subs:
 				    try{
 		  
 					// Get references to windatas
-					const Windata &rwin = Reduce::readout_frame[nccd].enclose(app->xref(), app->yref());
-					const Windata &gwin = Reduce::gain_frame[nccd].enclose(app->xref(), app->yref());
-		
-					read = rwin[0][0], gain = gwin[0][0];
+					// const Windata &rwin = Reduce::readout_frame[nccd].enclose(app->xref(), app->yref());
+					// const Windata &gwin = Reduce::gain_frame[nccd].enclose(app->xref(), app->yref());
+					// read = rwin[0][0], gain = gwin[0][0];
 		  
 					Ultracam::Ppars profile;
 					if(Reduce::profile_fit_method == Reduce::GAUSSIAN){

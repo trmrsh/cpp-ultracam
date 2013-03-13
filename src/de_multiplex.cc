@@ -493,7 +493,7 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
                     first = true;
                     nwin  = nwin1;
                     iy++;
-                    if(iy == data[0][nwin].ny()) break
+                    if(iy == data[0][nwin].ny()) break;
                     NX    = NX1;
                 }
 	
