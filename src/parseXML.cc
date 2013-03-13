@@ -319,8 +319,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
     if(serverdata.headerwords == 16){
 
-        const int NRECOG = 4;
-        const int RECOG[NRECOG] = {100222, 111205, 120716, 120813};
+        const int NRECOG = 5;
+        const int RECOG[NRECOG] = {100222, 111205, 120716, 120813, 130307};
         bool ok = false;
         int vfound = uinfo.user_info ? uinfo.revision : serverdata.version;
         for(int i=0; i<NRECOG; i++){
@@ -1110,7 +1110,6 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 		}else{
 		    wind.llx = std::max(1, 1074 - xStart_it->second - xSize_it->second*uinfo.xbin);
 		}
-		std::cerr << "nchop = " << nchop << std::endl;
 		serverdata.l3data.nchop.push_back(nchop);
 
 		wind.lly = yStart_it->second;

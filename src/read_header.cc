@@ -551,7 +551,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		cds_time = CDS_TIME_CDD;
 	    }
 	}else if(serverdata.instrument == "ULTRASPEC"){
-	    std::cerr << "Ultracam::read_header WARNING: timing for ULTRASPEC still to be worked out!!" << std::endl;
+	    //	    std::cerr << "Ultracam::read_header WARNING: timing for ULTRASPEC still to be worked out!!" << std::endl;
 	    cds_time = 0.;
 	}
     }
