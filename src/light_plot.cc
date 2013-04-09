@@ -242,7 +242,7 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 		}
 	
 		y  = yt/yc; // y value of point
-		ye = y*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); // 1 sigma error 
+		ye = Subs::abs(y)*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); // 1 sigma error 
 	
 		if(!Reduce::lightcurve_linear){
 		    if(y > 0.){
@@ -480,7 +480,7 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 		    }
 	  
 		    y  = yt/yc;
-		    ye = y*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); 
+		    ye = Subs::abs(y)*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); 
 	  
 		    if(!Reduce::lightcurve_linear){
 			if(y > 0.){
@@ -674,7 +674,7 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 		}
 	
 		y  = yt/yc;
-		ye = y*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); 
+		ye = Subs::abs(y)*sqrt(Subs::sqr(yte/yt)+Subs::sqr(yce/yc)); 
 	
 		if(!Reduce::lightcurve_linear){
 		    if(y > 0.){
