@@ -841,7 +841,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	if(first){
 
 	    int xbin = serverdata.xbin;
-	    int ybin = serverdata.xbin;
+	    int ybin = serverdata.ybin;
       
 	    int nx     = xbin*serverdata.window[0].nx;
 	    int ny     = ybin*serverdata.window[0].ny;
