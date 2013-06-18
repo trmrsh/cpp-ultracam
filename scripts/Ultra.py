@@ -661,21 +661,6 @@ class Run(object):
                     self.hv_gain  = param['HV_GAIN'] if 'HV_GAIN' in param else None
                     self.output   = ('N' if param['OUTPUT'] == '0' else 'A') if 'OUTPUT' in param else None
 
-                    def proc_xstart(output, xstart, nx):
-                        """
-                        Applies corrections to xstart and nx needed to get to the output independent
-                        coordinates used by Usdriver (version 1.1.0 and after) and the pipeline (8.1.19 
-                        and after).
-
-                        Arguments:
-
-                        output -- 'A' or 'N' for avalanche or normal
-                        xstart -- string from XML of xstart in Derek coords
-                        nx     -- string from XML
-
-                        Returns (xstart,nx) integers 
-                        """
-
                     self.xstart[0] = param['X1_START'] if 'X1_START' in param else None
                     self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
                     self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
@@ -717,7 +702,8 @@ class Run(object):
         try:
             node        = dom.getElementsByTagName('instrument_status')[0]
             instrument  = node.getElementsByTagName('name')[0].childNodes[0].data
-            application = [nd for nd in node.getElementsByTagName('application_status') if nd.getAttribute('id') == 'SDSU Exec'][0].getAttribute('name')
+            application = [nd for nd in node.getElementsByTagName('application_status') \
+                               if nd.getAttribute('id') == 'SDSU Exec'][0].getAttribute('name')
             param = {}
             for nd in node.getElementsByTagName('parameter_status'):
                 param[nd.getAttribute('name')] = nd.getAttribute('value')
@@ -736,7 +722,7 @@ class Run(object):
             headerwords = node.getElementsByTagName('header_status')[0].getAttribute('headerwords')
         except Exception, err:
             sys.stderr.write('Error reading data_status: ' + str(err) + '\n')
-            framsize    = None
+            framesize    = None
             headerwords = None
         return (framesize, headerwords)
 
@@ -1306,7 +1292,7 @@ def load_runs(rdir, ldir=None):
     # also see if there are equivalent '.dat' and '.times' files present from which to get comments
 
     first = True
-    xtest = re.compile('run[0-9][0-9][0-9]\.xml')
+    xtest = re.compile('run[0-9][0-9][0-9]\.xml$')
     form  = {}
 
     # read target data
