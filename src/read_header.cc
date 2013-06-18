@@ -72,7 +72,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         format = 2;
     }else if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
         format = 1;
-    }else if(serverdata.version == 100222 || serverdata.version == 110921 || serverdata.version == 111205 || serverdata.version == 120716 || serverdata.version == 120813){
+    }else if(serverdata.version == 100222 || serverdata.version == 110921 || serverdata.version == 111205 || 
+	     serverdata.version == 120716 || serverdata.version == 120813){
         format = 2;
     }else{
         std::cerr << "Ultracam::read_header WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
@@ -128,7 +129,6 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    intread.c[0] = buffer[16];
 	}    
 	nnanosec = intread.i;
-	nnanosec = format == 1 ? intread.i : 100*intread.i;
 
         // number of satellites. -1 indicates no GPS, and thus times generated from
 	// when software loaded into kernel. Useful for relative times still.
@@ -673,7 +673,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		readout_time = 0.;
 	
 		int xbin = serverdata.xbin;
-		int ybin = serverdata.xbin;
+		int ybin = serverdata.ybin;
 		for(size_t np=0; np<serverdata.window.size(); np += 2){
 
 		    int nx     = xbin*serverdata.window[np].nx;
