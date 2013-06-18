@@ -142,7 +142,7 @@ int main(int argc, char* argv[]){
 
     Subs::Format dform(16);
     dform.left();
-    dform.width(17);
+    dform.width(18);
 
     // Parse the XML file      
     Ultracam::Mwindow mwindow;
