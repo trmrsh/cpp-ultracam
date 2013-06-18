@@ -140,7 +140,7 @@ int main(int argc, char* argv[]){
       throw Ultracam::Input_Error("Should not specify the local file as a URL");
     }
 
-    Subs::Format dform(16);
+    Subs::Format dform(17);
     dform.left();
     dform.width(18);
 
