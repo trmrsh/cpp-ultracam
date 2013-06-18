@@ -115,6 +115,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    intread.c[0] = buffer[12];
 	}
 	nsec = intread.ui;
+        if(nsec == (unsigned int)(-1)) nsec = 0;            
     
 	// number of nanoseconds
 	if(LITTLE){
@@ -129,6 +130,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    intread.c[0] = buffer[16];
 	}    
 	nnanosec = intread.ui;
+        if(nnanosec == (unsigned int)(-1)) nnanosec = 0;
 
         // number of satellites. -1 indicates no GPS, and thus times generated from
 	// when software loaded into kernel. Useful for relative times still.
