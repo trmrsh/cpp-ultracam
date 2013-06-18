@@ -12,8 +12,8 @@ files.
 import os, re
 
 cwd = os.getcwd()
-if cwd != '/storage/astro2/phsaap/ultracam':
-    print 'This must be run from /storage/astro2/phsaap/ultracam'
+if cwd != '/storage/astro1/phsaap/ultracam':
+    print 'This must be run from /storage/astro1/phsaap/ultracam'
     exit(1)
 
 raw = 'raw_data'

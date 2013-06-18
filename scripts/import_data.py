@@ -20,8 +20,8 @@ if len(sys.argv) != 2:
     exit(1)
 
 cwd = os.getcwd()
-if cwd != '/storage/astro2/phsaap/ultracam/raw_data':
-    print 'This must be run from /storage/astro2/phsaap/ultracam/raw_data'
+if cwd != '/storage/astro1/phsaap/ultracam/raw_data':
+    print 'This must be run from /storage/astro1/phsaap/ultracam/raw_data'
     exit(1)
 
 tdir = sys.argv[1]

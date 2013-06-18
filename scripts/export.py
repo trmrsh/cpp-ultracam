@@ -57,8 +57,8 @@ progid = sys.argv[2]
 
 idtest = re.compile(progid)
 
-log_dir = '/storage/astro2/phsaap/ultracam/logs'
-raw_dir = '/storage/astro2/phsaap/ultracam/raw_data'
+log_dir = '/storage/astro1/phsaap/ultracam/logs'
+raw_dir = '/storage/astro1/phsaap/ultracam/raw_data'
 
 dtest = re.compile('^\d\d\d\d-\d\d$')
 if dtest.match(rdir):

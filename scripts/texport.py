@@ -37,7 +37,7 @@
 #
 # !!end
 
-import sys, os, re
+import sys, os, re, shutil
 import Ultra
 import trm.subs as subs
 
@@ -56,7 +56,7 @@ if len(sys.argv) != 4:
 # name the arguments
 rdir, edir, target   = sys.argv[1:4]
 
-uroot   = '/storage/astro2/phsaap/ultracam'
+uroot   = '/storage/astro1/phsaap/ultracam'
 
 log_dir = os.environ['ULTRACAM_LOGS']
 raw_dir = os.environ['ULTRACAM_RAW']
@@ -88,6 +88,12 @@ for i,run in enumerate(runs):
         matches[run.night + ('%03d' % run.number)] = i
         print 'Match found: night =',run.night,', number =',run.number,', target =',run.target
 
+if len(matches) == 0:
+    print 'No matches found. Stopping immediately'
+    exit(1)
+else:
+    print 'Found',len(matches),'matches.'
+
 # copy these
 science = dict(matches)
 
@@ -115,31 +121,11 @@ for ed in edirs:
     if not os.path.exists(ed):
         os.makedirs(ed)
  
-# Create hard links 
-for run in runs:
-    r = 'run' + ('%03d' % (run.number,))
-    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
-    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
-    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
-
-    if os.path.exists(source_xml):
-        if os.path.exists(link_xml):
-            print link_xml,'already exists and will not be over-written'
-        else:
-            os.link(source_xml, link_xml)
-
-    if os.path.exists(source_dat):
-        if os.path.exists(link_dat):
-            print link_dat,'already exists and will not be over-written'
-        else:
-            os.link(source_dat, link_dat)
-
 # Write out a log file
 f = open(os.path.join(edir, 'index.html'), 'w')
 
 f.write("""
-<html>q
+<html>
 <head>
 <title>ULTRACAM/ULTRASPEC log</title>
 <link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />
@@ -263,3 +249,49 @@ for run in runs:
     f.write(server + root + '.xml\n')
     f.write(server + root + '.dat\n')
 f.close()
+
+
+# Finally, copy the data:
+
+## Create hard links 
+#for run in runs:
+#    r = 'run' + ('%03d' % (run.number,))
+#    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
+#    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
+#    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+#    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
+#
+#    if os.path.exists(source_xml):
+#        if os.path.exists(link_xml):
+#            print link_xml,'already exists and will not be over-written'
+#        else:
+#            os.link(source_xml, link_xml)
+#
+#    if os.path.exists(source_dat):
+#        if os.path.exists(link_dat):
+#            print link_dat,'already exists and will not be over-written'
+#        else:
+#            os.link(source_dat, link_dat)
+
+# Copy files
+for run in runs:
+    r = 'run' + ('%03d' % (run.number,))
+    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
+    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
+    copy_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+    copy_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
+
+    if os.path.exists(source_xml):
+        if os.path.exists(copy_xml):
+            print copy_xml,'already exists and will not be over-written'
+        else:
+            shutil.copyfile(source_xml, copy_xml)
+            print 'Copied',source_xml,'to',copy_xml
+
+    if os.path.exists(source_dat):
+        if os.path.exists(copy_dat):
+            print copy_dat,'already exists and will not be over-written'
+        else:
+            shutil.copyfile(source_dat, copy_dat)
+            print 'Copied',source_dat,'to',copy_dat
+
