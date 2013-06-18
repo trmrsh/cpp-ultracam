@@ -126,12 +126,14 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
 	    if(strstr(chunk.memory, "Exception: no_xml: file does not exist")){
 		if(tmax > 0.){
-		    std::cerr << "Request to server: " << URL << " failed.\nPerhaps the first exposure is not finished or the run number is wrong" << std::endl;
+		    std::cerr << "Request to server: " << URL << 
+			" failed.\nPerhaps the first exposure is not finished or the run number is wrong" << std::endl;
 		    std::cerr << "Will wait " << twait << " secs before trying again." << std::endl;
 		    Subs::sleep(twait);
 		    total   += std::max(0.01,twait);
 		}else{
-		    std::cerr << "Request to server: " << URL << " failed.\nPerhaps the first exposure is not finished or the run number is wrong" << std::endl;
+		    std::cerr << "Request to server: " << URL << 
+			" failed.\nPerhaps the first exposure is not finished or the run number is wrong" << std::endl;
 		    std::cerr << "tmax <=0  so finishing attempted input of server data." << std::endl;
 		    curl_easy_cleanup(curl_handle);
 		    free(chunk.memory);
@@ -333,7 +335,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	if(ok){
 	    serverdata.version = vfound;
 	}else{
-            std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << " was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
+            std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << 
+		" was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
             if(vfound > 120813){
                 std::cerr << "parseXML warning: 120813 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
                 serverdata.version = 120813;
