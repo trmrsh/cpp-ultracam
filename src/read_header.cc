@@ -305,11 +305,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // Dates to define when change occurred. "Default" time stamps occurred
     // prior to timestamp_change1 and then toggled thereafter.
     const Subs::Time clockboard_change(1,Subs::Date::Aug,2003); 
-
     const Subs::Time timestamp_change1(1,Subs::Date::Aug,2003); 
     const Subs::Time timestamp_change2(1,Subs::Date::Jan,2005); 
     const Subs::Time timestamp_change3(1,Subs::Date::Mar,2010); 
-
     const Subs::Time ultraspec_change1(21,Subs::Date::Sep,2011); 
 
     if(format == 1 && nsatellite == -1){
@@ -378,7 +376,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }else if(format == 2){
 		day_of_month  = 1;
 		month_of_year = 1;
-		year          = 1970;
+		year          = 2000;
 	    }else{
 		std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish date in read_header" << std::endl;
 	    }
@@ -387,6 +385,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    if(format == 1 && month_of_year == 9 && year == 263) year = 2002;
       
 	    if(format == 1 && year < 2002){
+                // this fixes first night of September run which has year = 0
 		gps_timestamp.set(8,Subs::Date::Sep,2002,0,0,0.);
 		gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
@@ -451,25 +450,25 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		}else{
 		    std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish GPS time in read_header" << std::endl;
 		}
+            }
 
-		// Set the vertical clock time. Have to account for the change of
-		// clock board that occured in July 2003 which altered the conversion
-		// formulae.
+            // Set the vertical clock time. Have to account for the change of
+            // clock board that occured in July 2003 which altered the conversion
+            // formulae.
 
-		if(gps_timestamp > clockboard_change){
-		    if(serverdata.v_ft_clk > 127){
-			vclock_frame = 6.e-9*(40+320*(serverdata.v_ft_clk - 128));
-		    }else{
-			vclock_frame = 6.e-9*(40+40*serverdata.v_ft_clk);
-		    }
-		}else{
-		    if(serverdata.v_ft_clk > 127){
-			vclock_frame = 6.e-9*(80+160*(serverdata.v_ft_clk - 128));
-		    }else{
-			vclock_frame = 6.e-9*(80+20*serverdata.v_ft_clk);
-		    }
-		}
-	    }
+            if(gps_timestamp > clockboard_change){
+                if(serverdata.v_ft_clk > 127){
+                    vclock_frame = 6.e-9*(40+320*(serverdata.v_ft_clk - 128));
+                }else{
+                    vclock_frame = 6.e-9*(40+40*serverdata.v_ft_clk);
+                }
+            }else{
+                if(serverdata.v_ft_clk > 127){
+                    vclock_frame = 6.e-9*(80+160*(serverdata.v_ft_clk - 128));
+                }else{
+                    vclock_frame = 6.e-9*(80+20*serverdata.v_ft_clk);
+                }
+            }
 	}
     }
 
@@ -907,7 +906,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }else{
 
 		// Set to silly value for easy checking
-		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+		ut_date = Subs::Time(1,Subs::Date::Jan,2000);
 		exposure_time    = serverdata.expose_time;
 		if(reliable){
 		    reason = "too few stored timestamps";
@@ -942,7 +941,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	    }else{
 	  
 		// Set to silly value for easy checking
-		ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+		ut_date = Subs::Time(1,Subs::Date::Jan,2000);
 		exposure_time    = serverdata.expose_time;
 		if(reliable){
 		    reason = "too few stored timestamps";
@@ -1100,7 +1099,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 	}else{
 	  
 	    // Set to silly value for easy checking
-	    ut_date = Subs::Time(1,Subs::Date::Jan,1900);
+	    ut_date = Subs::Time(1,Subs::Date::Jan,2000);
 	    exposure_time    = serverdata.expose_time;
 	    if(reliable){
 		reason = "too few stored timestamps";
