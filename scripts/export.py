@@ -13,7 +13,7 @@
 # !!head1    export makes all runs compatible with a particular run ID available for download
 #
 # !!emph{export} searches an ultracam run directory for all ULTRACAM runs compatible
-# with a specified run ID and then creates a set of directories and hard linked files
+# with a specified run ID and then creates a set of directories and copies the files
 # connected to those it identifies. The script is quite restrictive about where it can
 # be run to guard against irritating pollution with hard links. If you try it from the 
 # wrong directory it will let you know. [NB. This is not a general user script.] The script
@@ -22,22 +22,22 @@
 #
 # !!head2 Invocation
 #
-# export rundir progid
+# export rundir edir progid
 #
 # !!head2 Arguments
 #
 # !!table
 #
 # !!arg{rundir}{The run in question, identified by a string of the form YYYY-MM, e.g. 2006-03}
+# !!arg{edir}{Data export directory. This will be a sub-directory of where the script is run}
 # !!arg{progid}{String identifying the data, i.e. a programme ID code. A regular expression match is applied so with
-# some fiddling you should be able to allow for mistakes. This will also be used to define the top-level directory
-# where the data will be stored. Any forward slashes in it will be converted to dashes.}
+# some fiddling you should be able to allow for mistakes.}
 #
 # !!table
 #
 # !!end
 
-import sys, os, re
+import sys, os, re, shutil
 import Ultra
 import trm.subs as subs
 
@@ -47,13 +47,14 @@ if wd != fwd:
     print 'You must run this script from ' + fwd
     print 'The export directory must be a sub-directory of this one'
 
-if len(sys.argv) != 3:
-    print 'usage: rundir progid'
+if len(sys.argv) != 4:
+    print 'usage: rundir edir progid'
     exit(1)
 
 # name the arguments
 rdir   = sys.argv[1]
-progid = sys.argv[2]
+edir   = sys.argv[2]
+progid = sys.argv[3]
 
 idtest = re.compile(progid)
 
@@ -67,13 +68,12 @@ else:
     print 'Run = ' + rdir + ' does not have the form YYYY-MM'
     exit(1)
 
-progdir = progid.replace('/','-')
-if os.path.exists(progdir) and not os.path.isdir(progdir):
-    print progdir,'exists but is not a directory; please fix.'
+if os.path.exists(edir) and not os.path.isdir(edir):
+    print edir,'exists but is not a directory; please fix.'
     exit(1)
-elif not os.path.exists(progdir):
-    os.makedirs(progdir)
-    print 'Created directory =',progdir
+elif not os.path.exists(edir):
+    os.makedirs(edir)
+    print 'Created directory =',edir
 
 # get a list of night-by-night directories
 ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
@@ -105,34 +105,56 @@ keys.sort()
 runs = [runs[matches[key]] for key in keys]
 
 # Create export directory names and then create the directories
-edirs = [os.path.join(progdir, rdir, night) for night in ndirs]
+edirs = [os.path.join(edir, rdir, night) for night in ndirs]
 
-for edir in edirs:
-    if not os.path.exists(edir):
-        os.makedirs(edir)
+for edr in edirs:
+    if not os.path.exists(edr):
+        os.makedirs(edr)
  
-# Create hard links 
+## Create hard links 
+#for run in runs:
+#    r = 'run' + ('%03d' % (run.number,))
+#    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
+#    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
+#    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+#    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
+#
+#    if os.path.exists(source_xml):
+#        if os.path.exists(link_xml):
+#            print link_xml,'already exists and will not be over-written'
+#        else:
+#            os.link(source_xml, link_xml)
+#
+#    if os.path.exists(source_dat):
+#        if os.path.exists(link_dat):
+#            print link_dat,'already exists and will not be over-written'
+#        else:
+#            os.link(source_dat, link_dat)
+
+# Copy files
 for run in runs:
     r = 'run' + ('%03d' % (run.number,))
     source_xml = os.path.join(raw_dir, run.night, r + '.xml')
     source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-    link_xml   = os.path.join(progdir, rdir, run.night, r  + '.xml')
-    link_dat   = os.path.join(progdir, rdir, run.night, r + '.dat')
+    copy_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+    copy_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
 
     if os.path.exists(source_xml):
-        if os.path.exists(link_xml):
-            print link_xml,'already exists and will not be over-written'
+        if os.path.exists(copy_xml):
+            print copy_xml,'already exists and will not be over-written'
         else:
-            os.link(source_xml, link_xml)
+            shutil.copyfile(source_xml, copy_xml)
+            print 'Copied',source_xml,'to',copy_xml
 
     if os.path.exists(source_dat):
-        if os.path.exists(link_dat):
-            print link_dat,'already exists and will not be over-written'
+        if os.path.exists(copy_dat):
+            print copy_dat,'already exists and will not be over-written'
         else:
-            os.link(source_dat, link_dat)
+            shutil.copyfile(source_dat, copy_dat)
+            print 'Copied',source_dat,'to',copy_dat
 
 # Write out a log file
-f = open(os.path.join(progdir, 'index.html'), 'w')
+f = open(os.path.join(edir, 'index.html'), 'w')
 
 f.write("""
 <html>
@@ -207,7 +229,7 @@ server = 'http://deneb.astro.warwick.ac.uk/phsaap/data/'
 nold = 'None'
 
 for run in runs:
-    root = os.path.join(progdir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(edir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
 
     if nold == 'None':
         nold = run.night
@@ -253,10 +275,10 @@ f.write("""
 f.close()
 
 # Write out wget targets
-f = open(os.path.join(progdir, 'links.lis'), 'w')
+f = open(os.path.join(edir, 'links.lis'), 'w')
 
 for run in runs:
-    root = os.path.join(progdir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
+    root = os.path.join(edir, rdir, run.night, 'run' + ('%03d' % (run.number,)))
     f.write(server + root + '.xml\n')
     f.write(server + root + '.dat\n')
 f.close()
