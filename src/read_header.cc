@@ -372,13 +372,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    intread.c[1] = buffer[19];
 		}
 		year = intread.usi;
-
-	    }else if(format == 2){
-		day_of_month  = 1;
-		month_of_year = 1;
-		year          = 2000;
-	    }else{
-		std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish date in read_header" << std::endl;
+	    }else if(format != 2){
+		std::cerr << "Ultracam::read_header WARNING: could not recognize format = " 
+			  << format << " when trying to establish date in read_header" << std::endl;
 	    }
       
 	    // hack for partial fix with day and month ok but not year
@@ -444,7 +440,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    // This format started in Feb 2010 before the NTT run with a new GPS thingy. 
 		    // nsec in this case represents the number of seconds from the start of 
 		    // "unix time", 1 Jan 1970
-		    gps_timestamp.set(day_of_month,month_of_year,year,0,0,0.);
+		    gps_timestamp.set(1,1,1970,0,0,0.);
 		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
 		}else{
