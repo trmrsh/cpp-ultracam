@@ -12,7 +12,7 @@
 # !!head1    texport makes all runs compatible with a particular run ID available for download
 #
 # !!emph{texport} searches through an ultracam run directory for all ULTRACAM runs compatible
-# with a specified target and then creates a set of directories and hard linked files
+# with a specified target and then creates a set of directories and copies the files
 # connected to those it identifies. The script is quite restrictive about where it can
 # be run to guard against irritating pollution with hard links. If you try it from the 
 # wrong directory it will let you know. [NB. This is not a general user script.] The script
@@ -120,7 +120,49 @@ edirs = [os.path.join(edir, rdir, night) for night in ndirs]
 for ed in edirs:
     if not os.path.exists(ed):
         os.makedirs(ed)
- 
+
+## Create hard links 
+#for run in runs:
+#    r = 'run' + ('%03d' % (run.number,))
+#    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
+#    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
+#    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+#    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
+#
+#    if os.path.exists(source_xml):
+#        if os.path.exists(link_xml):
+#            print link_xml,'already exists and will not be over-written'
+#        else:
+#            os.link(source_xml, link_xml)
+#
+#    if os.path.exists(source_dat):
+#        if os.path.exists(link_dat):
+#            print link_dat,'already exists and will not be over-written'
+#        else:
+#            os.link(source_dat, link_dat)
+
+# Copy files
+for run in runs:
+    r = 'run' + ('%03d' % (run.number,))
+    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
+    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
+    copy_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
+    copy_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
+
+    if os.path.exists(source_xml):
+        if os.path.exists(copy_xml):
+            print copy_xml,'already exists and will not be over-written'
+        else:
+            shutil.copyfile(source_xml, copy_xml)
+            print 'Copied',source_xml,'to',copy_xml
+
+    if os.path.exists(source_dat):
+        if os.path.exists(copy_dat):
+            print copy_dat,'already exists and will not be over-written'
+        else:
+            shutil.copyfile(source_dat, copy_dat)
+            print 'Copied',source_dat,'to',copy_dat
+
 # Write out a log file
 f = open(os.path.join(edir, 'index.html'), 'w')
 
@@ -253,45 +295,5 @@ f.close()
 
 # Finally, copy the data:
 
-## Create hard links 
-#for run in runs:
-#    r = 'run' + ('%03d' % (run.number,))
-#    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
-#    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-#    link_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
-#    link_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
-#
-#    if os.path.exists(source_xml):
-#        if os.path.exists(link_xml):
-#            print link_xml,'already exists and will not be over-written'
-#        else:
-#            os.link(source_xml, link_xml)
-#
-#    if os.path.exists(source_dat):
-#        if os.path.exists(link_dat):
-#            print link_dat,'already exists and will not be over-written'
-#        else:
-#            os.link(source_dat, link_dat)
 
-# Copy files
-for run in runs:
-    r = 'run' + ('%03d' % (run.number,))
-    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
-    source_dat = os.path.join(raw_dir, run.night, r + '.dat')
-    copy_xml   = os.path.join(edir, rdir, run.night, r  + '.xml')
-    copy_dat   = os.path.join(edir, rdir, run.night, r + '.dat')
-
-    if os.path.exists(source_xml):
-        if os.path.exists(copy_xml):
-            print copy_xml,'already exists and will not be over-written'
-        else:
-            shutil.copyfile(source_xml, copy_xml)
-            print 'Copied',source_xml,'to',copy_xml
-
-    if os.path.exists(source_dat):
-        if os.path.exists(copy_dat):
-            print copy_dat,'already exists and will not be over-written'
-        else:
-            shutil.copyfile(source_dat, copy_dat)
-            print 'Copied',source_dat,'to',copy_dat
 
