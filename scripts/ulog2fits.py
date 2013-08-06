@@ -105,7 +105,7 @@ nchunk  = {}
 found_all_ccds = False
 
 header = pyfits.Header()
-header.update('LOGFILE', ulog) 
+header['LOGFILE'] = ulog 
 header.add_comment('File created from ULTRACAM log file. One binary table per CCD.')
 header.add_comment('This was created using ult2fits which is based on pyfits.')
 header.add_comment('There follows the comments from the log file, verbatim.')
@@ -391,11 +391,11 @@ for nc in nccd:
     # Create tables
 
     theader = pyfits.Header()
-    theader.update('NCCD', nc)
-    theader.update('NAPERTUR', x[nc].shape[1])
+    theader['NCCD'] = nc
+    theader['NAPERTUR'] = x[nc].shape[1]
     tbhdu = pyfits.new_table(cols[nc], theader, len(x[nc]))
-    tbhdu.header.update('NCCD', nc)
-    tbhdu.header.update('EXTNAME', 'CCD ' + str(nc))
+    tbhdu.header['NCCD'] = nc
+    tbhdu.header['EXTNAME'] = 'CCD ' + str(nc)
     tbhdu.data.field('MJD')[:]    = mjd[nc]
     tbhdu.data.field('Flag')[:]   = tflag[nc]
     if format == 1: tbhdu.data.field('Nsat')[:]   = nsat[nc]
