@@ -79,6 +79,7 @@ rdirs.sort()
 
 # to keep track of those targets IDed from Simbad
 sims = []
+
 for rdir in rdirs:
 
     # Try to find the telescope.
@@ -187,10 +188,15 @@ for rdir in rdirs:
 
                 # update targets to reduce simbad lookups
                 if run.simbad:
+                    if run.target in targets.lnames:
+                        print 'ERROR: ' + run.target + ' already in database; should not happen.'
+                        exit(1)
+                    targets.lnames[run.target] = run.id
+
                     if run.id in targets:
-                        targets[run.id]['match'].append((run.target, True))
+                        targets[run.id]['names'].append(run.target)
                     else:
-                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
+                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'names' : [run.target,]}
                     sims.append(run.id)
                 elif run.id is None:
                     sskip.append(run.target)
@@ -265,3 +271,5 @@ if len(sims):
 
 # write out all targets to an html file
 targets.tohtml('all_targets.html')
+
+
