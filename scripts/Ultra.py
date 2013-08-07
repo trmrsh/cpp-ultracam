@@ -102,7 +102,8 @@ class Times(object):
             for line in f:
                 if line.startswith('run'):
                     num = int(line[3:6])
-                    self.date[num],self.utstart[num],self.utend[num],self.nframe[num],self.expose[num],self.sample[num] = line[6:].split()
+                    self.date[num],self.utstart[num],self.utend[num],self.nframe[num],\
+                        self.expose[num],self.sample[num] = line[6:].split()
         except Exception, err:
             sys.stderr.write('File = ' + fname + ', timing data problem: ' + str(err) + '\n')
 
@@ -115,9 +116,8 @@ class Targets(dict):
 
     'ra'     -- RA (decimal hours)
     'dec'    -- Dec (decimal degrees)
-    'match'  -- A list of tuples. Each tuples has a matching expression and a flag. If the flag is True, it indicates
-                that an exact match is needed while it is false regular expression matchin is used. In this case the tuple
-                aends with a compiled version of the regular expression to spped processing
+    'names'  -- A list of matching names. These are names from the logs with 
+                their typos etc that will we identified with the object. 
     """
 
     def __init__(self, *fnames):
@@ -127,51 +127,48 @@ class Targets(dict):
         file names can be specified; any which do not exist will be skipped.
         The files must have the format
         
-        name hh mm ss.ss dd mm ss.ss E expr1 R expr2 E expr3 ...
+        name hh:mm:ss.ss [+-]dd:mm:ss.s lname1 lname2 .. lnameN
        
-        where name is the name that will be attached to the target dd include the 
-        declination sign. E = exact, R = regex matching using the following expression.
-        These can come in any order.
-        """
+        where name is the name that will be attached to the target, and
+        lname1, lname2 etc, are the names in the log that will be matched to
+        give name. The set of 'name's must be unique as must the set of 'lname's
 
+        The RA and Dec are assumed to be ICRS. Any ~ in either name or lname will
+        be replaced by single spaces.
+
+        An attribute called lnames is maintined which is a dictionary keyed on the
+        lnames and translating to the name
+        """
+        self.lnames = {}
         for fname in fnames:
             if os.path.isfile(fname):
                 f  = open(fname)
                 for line in f:
                     if not line.startswith('#') and not line.isspace():
                         tokens = line.strip().split()
-                        if len(tokens) >= 9 and (len(tokens)-7) % 2 == 0:
-                            (target,rah,ram,ras,decd,decm,decs) = tokens[:7]
-                            match = []
-                            for i in range(7, len(tokens), 2):
-                                if tokens[i] == 'E':
-                                    exact = True
-                                elif tokens[i] == 'R':
-                                    exact = False
-                                else:
-                                    raise Exception('Invalid target line = ' + line + '; could not recognise match type = ' + tokens[i])
-                                        
-                                if tokens[i+1] in match:
-                                    raise Exception('Repeated match expression in line = ' + line)
+                        if len(tokens) < 4:
+                            # must have at least one log name
+                            raise Exception('Targets: invalid target, file = ' + fname + ', line = ' + line)
 
-                                if exact:
-                                    match.append((tokens[i+1].replace('~',' '), exact))
-                                else:
-                                    match.append((tokens[i+1], exact, re.compile(tokens[i+1])))
-                        else:
-                            raise Exception('Invalid target line = ' + line)
+                        target,ra,dec = tokens[:3]
+                        target = target.replace('~',' ')
 
-                        (ra,dec,system) = subs.str2radec(rah + ' ' + ram + ' ' + ras + ' ' + decd + ' ' + decm + ' ' + decs)
-                        target = target.strip().replace('~',' ')
-
-                        # add matches together when target name and positions agree
                         if target in self:
-                            if ra != self[target]['ra'] or dec != self[target]['dec']:
-                                raise Exception('Found target name = "' + target + '" more than once with different positions in ' + str(fnames))
-                            else:
-                                self[target]['match'] += match
-                        else:
-                            self[target] = {'ra' : ra, 'dec' : dec, 'match' : match}
+                            # only one entry per target
+                            raise Exception('Targets: target = ' + target + ', file = ' + fname +\
+                                                ', line = ' + line + ' already has an entry.')
+
+                        ra,dec,system = subs.str2radec(ra + ' ' + dec) 
+                        names = [token.replace('~',' ') for token in tokens[3:]]
+                        
+                        # add names to the set maintained to check for uniqueness
+                        for name in names:
+                            if name in self.lnames:
+                                raise Exception('Targets: file = ' + fname + ', line = ' + line + \
+                                                    ': name = ' + name + ' already exists.')
+                            self.lnames[name] = target
+
+                        self[target] = {'ra' : ra, 'dec' : dec, 'names' : names}
                 f.close()
                 print len(self),'targets after loading',fname
             else:
@@ -196,11 +193,10 @@ class Targets(dict):
 
         for targ in targs:
             entry = self[targ]
-            pos = subs.d2hms(entry['ra'],sep=' ') + '   ' + subs.d2hms(entry['dec'],sep=' ',sign=True)
-            f.write('%-35s %s' % (targ.replace(' ','~'),pos))
-            for ent in entry['match']:
-                f.write(' ' + ('E' if ent[1] else 'R') + ' ' + ent[0].replace(' ','~'))
-            f.write('\n')
+            pos   = subs.d2hms(entry['ra']) + '   ' + subs.d2hms(entry['dec'],sign=True)
+            f.write('%-32s %s' % (targ.replace(' ','~'),pos))
+            lnames = ' '.join([name.replace(' ','~') for name in entry['names']])
+            f.write(lnames + '\n')
         f.close()
 
     def tohtml(self, fname):
@@ -243,21 +239,18 @@ minimum run length.
 
         for targ in targs:
             entry = self[targ]
-            rad  = entry['ra']
-            decd = entry['dec']
-            ra  = subs.d2hms(rad,sep=' ') 
-            dec = subs.d2hms(decd,sep=' ',sign=True)
-            req = urllib.urlencode({'slimits' : 'manual', 'target' : '', 'delta' : 2., 'RA1' : rad-0.01, 'RA2' : rad + 0.01, \
-                                        'Dec1' : decd - 0.01, 'Dec2' : decd + 0.01, 'emin' : 10.})
+            rad   = entry['ra']
+            decd  = entry['dec']
+            ra    = subs.d2hms(rad,sep=' ') 
+            dec   = subs.d2hms(decd,sep=' ',sign=True)
+            req   = urllib.urlencode({'slimits' : 'manual', 'target' : '', 'delta' : 2., 'RA1' : rad-0.01, \
+                                          'RA2' : rad + 0.01, 'Dec1' : decd - 0.01, 'Dec2' : decd + 0.01, 'emin' : 10.})
             f.write('<tr><td><a href="ulogs.php?%s">%s<td>%s</td><td>%s</td><td>' % (req,targ,ra,dec))
-            for ent in entry['match']:
-                f.write(' ' + ('E' if ent[1] else 'R') + ' ' + ent[0].replace(' ','~'))
-            f.write('</td></tr>\n')
+            lnames = ' '.join([name.replace(' ','~') for name in entry['names']])
+            f.write(lnames + '</td></tr>\n')
         f.write('</table>\n</body>\n</html>\n')
 
         f.close()
-
-
 
 class Run(object):
     """
@@ -273,7 +266,8 @@ class Run(object):
     FUSSY = True
     RESPC = re.compile('\s+')
 
-    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, run=None, sskip=None, warn=False, noid=False):
+    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, \
+                     run=None, sskip=None, warn=False, noid=False):
         """
         xml       -- xml file name with format run###.xml
         log       -- previously read night log
@@ -438,7 +432,8 @@ class Run(object):
                     sys.stderr.write('File = ' + self.fname + ' failed to identify telescope\n')
             
             # identify power ons & offs
-            self.poweron  = (self.application.find('poweron') > -1) or (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
+            self.poweron  = (self.application.find('poweron') > -1) or \
+                (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
             self.poweroff = (self.application.find('poweroff') > -1) or (self.application.find('appl2_pof_cfg') > -1)
 
             if self.poweron:
@@ -448,43 +443,27 @@ class Run(object):
             else:
 
                 self.num_exp = param['NO_EXPOSURES'] if 'NO_EXPOSURES' in param else None
-                self.x_bin = param['X_BIN_FAC'] if 'X_BIN_FAC' in param else param['X_BIN']
-                self.y_bin = param['Y_BIN_FAC'] if 'Y_BIN_FAC' in param else param['Y_BIN']
+                self.x_bin   = param['X_BIN_FAC'] if 'X_BIN_FAC' in param else param['X_BIN']
+                self.y_bin   = param['Y_BIN_FAC'] if 'Y_BIN_FAC' in param else param['Y_BIN']
 
                 if user is not None:
-                    if self.target is None and 'target' in user:
-                        self.target = user['target'].strip()
-                    if 'flags' in user:
-                        self.flag = user['flags'].strip()
-#                        print self.number, user['flags'], self.flag
-                    if 'filters' in user:
-                        self.filters = user['filters'].strip()
-                    if 'PI' in user:
-                        self.pi = user['PI'].strip()
-                    if 'Observers' in user:
-                        self.observers = user['Observers'].strip()
-                    if 'ID' in user:
-                        self.pid = user['ID'].strip()
+                    
+                    self.target  = user['target'].strip() \
+                        if self.target is None and 'target' in user else self.target
+                    self.flag    = user['flags'].strip() if 'flags' in user else self.flag
+                    self.filters = user['filters'].strip() if 'filters' in user else self.filters
+                    self.pi      = user['PI'].strip() if 'PI' in user else self.pi
+                    self.observers = user['Observers'].strip() if 'Observers' in user else self.observers
+                    self.pid     = user['ID'].strip() if 'ID' in user else self.pid
 
                 # Try to ID target with one of known position
                 if self.target is not None and noid is False:
-
                     if targets is not None:
-                        # Search through target entries.
-                        for target, entry in targets.iteritems():
-                            if self.id is None:
-                                unid = True
-                            else:
-                                unid = False
-                            for ent in entry['match']:
-                                if (ent[1] and self.target == ent[0]) or (not ent[1] and ent[2].match(self.target)):
-                                    if self.id is None or unid:
-                                        self.id  = target
-                                        self.ra  = subs.d2hms(entry['ra'],2,':',2)
-                                        self.dec = subs.d2hms(entry['dec'],2,':',1,'yes')
-                                    else:
-                                        sys.stderr.write('Multiple matches to target name = ' + self.target + '\n')
-
+                        if self.target in targets.lnames:
+                            self.id  = targets.lnames[self.target]
+                            entry    = targets[self.id]
+                            self.ra  = subs.d2hms(entry['ra'],2,':',2)
+                            self.dec = subs.d2hms(entry['dec'],2,':',1,sign=True)
 
                     # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
                     # be updated between multiple invocations of run and then this lookup will not be repeated.
@@ -550,6 +529,9 @@ class Run(object):
                     self.nwindow = 2
                 elif app == 'appl4_frameover_cfg':
                     self.mode    = 'FFOVER'
+                    self.nwindow = 2
+                elif app == 'appl10_frameover_mindead_cfg':
+                    self.mode    = 'FFOVNC'
                     self.nwindow = 2
                 elif app == 'ap9_250_fullframe_mindead' or app == 'ap9_fullframe_mindead' or app == 'appl9_fullframe_mindead_cfg':
                     self.mode    = 'FFNCLR'
@@ -625,7 +607,7 @@ class Run(object):
                         self.xright[0] = '513'
                         self.nx[0]     = '512'
                         self.ny[0]     = '1024'
-                    elif self.mode == 'FFOVER':
+                    elif self.mode == 'FFOVER' or self.mode == 'FFOVNC':
                         self.ystart[0] = '1'
                         self.xleft[0]  = '1'
                         self.xright[0] = '541'
