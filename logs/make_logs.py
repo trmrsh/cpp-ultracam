@@ -77,9 +77,6 @@ else:
     rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
 rdirs.sort()
 
-# to keep track of those targets IDed from Simbad
-sims = []
-
 for rdir in rdirs:
 
     # Try to find the telescope.
@@ -186,21 +183,6 @@ for rdir in rdirs:
             try:
                 run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
 
-                # update targets to reduce simbad lookups
-                if run.simbad:
-                    if run.target in targets.lnames:
-                        print 'ERROR: ' + run.target + ' already in database; should not happen.'
-                        exit(1)
-                    targets.lnames[run.target] = run.id
-
-                    if run.id in targets:
-                        targets[run.id]['names'].append(run.target)
-                    else:
-                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'names' : [run.target,]}
-                    sims.append(run.id)
-                elif run.id is None:
-                    sskip.append(run.target)
-
                 if first:
                     previous = ndirs[inight-1] if inight > 0 else None
                     next     = ndirs[inight+1] if inight < len(ndirs)-1 else None
@@ -252,7 +234,7 @@ data in this parameter.</td></tr>
             fh_s.close()
 
 # Write out newly added / modified targets to disk to save future simbad lookups
-if len(sims):
+if len(Ultra.sims):
 
     # These have to be appended to the AUTO_TARGETS file. So we read them in again
     ntargs = Ultra.Targets('AUTO_TARGETS')
@@ -261,15 +243,31 @@ if len(sims):
         os.rename('AUTO_TARGETS', 'AUTO_TARGETS.old')
 
     # add in the new ones
-    for rid in sims:
-        ntargs[rid] = targets[rid]
+    for rid, names in Ultra.sims.iteritems():
+        entry = targets[rid]
+        ntargs[rid] = {'ra' : entry['ra'], 'dec' : entry['dec'], 'names' : names}
 
     ntargs.write('AUTO_TARGETS')
 
-    print 'Total of',len(sims),'targets identified by Simbad.'
-    print 'Written to AUTO_TARGETS to save future lookups.'
+    print 'Total of',len(Ultra.sims),'targets identified by Simbad.'
+    print 'Written to AUTO_TARGETS to save on future lookups.'
+
+else:
+    print 'There were no targets identified using Simbad'
+    print 'No new AUTO_TARGETS file was written.'
 
 # write out all targets to an html file
 targets.tohtml('all_targets.html')
 
+# write list of failures
+if len(Ultra.failures):
+    with open('FAILED_TARGETS','w') as fobj:
+        fobj.write('# The following have no IDs:\n')
+        for name, value in Ultra.failures.iteritems():
+            fobj.write('%-32s %s %s run%03d' % (name.replace(' ','~'),value[0],value[1],value[2]) + '\n')
+
+    print 'Wrote',len(Ultra.failures),'names to FAILED_TARGETS'
+else:
+    print 'There were no targets that could not be identified.'    
+    print 'No new FAILED_TARGETS file was written.'
 
