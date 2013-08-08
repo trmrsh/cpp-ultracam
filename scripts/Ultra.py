@@ -13,6 +13,12 @@ import trm.simbad as simbad
 import trm.sla as sla
 import urllib
 
+# global to capture names of objects without any ID
+failures = {}
+
+# global to capture any looked up in SIMBAD to save to disk at the end
+sims = {}
+
 # couple of helper functions
 def cosd(deg):
     return math.cos(math.radians(deg))
@@ -150,22 +156,25 @@ class Targets(dict):
                             # must have at least one log name
                             raise Exception('Targets: invalid target, file = ' + fname + ', line = ' + line)
 
+                        # prepare data
                         target,ra,dec = tokens[:3]
                         target = target.replace('~',' ')
-
-                        if target in self:
-                            # only one entry per target
-                            raise Exception('Targets: target = ' + target + ', file = ' + fname +\
-                                                ', line = ' + line + ' already has an entry.')
-
                         ra,dec,system = subs.str2radec(ra + ' ' + dec) 
                         names = [token.replace('~',' ') for token in tokens[3:]]
-                        
-                        # add names to the set maintained to check for uniqueness
+
+                        # check that, if the target has been entered before, as is possible,
+                        # that it is self-consistent
+                        if target in self:
+                            entry = self[target]
+                            if entry['ra'] != ra or entry['dec'] != dec:
+                                raise Exception('Targets: file = ' + fname + ', line = ' + line + \
+                                                    '\nTarget =' + target + ' already has an entry but with a different position.')
+
+                        # add names to the dictionary maintained to check for uniqueness
                         for name in names:
                             if name in self.lnames:
                                 raise Exception('Targets: file = ' + fname + ', line = ' + line + \
-                                                    ': name = ' + name + ' already exists.')
+                                                    '\nName = ' + name + ' already exists.')
                             self.lnames[name] = target
 
                         self[target] = {'ra' : ra, 'dec' : dec, 'names' : names}
@@ -193,10 +202,10 @@ class Targets(dict):
 
         for targ in targs:
             entry = self[targ]
-            pos   = subs.d2hms(entry['ra']) + '   ' + subs.d2hms(entry['dec'],sign=True)
+            pos   = subs.d2hms(entry['ra'],dp=2) + '   ' + subs.d2hms(entry['dec'],dp=1,sign=True)
             f.write('%-32s %s' % (targ.replace(' ','~'),pos))
             lnames = ' '.join([name.replace(' ','~') for name in entry['names']])
-            f.write(lnames + '\n')
+            f.write(' ' + lnames + '\n')
         f.close()
 
     def tohtml(self, fname):
@@ -234,7 +243,7 @@ minimum run length.
 
 <p>
 <table>
-<tr><th>ID</th><th>RA</th><th>Dec</th><th>Matching strings</th></tr>
+<tr><th class="left">ID</th><th>RA</th><th>Dec</th><th class="left">Matching strings</th></tr>
 """)
 
         for targ in targs:
@@ -245,7 +254,7 @@ minimum run length.
             dec   = subs.d2hms(decd,sep=' ',sign=True)
             req   = urllib.urlencode({'slimits' : 'manual', 'target' : '', 'delta' : 2., 'RA1' : rad-0.01, \
                                           'RA2' : rad + 0.01, 'Dec1' : decd - 0.01, 'Dec2' : decd + 0.01, 'emin' : 10.})
-            f.write('<tr><td><a href="ulogs.php?%s">%s<td>%s</td><td>%s</td><td>' % (req,targ,ra,dec))
+            f.write('<tr><td class="left"><a href="ulogs.php?%s">%s<td>%s</td><td>%s</td><td class="left">' % (req,targ,ra,dec))
             lnames = ' '.join([name.replace(' ','~') for name in entry['names']])
             f.write(lnames + '</td></tr>\n')
         f.write('</table>\n</body>\n</html>\n')
@@ -458,27 +467,33 @@ class Run(object):
 
                 # Try to ID target with one of known position
                 if self.target is not None and noid is False:
+
                     if targets is not None:
+                        # First try the list of loaded targets
                         if self.target in targets.lnames:
                             self.id  = targets.lnames[self.target]
                             entry    = targets[self.id]
                             self.ra  = subs.d2hms(entry['ra'],2,':',2)
                             self.dec = subs.d2hms(entry['dec'],2,':',1,sign=True)
 
-                    # SIMBAD lookup if no ID at this stage. To save time, the 'targets' dictionary should
-                    # be updated between multiple invocations of run and then this lookup will not be repeated.
                     if self.id is None and self.is_science() and self.target not in sskip:
-                        print 'Making SIMBAD query for',self.target
+                        # Failed to look up in target list, so try SIMBAD lookup.
+                        # To save time, the 'targets' dictionary should
+                        # be updated between multiple invocations of run and then this lookup will not be repeated.
+
+                        print 'Querying SIMBAD query for target =',self.target
                         qsim = simbad.Query(self.target).query()
                         if len(qsim) == 0:
-                            sys.stderr.write('Error: SIMBAD returned no matches to ' + self.target + '\n')
+                            sys.stderr.write('Warning: SIMBAD returned no matches to ' + self.target + '\n')
+                            failures[self.target] = (self.run, self.night, self.number) 
                         elif len(qsim) > 1:
-                            sys.stderr.write('Error: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
+                            sys.stderr.write('Warning: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
+                            failures[self.target] = (self.run, self.night, self.number) 
                         else:
+                            # OK we have found one, but we are still not done --
+                            # some SIMBAD lookup are no good
                             name = qsim[0]['Name']
                             pos  = qsim[0]['Position']
-#                            if name.startswith('V* '):
-#                                name = name[3:]
                             name = name.strip()
                             name = re.sub(Run.RESPC, ' ', name)
                             print 'Matched with',name,pos
@@ -487,19 +502,37 @@ class Run(object):
                                 if ms > -1:
                                     self.ra  = subs.d2hms(subs.hms2d(pos[:ms].strip()),2,':',2)
                                     self.dec = subs.d2hms(subs.hms2d(pos[ms:].strip()),2,':',1,sign=True)
-                                    self.simbad = True
                                     self.id  = name
                                 else:
                                     mp = pos.find('+')
                                     if mp > -1:
                                         self.ra  = subs.d2hms(subs.hms2d(pos[:mp].strip()),2,':',2)
                                         self.dec = subs.d2hms(subs.hms2d(pos[mp:].strip()),2,':',1,sign=True)
-                                        self.simbad = True
                                         self.id  = name
                                     else:
                                         raise ValueError()
+
+                                # At this point all is OK. Try updating the targets to save repeated lookups ..
+                                if targets:
+                                    targets.lnames[self.target] = self.id
+                                    if self.id in targets:
+                                        targets[self.id]['names'].append(self.target)
+                                    else:
+                                        targets[self.id] = {'ra' : subs.hms2d(self.ra), 'dec' : subs.hms2d(self.dec), 'names' : [self.target,]}
+                                
+                                # store the extra names in sims for later storage in AUTO_TARGETS
+                                if self.id in sims:
+                                    sims[self.id].append(self.target)
+                                else:
+                                    sims[self.id] = [self.target,]
+
                             except ValueError, err:
                                 sys.stderr.write('Failed to parse target = ' + name + ', position = ' + pos + '\n')
+                                failures[self.target] = (self.run, self.night, self.number) 
+
+                if self.id is None:
+                    # short-circuit repeated SIMBAD lookups
+                    sskip.append(self.target)
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -1306,15 +1339,6 @@ def load_runs(rdir, ldir=None):
         for xml in xmls:
             try:
                 run = Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
-
-                # update targets to reduce simbad lookups
-                if run.simbad:
-                    if run.id in targets:
-                        targets[run.id]['match'].append((run.target, True))
-                    else:
-                        targets[run.id] = {'ra' : subs.hms2d(run.ra), 'dec' : subs.hms2d(run.dec), 'match' : [(run.target, True),]}
-                elif run.id is None:
-                    sskip.append(run.target)
 
                 # store all but power ons
                 if run.is_not_power_onoff():
