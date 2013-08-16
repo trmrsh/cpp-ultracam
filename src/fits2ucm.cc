@@ -76,7 +76,7 @@ Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fit
 #include <string>
 #include <sstream>
 #include <vector>
-#include "fitsio.h"
+#include "cfitsio/fitsio.h"
 #include "trm_subs.h"
 #include "trm_input.h"
 #include "trm_frame.h"

@@ -39,7 +39,7 @@ dnl First headers
 
 AC_CHECK_HEADERS([stdlib.h float.h math.h sstream string fstream iostream], [], AC_MSG_ERROR(missing header; please fix))
 
-AC_CHECK_HEADERS([pcrecpp.h slalib.h fitsio.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR(missing header; please fix))
+AC_CHECK_HEADERS([pcrecpp.h slalib.h cfitsio/fitsio.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR(missing header; please fix))
 
 dnl Now libraries
 AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR(cannot find the pcre C++ library))
