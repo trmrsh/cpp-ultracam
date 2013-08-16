@@ -231,10 +231,11 @@ class Targets(dict):
 This table shows the identifier name, position and matching strings used
 to attach coordinates to objects in the ULTRACAM database. Since ULTRACAM does
 not talk to telescopes, this is pretty much all we have to go on. If you spot
-problems please let me (trm) know about them. In the matches 'E' indicates an 
-exact match, while 'R' indicates a regular expression match. The positions are 
-all ICRS. Where you see "~" in the matching strings, they actually count as
-blanks.
+problems please let me (trm) know about them. Matching is exact and case-sensitive.
+The positions are ICRS. Where you see "~" in the matching strings, they actually 
+count as blanks. If you are searching for a name to use for a previously observed
+object while observing which will be recognised (good for you), use one of the 
+match strings rather than the ID string.
 
 <p>
 You can search for runs on particular positions <a href="ulogs.php">here</a>. Clicking
