@@ -49,13 +49,13 @@ not found.}
 #include <climits>
 #include <string>
 #include <fstream>
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_window.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/window.h"
+#include "trm/ultracam.h"
 
 // Main program
 

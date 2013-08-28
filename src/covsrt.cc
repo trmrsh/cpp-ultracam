@@ -1,6 +1,6 @@
-#include "trm_subs.h"
-#include "trm_buffer2d.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/buffer2d.h"
+#include "trm/ultracam.h"
 
 /** covsrt sorts the covariances produced during profile fits into correct order, 
  * setting the covariances of fixed parameters to zero and getting the indices correct

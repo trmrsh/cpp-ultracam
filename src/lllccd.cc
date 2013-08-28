@@ -1,9 +1,9 @@
 #include <cfloat>
 #include <cmath>
 #include <iostream>
-#include "trm_subs.h"
-#include "trm_array1d.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/array1d.h"
+#include "trm/ultracam.h"
 
 /** Subroutine to generate probability distributions of L3 CCDs for use in simulating
  * their noise characteristics.

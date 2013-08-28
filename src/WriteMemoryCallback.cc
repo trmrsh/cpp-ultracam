@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <string.h>
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 /** Call back function for getting data from server with cURL. 
  * This handles reallocation of memory as the buffer size grows and also

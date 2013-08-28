@@ -2,40 +2,38 @@
 
 !!begin
 
-!!title   Cropping of Ultracam frames
+!!title   Windowing of Ultracam frames
 !!author  T.R. Marsh
-!!created 28 February 2002
-!!revised 10 November 2003
-!!descr   Crops Ultracam frames
-!!css   style.css
-!!root    crop
-!!index   crop
+!!created 11 June 2004
+!!descr   Windows Ultracam frames
+!!css     style.css
+!!root    cwin
+!!index   cwin
 !!class   Programs
 !!class   Arithematic
 !!class   Testing
 !!class   Manipulation
-!!head1   crop - crops Ultracam frames
+!!head1   cwin - windows Ultracam frames
 
-!!emph{crop} crops an Ultracam frames to match a
-set of windows either from an ASCII file or from another Ultracam frame. 
-The windows in the frame to be cropped must enclose the new windows. Their 
-binning factors must divide into those of the new windows and the pixels must be in step.
+!!emph{cwin} windows an Ultracam frame in the sense that the result is
+as if one only kept the region of the frame visible though the window.
+See also !ref{crop.html}{crop}. The binning factors of any overlapping
+windows must match.
 
 !!head2 Invocation
 
-crop input window output!!break
+cwin input window output!!break
 
 !!head2 Arguments
 
 !!table
 !!arg{input}{Input frame}
-!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin} for example) or ULTRACAM file 
-to crop down to. The program first looks for a window file, with extension ".win". Failing this it looks for 
-a file with extension ".ucm" and uses the window from this instead.}
+!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin} 
+for example).}
 !!arg{output}{Output, cropped frame}
 !!table
 
-See also !!ref{bcrop.html}{bcrop} and !!ref{window.html}{window}
+See also: !!ref{crop.html}{crop} and !!ref{bcrop.html}{bcrop}
 
 !!end
 
@@ -44,11 +42,12 @@ See also !!ref{bcrop.html}{bcrop} and !!ref{window.html}{window}
 #include <cstdlib>
 #include <string>
 #include <map>
-#include "trm/subs.h"
-#include "trm/input.h"
-#include "trm/frame.h"
-#include "trm/mccd.h"
-#include "trm/ultracam.h"
+#include "trm_subs.h"
+#include "trm_input.h"
+#include "trm_frame.h"
+#include "trm_mccd.h"
+#include "trm_window.h"
+#include "trm_ultracam.h"
 
 int main(int argc, char* argv[]){
 
@@ -66,31 +65,20 @@ int main(int argc, char* argv[]){
 
     // Get inputs
     std::string sinput;
-    input.get_value("input", sinput, "input", "file to crop");
+    input.get_value("input", sinput, "input", "file to window");
     Ultracam::Frame indata(sinput);
 
     std::string swindow;
-    input.get_value("window", swindow, "window", "the window or frame to chop down to");
+    input.get_value("window", swindow, "window", "the window to apply");
+    Ultracam::Mwindow window(swindow);
 
     std::string output;
     input.get_value("output", output, "output", "file to dump result to");
 
-    Ultracam::Mwindow window;
-    try{
-      window.rasc(swindow);
+    // Window
+    indata.window(window);    
 
-      // Crop
-      indata.crop(window);    
-    }
-
-    // If we fail to find a window file, look for a Frame instead
-    catch(const Ultracam::File_Open_Error&){
-      Ultracam::Frame temp(swindow);
-
-      // Crop
-      indata.crop(temp);    
-    }
-
+    // dump to disk
     indata.write(output);
 
   }

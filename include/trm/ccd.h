@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include "trm_subs.h"
-#include "trm_array1d.h"
-#include "trm_windata.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/array1d.h"
+#include "trm/windata.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
     

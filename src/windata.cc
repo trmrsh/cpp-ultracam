@@ -1,7 +1,7 @@
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_windata.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/windata.h"
+#include "trm/ultracam.h"
 
 int Ultracam::Windata::plevel = 1;
 

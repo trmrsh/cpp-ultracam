@@ -1,8 +1,8 @@
 #include <cstdlib>
 #include <string>
-#include "trm_subs.h"
-#include "trm_constants.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
+#include "trm/ultracam.h"
 
 void sub_back(float* y, int i1, int i2);    
 

@@ -2,9 +2,9 @@
 
 #include <iostream>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
 
 int Ultracam::Aperture::Ref_col = 3;
 int Ultracam::Aperture::Invalid_col = 2;

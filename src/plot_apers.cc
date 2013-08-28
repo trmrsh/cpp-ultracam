@@ -12,10 +12,10 @@
 
 #include <string>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_mccd.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/mccd.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
 
 void Ultracam::plot_apers(const Maperture& apers, float x1, float x2, float y1, float y2, 
 			  bool all, char stackdirn, int nccd){

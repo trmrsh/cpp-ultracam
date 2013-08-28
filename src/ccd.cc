@@ -1,7 +1,7 @@
 #include <vector>
 #include <string>
 
-#include "trm_ccd.h"
+#include "trm/ccd.h"
 
 using Ultracam::Ultracam_Error;
 using Ultracam::Modify_Error;

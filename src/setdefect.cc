@@ -83,14 +83,14 @@ the true value)}
 #include <map>
 #include <fstream>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_plot.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_defect.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/plot.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/defect.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

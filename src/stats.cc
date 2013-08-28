@@ -44,13 +44,13 @@ up if you are not interested in it.}
 #include <string>
 #include <sstream>
 #include <map>
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_window.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/window.h"
+#include "trm/ultracam.h"
 
 
 int main(int argc, char* argv[]){

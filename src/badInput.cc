@@ -1,6 +1,6 @@
 #include <string>
 #include <map>
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 /** Routine to test that a given variable has a value stored in the structure reduce, and that it is 
  * not blank. The structure reduce is constructed from reading in the reduce data file and consists

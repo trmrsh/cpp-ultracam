@@ -45,12 +45,12 @@ genseries data time1 time2 ntime root
 #include <map>
 #include <fstream>
 #include <sstream>
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_target.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/target.h"
+#include "trm/ultracam.h"
 
 
 std::string fname(const std::string& root, int nim, int ndig);

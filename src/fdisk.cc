@@ -1,6 +1,6 @@
-#include "trm_frame.h"
-#include "trm_header.h"
-#include "trm_fdisk.h"
+#include "trm/frame.h"
+#include "trm/header.h"
+#include "trm/fdisk.h"
 
 /** Constructor of an Fdisk which opens a disk file, reads the start and positions an internal
  * pointer just before the start of the data

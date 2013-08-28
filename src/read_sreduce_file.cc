@@ -3,12 +3,12 @@
 #include <map>
 #include <iostream>
 #include <fstream>
-#include "trm_subs.h"
-#include "trm_time.h"
-#include "trm_specap.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/time.h"
+#include "trm/specap.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 // External variables for communicating with sreduce. See 'sreduce.cc' for full list of meanings.
 

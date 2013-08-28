@@ -54,13 +54,13 @@ the intensity}
 #include <fstream>
 #include <sstream>
 #include "cpgplot.h"
-#include "trm_input.h"
-#include "trm_plot.h"
-#include "trm_subs.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_target.h"
-#include "trm_ultracam.h"
+#include "trm/input.h"
+#include "trm/plot.h"
+#include "trm/subs.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/target.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

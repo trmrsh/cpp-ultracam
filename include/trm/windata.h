@@ -6,10 +6,10 @@
 #include <iomanip>
 #include <fstream>
 #include <string>
-#include "trm_subs.h"
-#include "trm_window.h"
-#include "trm_array2d.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/window.h"
+#include "trm/array2d.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
 

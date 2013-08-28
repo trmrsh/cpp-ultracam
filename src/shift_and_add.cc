@@ -1,6 +1,6 @@
 #include <vector>
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 /**
  * shift_and_add is a program to shift a frame in x and y, multiply it by a constant and then add it on to another frame. This is 

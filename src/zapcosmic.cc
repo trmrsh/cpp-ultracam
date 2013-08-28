@@ -44,9 +44,9 @@ float thresh_height, float thresh_frac, vector<pair<int,int>>& zapped)
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include "trm_subs.h"
-#include "trm_constants.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
+#include "trm/ultracam.h"
 
 #ifndef DEBUG
 

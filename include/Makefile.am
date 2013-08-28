@@ -2,7 +2,8 @@
 ##
 ## This is the file that must be edited if you are changing anything in the include directory
 
-EXTRA_DIST = trm_aperture.h trm_ccd.h trm_defect.h trm_frame.h trm_mccd.h trm_reduce.h trm_target.h trm_skyline.h trm_spectrum.h \
-trm_ultracam.h trm_windata.h trm_window.h Makefile.in trm_fdisk.h trm_specap.h trm_ultracam_enums.h trm_signal.h
-
+nobase_include_HEADERS = trm/aperture.h trm/ccd.h trm/defect.h trm/frame.h \
+trm/mccd.h trm/reduce.h trm/target.h trm/skyline.h trm/spectrum.h \
+trm/ultracam.h trm/windata.h trm/window.h trm/fdisk.h trm/specap.h \
+trm/ultracam_enums.h trm/signal.h
 

@@ -1,7 +1,7 @@
 #ifndef TRM_REDUCE_H
 #define TRM_REDUCE_H
 
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 //! Namespace for 'reduce' related items
 namespace Reduce {

@@ -2,11 +2,11 @@
 #define TRM_FRAME_H
 
 #include <string>
-#include "trm_header.h"
-#include "trm_mccd.h"
-#include "trm_windata.h"
-#include "trm_window.h"
-#include "trm_ultracam.h"
+#include "trm/header.h"
+#include "trm/mccd.h"
+#include "trm/windata.h"
+#include "trm/window.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
 

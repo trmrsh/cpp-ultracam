@@ -2,11 +2,11 @@
 #include <deque>
 #include <time.h>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_constants.h"
-#include "trm_plot.h"
-#include "trm_ultracam.h"
-#include "trm_reduce.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
+#include "trm/plot.h"
+#include "trm/ultracam.h"
+#include "trm/reduce.h"
 
 // Variables that are set by reading from the input file with read_reduce_file.
 // Enclosed in a namespace for safety.

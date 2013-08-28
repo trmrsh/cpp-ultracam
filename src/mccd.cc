@@ -1,4 +1,4 @@
-#include "trm_mccd.h"
+#include "trm/mccd.h"
 
 /**
  * Binary input from  a file with the option of reading only 1 CCD

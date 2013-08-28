@@ -62,12 +62,12 @@ border.}
 #include <fstream>
 #include <errno.h>
 #include "cpgplot.h"
-#include "trm_constants.h"
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_plot.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/constants.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/plot.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

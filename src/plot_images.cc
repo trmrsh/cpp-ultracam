@@ -23,10 +23,10 @@
 
 #include <string>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_frame.h"
-#include "trm_format.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/frame.h"
+#include "trm/format.h"
+#include "trm/ultracam.h"
 
 void Ultracam::plot_images(const Frame& data, float x1, float x2, float y1, float y2, 
 			   bool all, char stackdirn, char iset, float& ilow, float& ihigh, 

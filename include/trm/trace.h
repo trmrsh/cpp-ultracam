@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include <string>
-#include "trm_poly.h"
-#include "trm_ultracam.h"
+#include "trm/poly.h"
+#include "trm/ultracam.h"
 
 
 namespace Ultracam {

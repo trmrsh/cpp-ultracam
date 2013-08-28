@@ -1,4 +1,4 @@
-#include "trm_signal.h"
+#include "trm/signal.h"
 
 //! Function for getting data from server
 extern "C" {

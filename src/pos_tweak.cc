@@ -1,6 +1,6 @@
-#include "trm_subs.h"
-#include "trm_windata.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/windata.h"
+#include "trm/ultracam.h"
 
 /** pos_tweak refines a position of a star in an image by collapse along X and Y followed
  * by gaussian cross-correlation of each 1D profile. It is useful as

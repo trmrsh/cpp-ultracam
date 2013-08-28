@@ -141,18 +141,18 @@ lies in a given percentile range or not. This is the upperlimit in percent}
 #include <climits>
 #include <string>
 #include <fstream>
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_array1d.h"
-#include "trm_ephem.h"
-#include "trm_position.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_window.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/array1d.h"
+#include "trm/ephem.h"
+#include "trm/position.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/window.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
 
 // Main program
 

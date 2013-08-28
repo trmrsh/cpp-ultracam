@@ -61,17 +61,17 @@ This prevents identical peaks being reported.}
 #include <map>
 #include <vector>
 #include "cpgplot.h"
-#include "trm_constants.h"
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_array1d.h"
-#include "trm_input.h"
-#include "trm_plot.h"
-#include "trm_frame.h"
-#include "trm_aperture.h"
-#include "trm_mccd.h"
-#include "trm_reduce.h"
-#include "trm_ultracam.h"
+#include "trm/constants.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/array1d.h"
+#include "trm/input.h"
+#include "trm/plot.h"
+#include "trm/frame.h"
+#include "trm/aperture.h"
+#include "trm/mccd.h"
+#include "trm/reduce.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

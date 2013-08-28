@@ -77,10 +77,10 @@ Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fit
 #include <sstream>
 #include <vector>
 #include "cfitsio/fitsio.h"
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 void Tokenize(const std::string& str, std::vector<std::string>& tokens,
 	      const std::string& delimiters = " "){

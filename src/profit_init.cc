@@ -1,6 +1,6 @@
-#include "trm_ultracam.h"
-#include "trm_ccd.h"
-#include "trm_windata.h"
+#include "trm/ultracam.h"
+#include "trm/ccd.h"
+#include "trm/windata.h"
 
 /** profit_init carries out some tedious stuff to get ready for fits to profiles
  * \param data           the CCD under analysis

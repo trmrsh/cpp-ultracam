@@ -7,14 +7,14 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "trm_subs.h"
-#include "trm_plot.h"
-#include "trm_header.h"
-#include "trm_array2d.h"
+#include "trm/subs.h"
+#include "trm/plot.h"
+#include "trm/header.h"
+#include "trm/array2d.h"
 
 // enums and class forward declarations
 
-#include "trm_ultracam_enums.h"
+#include "trm/ultracam_enums.h"
 
 //! Structure to contain data passed back by servers
 /** This is used by WriteMemoryCallback which has to be in C

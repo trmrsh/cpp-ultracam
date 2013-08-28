@@ -35,10 +35,10 @@ hedlis list
 #include <fstream>
 #include <cerrno>
 #include <cfloat>
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

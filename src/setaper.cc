@@ -203,13 +203,13 @@ such apertures: !!ref{dummy.html}{dummy} and !!ref{copymask.html}{copymask}.
 #include <map>
 #include <fstream>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_plot.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/plot.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

@@ -127,14 +127,14 @@ multiple windows being opened. 0.01 seems to work in this case.}
 #include <fstream>
 #include <map>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_plot.h"
-#include "trm_header.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_window.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/plot.h"
+#include "trm/header.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/window.h"
+#include "trm/ultracam.h"
 
 // Structure for light curve
 struct Ldata {

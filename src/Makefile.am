@@ -9,10 +9,12 @@ AUTOMAKE_OPTIONS = nostdinc
 
 progdir = @bindir@/@PACKAGE@
 
-prog_PROGRAMS  = addfield arith carith crop folder grab hedit hedlis hist combine ncal noise pixel plot reduce \
-rtplot setaper setdefect setfield setwin stats uinfo uinit ucm2fits grab2fits fits2ucm oneline movie wjoin makeflat \
-vshow multiframe window boxavg list badgen shifter times gettime boxmed bcrop addspec gentemp genseries addsky \
-addbad dsub backsub setreg sreduce collapse expand lplot ppos diags
+prog_PROGRAMS  = addfield arith carith crop folder grab hedit hedlis hist \
+combine ncal noise pixel plot reduce rtplot setaper setdefect setfield setwin \
+stats uinfo uinit ucm2fits grab2fits fits2ucm oneline movie wjoin makeflat \
+vshow multiframe boxavg list badgen shifter times gettime boxmed bcrop \
+addspec gentemp genseries addsky addbad dsub backsub setreg sreduce collapse \
+expand lplot ppos diags cwin
 
 addfield_SOURCES   = addfield.cc 
 addsky_SOURCES     = addsky.cc 
@@ -28,6 +30,7 @@ carith_SOURCES     = carith.cc
 collapse_SOURCES   = collapse.cc
 combine_SOURCES    = combine.cc
 crop_SOURCES       = crop.cc
+cwin_SOURCES       = cwin.cc
 diags_SOURCES      = diags.cc
 dsub_SOURCES       = dsub.cc
 expand_SOURCES     = expand.cc
@@ -72,13 +75,14 @@ uinfo_SOURCES      = uinfo.cc
 ucm2fits_SOURCES   = ucm2fits.cc
 uinit_SOURCES      = uinit.cc
 vshow_SOURCES      = vshow.cc
-window_SOURCES     = window.cc
 wjoin_SOURCES      = wjoin.cc
 
 DATE = $(shell date)
 
-install-data-hook: $(progdir)/add $(progdir)/mul $(progdir)/div $(progdir)/sub $(progdir)/cadd $(progdir)/cmul $(progdir)/cdiv \
-$(progdir)/csub $(progdir)/cset $(progdir)/uset $(progdir)/msub $(progdir)/mdiv $(progdir)/cplot
+install-data-hook: $(progdir)/add $(progdir)/mul $(progdir)/div \
+$(progdir)/sub $(progdir)/cadd $(progdir)/cmul $(progdir)/cdiv \
+$(progdir)/csub $(progdir)/cset $(progdir)/uset $(progdir)/msub \
+$(progdir)/mdiv $(progdir)/cplot
 	echo "This is $(PACKAGE)-$(VERSION), built on $(DATE)" > $(progdir)/VERSION
 	@echo "Installed link targets"
 
@@ -135,9 +139,12 @@ LDADD = libultracam.la @LIBCURL@
 
 lib_LTLIBRARIES = libultracam.la 
 
-libultracam_la_SOURCES = trm_window.cc trm_windata.cc trm_ccd.cc trm_frame.cc trm_target.cc trm_mccd.cc trm_skyline.cc \
-trm_defect.cc shift_and_add.cc WriteMemoryCallback.cc parseXML.cc de_multiplex.cc read_header.cc trm_aperture.cc \
-get_server_frame.cc loadXML.cc trm_fdisk.cc lllccd.cc plot_images.cc findpos.cc \
-plot_apers.cc fitgaussian.cc trm_ultracam.cc gauss_reject.cc profit_init.cc moffat_reject.cc fitmoffat.cc pos_tweak.cc \
-fit_plot_profile.cc covsrt.cc extract_flux.cc sky_estimate.cc badInput.cc plot_defects.cc plot_setupwins.cc trm_spectrum.cc \
-make_profile.cc trm_specap.cc sky_move.cc sky_fit.cc ext_nor.cc plot_trail.cc plot_spectrum.cc trm_signal.cc
+libultracam_la_SOURCES = window.cc windata.cc ccd.cc frame.cc target.cc \
+mccd.cc skyline.cc defect.cc shift_and_add.cc WriteMemoryCallback.cc \
+parseXML.cc de_multiplex.cc read_header.cc aperture.cc get_server_frame.cc \
+loadXML.cc fdisk.cc lllccd.cc plot_images.cc findpos.cc plot_apers.cc \
+fitgaussian.cc ultracam.cc gauss_reject.cc profit_init.cc moffat_reject.cc \
+fitmoffat.cc pos_tweak.cc fit_plot_profile.cc covsrt.cc extract_flux.cc \
+sky_estimate.cc badInput.cc plot_defects.cc plot_setupwins.cc spectrum.cc \
+make_profile.cc specap.cc sky_move.cc sky_fit.cc ext_nor.cc plot_trail.cc \
+plot_spectrum.cc signal.cc

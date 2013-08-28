@@ -110,13 +110,13 @@ accumulating at the end, they will be written out even if they have not reach 'n
 #include <cfloat>
 #include <string>
 #include <fstream>
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/ultracam.h"
 
 // Main program
 

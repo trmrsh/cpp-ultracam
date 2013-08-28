@@ -1,4 +1,4 @@
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 int Ultracam::Ppars::npar() const {
   if(symm){

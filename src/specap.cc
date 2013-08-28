@@ -1,7 +1,7 @@
-#include "trm_ultracam.h"
-#include "trm_ccd.h"
-#include "trm_windata.h"
-#include "trm_specap.h"
+#include "trm/ultracam.h"
+#include "trm/ccd.h"
+#include "trm/windata.h"
+#include "trm/specap.h"
 
 float Ultracam::Specap::how_far(float x, float y) const {
   return fabs(y-get_ypos());

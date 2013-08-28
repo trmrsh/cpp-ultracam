@@ -1,8 +1,8 @@
 #include <cmath>
-#include "trm_subs.h"
-#include "trm_constants.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
 #include "cpgplot.h"
-#include "trm_spectrum.h"
+#include "trm/spectrum.h"
 
 /** Returns a number that monotonically increase with the distance of the
  * the Ultracam::Spectrum from the coordinates supplied. Needed for saying which Ultracam::Spectrum

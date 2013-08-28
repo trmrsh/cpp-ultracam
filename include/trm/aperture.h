@@ -5,7 +5,7 @@
 
 #include <iostream>
 #include <string>
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
 

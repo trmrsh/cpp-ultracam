@@ -1,6 +1,6 @@
-#include "trm_array1d.h"
-#include "trm_ultracam.h"
-#include "trm_windata.h"
+#include "trm/array1d.h"
+#include "trm/ultracam.h"
+#include "trm/windata.h"
 
 /** This collapses a Windata and a corresponding variance to make a profile in the Y-direction,
  * normalising the results by the number of pixels used, which are also returned. This is used

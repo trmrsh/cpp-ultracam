@@ -112,14 +112,14 @@ can be used to mark out the edges of a dekker for example.}
 #include <map>
 #include <fstream>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_array1d.h"
-#include "trm_plot.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_specap.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/array1d.h"
+#include "trm/plot.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/specap.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

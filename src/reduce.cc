@@ -590,17 +590,17 @@ The output files are ASCII and self-documenting.
 #include <map>
 #include <deque>
 #include <time.h>
-#include "trm_subs.h"
-#include "trm_constants.h"
-#include "trm_buffer2d.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_plot.h"
-#include "trm_aperture.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
-#include "trm_reduce.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
+#include "trm/buffer2d.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/plot.h"
+#include "trm/aperture.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
+#include "trm/reduce.h"
 
 // Variables that are set by reading from the input file with read_reduce_file.
 // Enclosed in a namespace for safety.

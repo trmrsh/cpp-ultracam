@@ -7,8 +7,8 @@
 #include <curl/easy.h>
 
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/ultracam.h"
 
 //! Little structure for setup windows
 struct Swin {

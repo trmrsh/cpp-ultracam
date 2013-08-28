@@ -1,7 +1,7 @@
 #include <cmath>
-#include "trm_target.h"
-#include "trm_subs.h"
-#include "trm_constants.h"
+#include "trm/target.h"
+#include "trm/subs.h"
+#include "trm/constants.h"
 #include "cpgplot.h"
 
 /** The profile is normalised by the number of counts. For computing it

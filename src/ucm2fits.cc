@@ -53,10 +53,10 @@ Related routines: !!ref{grab2fits.html}{grab2fits}, !!ref{fits2ucm.html}{fits2uc
 #include <sstream>
 #include <vector>
 #include "cfitsio/fitsio.h"
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

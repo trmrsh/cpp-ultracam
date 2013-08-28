@@ -1,9 +1,9 @@
 #include <cmath>
 #include <string>
-#include "trm_frame.h"
-#include "trm_mccd.h"
-#include "trm_subs.h"
-#include "trm_ultracam.h"
+#include "trm/frame.h"
+#include "trm/mccd.h"
+#include "trm/subs.h"
+#include "trm/ultracam.h"
 
 Ultracam::Frame::Frame(const std::string& file, int nc){
     read(file,nc);

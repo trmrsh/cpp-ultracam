@@ -218,20 +218,20 @@ user-defined fixed limits, 'automatic' which sets to the total range and 'percen
 #include <map>
 #include <deque>
 #include <time.h>
-#include "trm_subs.h"
+#include "trm/subs.h"
 #ifdef HAVE_TRM_COLLY_H
-#include "trm_colly.h"
+#include "trm/colly.h"
 #endif
-#include "trm_constants.h"
-#include "trm_array1d.h"
-#include "trm_buffer2d.h"
-#include "trm_input.h"
-#include "trm_header.h"
-#include "trm_plot.h"
-#include "trm_specap.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/constants.h"
+#include "trm/array1d.h"
+#include "trm/buffer2d.h"
+#include "trm/input.h"
+#include "trm/header.h"
+#include "trm/plot.h"
+#include "trm/specap.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 // Variables that are set by reading from the input file with read_reduce_file.
 // Enclosed in a namespace for safety.

@@ -1,8 +1,8 @@
 //! \file
 
-#include "trm_subs.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 // See later for the ULTRASPEC version.
 

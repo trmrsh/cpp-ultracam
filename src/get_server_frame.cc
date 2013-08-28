@@ -7,11 +7,11 @@
 #include <bitset>
 #include <curl/curl.h>
 #include <curl/easy.h>
-#include "trm_subs.h"
-#include "trm_time.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
-#include "trm_signal.h"
+#include "trm/subs.h"
+#include "trm/time.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
+#include "trm/signal.h"
 
 /** Gets a frame from a server data file.
  * \param source source of data: either 'S' for server or 'L' for local .xml file.

@@ -1,8 +1,8 @@
 #include <cstdlib>
-#include "trm_subs.h"
-#include "trm_buffer2d.h"
-#include "trm_ultracam.h"
-#include "trm_windata.h"
+#include "trm/subs.h"
+#include "trm/buffer2d.h"
+#include "trm/ultracam.h"
+#include "trm/windata.h"
 
 void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
 		     int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha, 

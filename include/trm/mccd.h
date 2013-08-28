@@ -2,9 +2,9 @@
 #define TRM_MCCD_H
 
 #include <string>
-#include "trm_subs.h"
-#include "trm_ccd.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/ccd.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
 

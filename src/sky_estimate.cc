@@ -1,8 +1,8 @@
-#include "trm_subs.h"
-#include "trm_windata.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
-#include "trm_reduce.h"
+#include "trm/subs.h"
+#include "trm/windata.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
+#include "trm/reduce.h"
 
 /** Routine to carry out the determination of the sky of a given aperture 
  * and appropriate windows. This routine serves to encapsulate this routine

@@ -1,6 +1,6 @@
-#include "trm_subs.h"
-#include "trm_ccd.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/ccd.h"
+#include "trm/ultracam.h"
 
 /** fit_plot_profile is a high-level routine that carries out initialisation,
  * position tweaking, fitting, rejection and plotting of gaussian or moffat profiles.

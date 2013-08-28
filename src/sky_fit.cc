@@ -1,9 +1,9 @@
-#include "trm_buffer2d.h"
-#include "trm_ultracam.h"
-#include "trm_ccd.h"
-#include "trm_mccd.h"
-#include "trm_frame.h"
-#include "trm_specap.h"
+#include "trm/buffer2d.h"
+#include "trm/ultracam.h"
+#include "trm/ccd.h"
+#include "trm/mccd.h"
+#include "trm/frame.h"
+#include "trm/specap.h"
 
 // Function for polynomial fits needed by llsqr
 

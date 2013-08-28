@@ -1,8 +1,8 @@
 #include <vector>
-#include "trm_subs.h"
-#include "trm_array1d.h"
-#include "trm_array2d.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/array1d.h"
+#include "trm/array2d.h"
+#include "trm/ultracam.h"
 
 /**
  * Plots trailed spectrum.

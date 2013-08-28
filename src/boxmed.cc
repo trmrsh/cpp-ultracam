@@ -41,11 +41,11 @@ See also !!ref{boxavg.html}{boxavg}
 #include <climits>
 #include <string>
 #include <map>
-#include "trm_subs.h"
-#include "trm_array1d.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/array1d.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

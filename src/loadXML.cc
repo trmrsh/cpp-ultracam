@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 /** Function to load XML data directly as opposed to doing so via a server.
  * \param name  name of the XML file

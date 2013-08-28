@@ -1,5 +1,5 @@
-#include "trm_windata.h"
-#include "trm_ultracam.h"
+#include "trm/windata.h"
+#include "trm/ultracam.h"
 
 /**
  * Carries out rejection stage of gaussian fitting.

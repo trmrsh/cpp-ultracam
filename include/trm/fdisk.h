@@ -3,8 +3,8 @@
 
 #include <string>
 #include <iostream>
-#include "trm_window.h"
-#include "trm_ultracam.h"
+#include "trm/window.h"
+#include "trm/ultracam.h"
 
 namespace Ultracam {
 

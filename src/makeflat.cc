@@ -119,11 +119,11 @@ the number of frames that !!emph{makeflat} says it has found for each CCD in dec
 #include <cfloat>
 #include <string>
 #include <map>
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_fdisk.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/fdisk.h"
+#include "trm/ultracam.h"
 
 // Basic structure for each CCD keyed by mean value inside 'map' containers
 struct Info{

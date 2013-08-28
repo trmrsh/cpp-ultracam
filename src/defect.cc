@@ -1,8 +1,8 @@
 #include <iostream>
 #include "cpgplot.h"
-#include "trm_subs.h"
-#include "trm_defect.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/defect.h"
+#include "trm/ultracam.h"
 
 /** Constructs a pixel defect
  * \param x        X position of defect

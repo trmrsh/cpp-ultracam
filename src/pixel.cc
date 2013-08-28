@@ -36,10 +36,10 @@ pixel image nccd nwin ix iy
 #include <string>
 #include <sstream>
 #include <map>
-#include "trm_subs.h"
-#include "trm_input.h"
-#include "trm_frame.h"
-#include "trm_ultracam.h"
+#include "trm/subs.h"
+#include "trm/input.h"
+#include "trm/frame.h"
+#include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
 

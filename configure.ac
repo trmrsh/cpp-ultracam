@@ -25,11 +25,11 @@ AC_PROG_LIBTOOL
 
 dnl check for other trm software
 
-AC_CHECK_HEADERS([trm_subs.h trm_position.h trm_constants.h trm_array1d.h],[],AC_MSG_ERROR([cannot find 'subs' headers]))
+AC_CHECK_HEADERS([trm/subs.h trm/position.h trm/constants.h trm/array1d.h],[],AC_MSG_ERROR([cannot find 'subs' headers]))
 
 AC_CHECK_LIB([subs], [main], [], AC_MSG_ERROR([cannot find 'subs' library]))
 
-AC_CHECK_HEADERS([trm_colly.h],[],AC_MSG_ERROR([cannot find 'colly' header]))
+AC_CHECK_HEADERS([trm/colly.h],[],AC_MSG_ERROR([cannot find 'colly' header]))
 
 AC_CHECK_LIB([colly], [main], [], AC_MSG_ERROR([cannot find 'colly' library]))
 

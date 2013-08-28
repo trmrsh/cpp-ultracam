@@ -37,11 +37,11 @@
 #include <xercesc/util/XMLString.hpp>  
 
 // my stuff
-#include "trm_subs.h"
-#include "trm_header.h"
-#include "trm_mccd.h"
-#include "trm_ultracam.h"
-#include "trm_signal.h"
+#include "trm/subs.h"
+#include "trm/header.h"
+#include "trm/mccd.h"
+#include "trm/ultracam.h"
+#include "trm/signal.h"
 
 // namespace 
 using namespace xercesc;

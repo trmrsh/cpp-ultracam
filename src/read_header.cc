@@ -1,11 +1,11 @@
 #include <deque>
-#include "trm_subs.h"
-#include "trm_format.h"
-#include "trm_constants.h"
-#include "trm_date.h"
-#include "trm_time.h"
-#include "trm_ultracam.h"
-#include "trm_constants.h"
+#include "trm/subs.h"
+#include "trm/format.h"
+#include "trm/constants.h"
+#include "trm/date.h"
+#include "trm/time.h"
+#include "trm/ultracam.h"
+#include "trm/constants.h"
 
 // Following are bit masks associated with the Meinberg GPS
 

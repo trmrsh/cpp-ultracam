@@ -1,8 +1,8 @@
-#include "trm_subs.h"
-#include "trm_frame.h"
-#include "trm_aperture.h"
-#include "trm_ultracam.h"
-#include "trm_reduce.h"
+#include "trm/subs.h"
+#include "trm/frame.h"
+#include "trm/aperture.h"
+#include "trm/ultracam.h"
+#include "trm/reduce.h"
 
 // Globals read by read_reduce_file
 

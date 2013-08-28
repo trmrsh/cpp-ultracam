@@ -1,5 +1,5 @@
 #include "cpgplot.h"
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 void Ultracam::def_col(bool reverse){
     if(reverse){

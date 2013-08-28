@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include "trm_ultracam.h"
+#include "trm/ultracam.h"
 
 // Call back function for getting data from server
 

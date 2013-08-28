@@ -1,0 +1,10 @@
+#! /bin/sh
+#
+# Prepares distribution to be in the usual
+# state for running './configure', 'make' and
+# 'make install'
+
+aclocal \
+&& libtoolize --force --copy \
+&& automake --gnu --add-missing \
+&& autoconf
