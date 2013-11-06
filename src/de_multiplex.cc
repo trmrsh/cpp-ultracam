@@ -255,11 +255,14 @@ window=1, iy=1, ix=0
 .
 \endverbatim
 
-There are two possible read out modes however, and in one of them the read out order is reversed in the X direction, so
-that it starts with nx-1. This function swaps this case so that the images will appear the same on the screen. It also has
-to make sure that a given format is compatible whether normal or avalanche. It turns out that the only way to ensure this
-is to remove any pixels if they are amongst the first 16 that can be read out by either port (overscan pixels). These are 
-thus ignored and never appear at any stage.
+There are two possible read out modes however, and in one of them the read out
+order is reversed in the X direction, so that it starts with nx-1. This
+function swaps this case so that the images will appear the same on the
+screen. It also has to make sure that a given format is compatible whether
+normal or avalanche. It turns out that the only way to ensure this is to
+remove any pixels if they are amongst the first 16 that can be read out by
+either port (overscan pixels). These are thus ignored and never appear at any
+stage.
 
 */
 
