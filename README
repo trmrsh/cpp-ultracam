@@ -20,3 +20,4 @@ Installation
 Main installation notes are in 'INSTALL'. If installing for the first time,
 run './bootstrap' before anything else which tries to get the autotools 
 stuff configured.
+
