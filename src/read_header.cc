@@ -73,7 +73,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else if(serverdata.version == -1 || serverdata.version == 70514 || serverdata.version == 80127){
         format = 1;
     }else if(serverdata.version == 100222 || serverdata.version == 110921 || serverdata.version == 111205 || 
-	     serverdata.version == 120716 || serverdata.version == 120813){
+	     serverdata.version == 120716 || serverdata.version == 120813 || serverdata.version == 130307 ||
+	     serverdata.version == 130317){
         format = 2;
     }else{
         std::cerr << "Ultracam::read_header WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
@@ -444,7 +445,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
 		    gps_timestamp.add_second(double(nsec) + double(nnanosec)/1.e9);
 
 		}else{
-		    std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << format << " when trying to establish GPS time in read_header" << std::endl;
+		    std::cerr << "Ultracam::read_header WARNING: could not recognize format = " << 
+			format << " when trying to establish GPS time in read_header" << std::endl;
 		}
             }
 
