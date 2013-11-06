@@ -1700,25 +1700,21 @@ int main(int argc, char* argv[]){
 			    if(Reduce::extraction_control.find(nccd) != Reduce::extraction_control.end()){
 
 				all_ccds[nccd] = std::vector<Reduce::Point>(aperture[nccd].size());
-	      
+				
+				bool time_ok;
 				// I/O -- output standard string that applies to a CCD before the aperture info appears.
 				if(source == 'S' || source == 'L'){
 		  
+				    time_ok = reliable;
+  
 				    // Format using 'sprintf' for reliability.
 				    if(nccd != 2){
-					if(reliable)
-					    sprintf(sprint_out, "%8i %16.10f 1 %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date.mjd(), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
-					else
-					    sprintf(sprint_out, "%8i %16.10f 0 %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date.mjd(), expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					sprintf(sprint_out, "%8i %16.10f %1i %9.6f %1i %7.3f %7.3f", 
+						int(nfile), ut_date.mjd(), reliable, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
 				    }else{
-					if(reliable)
-					    sprintf(sprint_out, "%8i %16.10f 1 %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date_blue.mjd(), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
-					else
-					    sprintf(sprint_out, "%8i %16.10f 0 %9.6f %1i %7.3f %7.3f", 
-						    int(nfile), ut_date_blue.mjd(), expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					sprintf(sprint_out, "%8i %16.10f %1i %9.6f %1i %7.3f %7.3f", 
+						int(nfile), ut_date_blue.mjd(), reliable, expose_blue, int(nccd+1), 
+						shape[nccd].fwhm, shape[nccd].beta);
 				    }
 
 				    Reduce::logger.ofstr() << sprint_out;
@@ -1738,19 +1734,14 @@ int main(int argc, char* argv[]){
 					ptime = double(nfile+1);
 		  
 				    if(nccd != 2){
-					if(reliable)
-					    sprintf(sprint_out, "%15s %16.10f 1 %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
-					else
-					    sprintf(sprint_out, "%15s %16.10f 0 %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					sprintf(sprint_out, "%15s %16.10f %1i %8.5f %1i %7.3f %7.3f", 
+						file[nfile].c_str(), ptime, reliable, expose, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					time_ok = reliable;
 				    }else{
-					if(reliable_blue)
-					    sprintf(sprint_out, "%15s %16.10f 1 %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
-					else
-					    sprintf(sprint_out, "%15s %16.10f 0 %8.5f %1i %7.3f %7.3f", 
-						    file[nfile].c_str(), ptime, expose_blue, int(nccd+1), shape[nccd].fwhm, shape[nccd].beta);
+					sprintf(sprint_out, "%15s %16.10f %1i %8.5f %1i %7.3f %7.3f", 
+						file[nfile].c_str(), ptime, reliable_blue, expose_blue, int(nccd+1), shape[nccd].fwhm, 
+						shape[nccd].beta);
+					time_ok = reliable_blue;
 				    }
 		  
 				    Reduce::logger.ofstr() << sprint_out;
@@ -1803,7 +1794,8 @@ int main(int argc, char* argv[]){
 					exmeas = eymeas = -1.;
 				    }
 		  
-				    sprintf(sprint_out, " %2i %9.4f %9.4f %9.4f %9.4f %7.4f %7.4f", int(naper+1), app.xpos(), app.ypos(), xmeas, ymeas, exmeas, eymeas);
+				    sprintf(sprint_out, " %2i %9.4f %9.4f %9.4f %9.4f %7.4f %7.4f", 
+					    int(naper+1), app.xpos(), app.ypos(), xmeas, ymeas, exmeas, eymeas);
 				    Reduce::logger.ofstr()<< sprint_out;
 		  
 				    if(Reduce::terminal_output == Reduce::FULL){
@@ -1814,24 +1806,28 @@ int main(int argc, char* argv[]){
 		  
 				    if(!blue_is_bad || nccd != 2){
 					// Extract the flux
-					Ultracam::extract_flux(data[nccd], dvar[nccd], bad[nccd], Reduce::gain_frame[nccd], Reduce::bias_frame[nccd],
-							       app, Reduce::sky_method, Reduce::sky_thresh, Reduce::sky_error, 
+					Ultracam::extract_flux(data[nccd], dvar[nccd], bad[nccd], Reduce::gain_frame[nccd], 
+							       Reduce::bias_frame[nccd], app, Reduce::sky_method, 
+							       Reduce::sky_thresh, Reduce::sky_error, 
 							       Reduce::extraction_control[nccd].extraction_method, zapped[nccd][naper], 
-							       shape[nccd], Reduce::pepper[nccd], Reduce::saturation[nccd], counts, sigma, sky, 
-							       nsky, nrej, ecode, worst);
+							       shape[nccd], Reduce::pepper[nccd], Reduce::saturation[nccd], 
+							       counts, sigma, sky, nsky, nrej, ecode, worst);
 		      
 					if(Reduce::abort_behaviour == Reduce::FUSSY){
 			  
 					    switch(ecode){
 		      
 						case Reduce::TARGET_APERTURE_AT_EDGE_OF_WINDOW:
-						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + Subs::str(naper+1) + ": target aperture at edge of window!");		  
+						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + 
+									 Subs::str(naper+1) + ": target aperture at edge of window!");	       
 		      
 						case Reduce::APERTURE_OUTSIDE_WINDOW:
-						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + Subs::str(naper+1) + ": aperture outside window!");		  
+						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + 
+									 Subs::str(naper+1) + ": aperture outside window!");		  
 		      
 						case Reduce::APERTURE_INVALID:
-						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + Subs::str(naper+1) + ": aperture invalid!");		  
+						    throw Ultracam_Error("Fussy mode: CCD " + Subs::str(nccd+1) + ", aperture " + 
+									 Subs::str(naper+1) + ": aperture invalid!");		  
 						default:
 						    break;
 					    }
@@ -1853,14 +1849,17 @@ int main(int argc, char* argv[]){
 				    Reduce::logger.ofstr()<< sprint_out;
 		  
 				    if(Reduce::terminal_output == Reduce::FULL || Reduce::terminal_output == Reduce::MEDIUM)
-					std::cout << blank << counts << blank << sigma << blank << sky << blank << nrej << blank << worst << blank << ecode;
+					std::cout << blank << counts << blank << sigma << blank << sky << blank << nrej << blank 
+						  << worst << blank << ecode;
 		  
 				    // Store this point for light curve plot.
 				    if(lplot || hcopy != "null"){
 					if(nccd != 2)
-					    all_ccds[nccd][naper] = Reduce::Point(counts, sigma, app.xpos(), app.ypos(), shape[nccd].fwhm, ecode, expose);
+					    all_ccds[nccd][naper] = Reduce::Point(counts, sigma, app.xpos(), app.ypos(), 
+										  shape[nccd].fwhm, ecode, expose, time_ok);
 					else
-					    all_ccds[nccd][naper] = Reduce::Point(counts, sigma, app.xpos(), app.ypos(), shape[nccd].fwhm, ecode, expose_blue);
+					    all_ccds[nccd][naper] = Reduce::Point(counts, sigma, app.xpos(), app.ypos(), 
+										  shape[nccd].fwhm, ecode, expose_blue, time_ok);
 				    }
 		
 				}

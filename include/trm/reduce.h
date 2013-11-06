@@ -60,14 +60,15 @@ namespace Reduce {
 
   //! Stores info for one aperture of one CCD
   struct Point{
-    Point() : flux(0.), ferr(0.), xpos(0.), ypos(0.), fwhm(0.), code(OK), exposure(1.f) {}
-    Point(float flx, float f_err, float xp, float yp, float fwhm, ERROR_CODES cde, float exposure) :
-      flux(flx), ferr(f_err), xpos(xp), ypos(yp), fwhm(fwhm), code(cde), exposure(exposure) {}
+    Point() : flux(0.), ferr(0.), xpos(0.), ypos(0.), fwhm(0.), code(OK), exposure(1.f), time_ok(true)  {}
+    Point(float flx, float f_err, float xp, float yp, float fwhm, ERROR_CODES cde, float exposure, bool time_ok) :
+        flux(flx), ferr(f_err), xpos(xp), ypos(yp), fwhm(fwhm), code(cde), exposure(exposure), time_ok(time_ok) {}
     float flux, ferr;
     double xpos, ypos;
     float fwhm;
     ERROR_CODES code;
     float exposure;
+    bool time_ok;
   };
 
   //! Structure to store light curve plot information

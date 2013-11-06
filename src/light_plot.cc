@@ -812,7 +812,8 @@ bool ok_to_plot_lc(LCIT lci, const std::vector<std::vector<Reduce::Point> >& all
     return (lci->nccd < all_ccds.size() && lci->targ < all_ccds[lci->nccd].size() &&
 	    (!lci->use_comp || lci->use_comp < all_ccds[lci->nccd].size()) &&
 	    code_ok_to_plot(all_ccds[lci->nccd][lci->targ].code) &&
-	    (!lci->use_comp || code_ok_to_plot(all_ccds[lci->nccd][lci->comp].code)));
+	    (!lci->use_comp || code_ok_to_plot(all_ccds[lci->nccd][lci->comp].code)) &&
+	    all_ccds[lci->nccd][lci->targ].time_ok);
 }
 
 //! Encapsulates whether a position point can be plotted
@@ -821,7 +822,8 @@ bool ok_to_plot_lc(LCIT lci, const std::vector<std::vector<Reduce::Point> >& all
  */
 bool ok_to_plot_pos(LPIT lpi, const std::vector<std::vector<Reduce::Point> >& all_ccds){     
     return (lpi->nccd < all_ccds.size() && lpi->targ < all_ccds[lpi->nccd].size() &&
-	    code_ok_to_plot(all_ccds[lpi->nccd][lpi->targ].code));
+	    code_ok_to_plot(all_ccds[lpi->nccd][lpi->targ].code) &&
+	    all_ccds[lpi->nccd][lpi->targ].time_ok);
 }
 
 //! Encapsulates whether a transmission point can be plotted
@@ -830,7 +832,8 @@ bool ok_to_plot_pos(LPIT lpi, const std::vector<std::vector<Reduce::Point> >& al
  */
 bool ok_to_plot_trans(TRIT tri, const std::vector<std::vector<Reduce::Point> >& all_ccds){     
     return (tri->nccd < all_ccds.size() && tri->targ < all_ccds[tri->nccd].size() &&
-	    code_ok_to_plot(all_ccds[tri->nccd][tri->targ].code));
+	    code_ok_to_plot(all_ccds[tri->nccd][tri->targ].code) &&
+	    all_ccds[tri->nccd][tri->targ].time_ok);
 }
 
 //! Encapsulates whether a seeing point can be plotted
@@ -839,5 +842,6 @@ bool ok_to_plot_trans(TRIT tri, const std::vector<std::vector<Reduce::Point> >& 
  */
 bool ok_to_plot_fwhm(FWIT fwi, const std::vector<std::vector<Reduce::Point> >& all_ccds){     
     return (fwi->nccd < all_ccds.size() && all_ccds[fwi->nccd].size() > 0 &&
-	    all_ccds[fwi->nccd][0].fwhm > 0 && code_ok_to_plot(all_ccds[fwi->nccd][fwi->targ].code));
+	    all_ccds[fwi->nccd][0].fwhm > 0 && code_ok_to_plot(all_ccds[fwi->nccd][fwi->targ].code) &&
+	    all_ccds[fwi->nccd][fwi->targ].time_ok);
 }
