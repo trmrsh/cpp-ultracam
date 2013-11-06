@@ -13,3 +13,10 @@ Python programs as well as SExtractor, but few others should want to use it.
 Some others are more useful, in particular 'ulog2fits' for which you will need
 Python along with 3rd-party modules numpy and pyfits. I don't have configure 
 check for these so that people can get up and running reasonably quickly. 
+
+Installation
+------------
+
+Main installation notes are in 'INSTALL'. If installing for the first time,
+run './bootstrap' before anything else which tries to get the autotools 
+stuff configured.
