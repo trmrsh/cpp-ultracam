@@ -321,8 +321,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 
     if(serverdata.headerwords == 16){
 
-        const int NRECOG = 5;
-        const int RECOG[NRECOG] = {100222, 111205, 120716, 120813, 130307};
+        const int NRECOG = 6;
+        const int RECOG[NRECOG] = {100222, 111205, 120716, 120813, 130307, 130317};
         bool ok = false;
         int vfound = uinfo.user_info ? uinfo.revision : serverdata.version;
         for(int i=0; i<NRECOG; i++){
@@ -336,7 +336,7 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
 	    serverdata.version = vfound;
 	}else{
             std::cerr << "parseXML warning: 16 header words found, but version number = " << vfound << 
-		" was not recognised out of 100222, 111205, 120716 or 120813" << std::endl;
+		" was not recognised out of 100222, 111205, 120716, 120813, 130307 or 130317" << std::endl;
             if(vfound > 120813){
                 std::cerr << "parseXML warning: 120813 will be used, but this could indicate a programming error so watch out for timing issues." << std::endl;
                 serverdata.version = 120813;
