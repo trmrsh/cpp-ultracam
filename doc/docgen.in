@@ -50,8 +50,7 @@ foreach $file ('addbad.cc', 'addfield.cc', 'addsky.cc', 'addspec.cc', 'arith.cc'
 	       'sreduce.cc', 'stats.cc', 
 	       'times.cc',
 	       'ucm2fits.cc', 'uinfo.cc', 'uinit.cc',
-	       'vshow.cc', 
-	       'window.cc', 'wjoin.cc',
+	       'vshow.cc', 'wjoin.cc',
 	       ){
     document("../src/$file",$html,"html","html","");
 }
