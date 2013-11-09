@@ -1197,8 +1197,10 @@ int main(int argc, char* argv[]){
 		    }while(nfile < file.size() && has_a_time && ut_date < ttime);
 		    if(nfile == file.size()) break;
 	  
+		    // time assumed reliable unless proven otherwise. This ensures that
+		    // data read using fits2ucm can be reduced.
 		    hnode = data.find("Frame.reliable");
-		    reliable = (hnode->has_data() && hnode->value->get_bool());
+		    reliable = !hnode->has_data() || hnode->value->get_bool();
 	  
 		    if(has_a_time){
 
