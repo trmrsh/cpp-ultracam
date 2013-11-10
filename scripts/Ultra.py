@@ -277,20 +277,30 @@ class Run(object):
     RESPC = re.compile('\s+')
 
     def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, \
-                     run=None, sskip=None, warn=False, noid=False):
+                     run=None, sskip=[], warn=False, noid=False):
         """
         xml       -- xml file name with format run###.xml
+
         log       -- previously read night log
+
         times     -- previously read timing data
+
         targets   -- previously read target position data
+
         telescope -- telescope; names from XML cannot be relied on
+
         night     -- date of night YYYY-MM-DD
+
         run       -- date of run YYYY-MM.
-        sskip     -- list of targets to avoid Simbad searches for. Added to as a given target fails to avoid
-                     stressing the Simbad server.
-        warn      -- If True, and the data is thought to be science (not bias, dark, flat, etc) to get message 
-                     of targets with no match in the 'targets' (all of them if targets=None, so only sensible 
+
+        sskip     -- list of targets to avoid Simbad searches for. Added to as a given 
+                     target fails to avoid stressing the Simbad server.
+
+        warn      -- If True, and the data is thought to be science (not bias, dark, 
+                     flat, etc) to get message of targets with no match in the 
+                     'targets' (all of them if targets=None, so only sensible 
                      to set this if you have a targets object defined)
+
         noid      -- make no effort to ID a target
 
         At the end there are a whole stack of attributes. Not all will 
@@ -438,13 +448,19 @@ class Run(object):
                     self.telescope = 'WHT'
                 elif telescope.find('New Technology Telescope') > -1:
                     self.telescope = 'NTT'
+                elif telescope.find('Thai National Observatory 2.4m') > -1:
+                    self.telescope = 'TNT'
                 else:
-                    sys.stderr.write('File = ' + self.fname + ' failed to identify telescope\n')
+                    sys.stderr.write('File = ' + self.fname + 
+                                     ' failed to identify telescope = ' + telescope + '\n')
             
             # identify power ons & offs
             self.poweron  = (self.application.find('poweron') > -1) or \
-                (self.application.find('pon_app') > -1) or (self.application.find('appl1_pon_cfg') > -1)
-            self.poweroff = (self.application.find('poweroff') > -1) or (self.application.find('appl2_pof_cfg') > -1)
+                (self.application.find('pon_app') > -1) or \
+                (self.application.find('appl1_pon_cfg') > -1) or \
+                (self.application.find('ccd201_pon_cfg') > -1)
+            self.poweroff = (self.application.find('poweroff') > -1) or \
+                (self.application.find('appl2_pof_cfg') > -1)
 
             if self.poweron:
                 self.target = 'Power on'
@@ -555,33 +571,53 @@ class Run(object):
                 elif app == 'ap7_250_window3pair' or app == 'ap7_window3pair' or app == 'appl7_window3pair_cfg':
                     self.mode    = '3-PAIR'
                     self.nwindow = 6
+
                 elif app == 'ap3_250_fullframe' or app == 'ap3_fullframe':
                     self.mode    = 'FFCLR'
                     self.nwindow = 2
+
                 elif app == 'ap3_250_fullframe' or app == 'appl3_fullframe_cfg':
                     self.mode    = 'FFCLR'
                     self.nwindow = 2
+
                 elif app == 'appl4_frameover_cfg':
                     self.mode    = 'FFOVER'
                     self.nwindow = 2
+
                 elif app == 'appl10_frameover_mindead_cfg':
                     self.mode    = 'FFOVNC'
                     self.nwindow = 2
-                elif app == 'ap9_250_fullframe_mindead' or app == 'ap9_fullframe_mindead' or app == 'appl9_fullframe_mindead_cfg':
+
+                elif app == 'ap9_250_fullframe_mindead' or app == 'ap9_fullframe_mindead' \
+                        or app == 'appl9_fullframe_mindead_cfg':
                     self.mode    = 'FFNCLR'
                     self.nwindow = 2
-                elif app == 'ccd201_winbin_con':
+
+                elif app == 'ccd201_winbin_cfg':
                     if int(param['X2_SIZE']) == 0:
-                        self.mode    = '1-USPEC'
+                        self.mode    = 'USPEC-1'
                         self.nwindow = 1
-                    else:
-                        self.mode    = '2-USPEC'
+                    elif int(param['X3_SIZE']) == 0:
+                        self.mode    = 'USPEC-2'
                         self.nwindow = 2
+                    elif int(param['X4_SIZE']) == 0:
+                        self.mode    = 'USPEC-3'
+                        self.nwindow = 3
+                    else:
+                        self.mode    = 'USPEC-4'
+                        self.nwindow = 4
+
+                elif app == 'ccd201_driftscan_cfg':
+                    self.mode    = 'UDRIFT'
+                    self.nwindow = 2
+
                 elif app == 'ap4_frameover':
                     self.mode    = 'FFOVER'
                     self.nwindow = 2
+
                 else:
-                    sys.stderr.write('File = ' + self.fname + ' failed to identify application = ' + app + '\n')
+                    sys.stderr.write('File = ' + self.fname + 
+                                     ' failed to identify application = ' + app + '\n')
 
                 if times is not None:
                     self.date    = times.date[self.number] \
