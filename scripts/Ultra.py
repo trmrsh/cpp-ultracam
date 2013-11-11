@@ -473,7 +473,7 @@ class Run(object):
                 self.y_bin   = param['Y_BIN_FAC'] if 'Y_BIN_FAC' in param else param['Y_BIN']
 
                 if user is not None:
-                    
+
                     self.target  = user['target'].strip() \
                         if self.target is None and 'target' in user else self.target
                     self.flag    = user['flags'].strip() if 'flags' in user else self.flag
@@ -1085,7 +1085,7 @@ class Run(object):
                 st += ' %4s %3s %4s %3s %4s' % (self.ystart[i],self.xleft[i],self.xright[i],self.nx[i],self.ny[i])
             for i in range(3-self.nwindow/2):
                 st += ' %4s %3s %4s %3s %4s' % (' ',' ',' ',' ',' ')
-            if self.flag is not None: st += ' ' + self.flag
+        if self.flag is not None: st += '  [' + self.flag + ']'
         return st
 
     def is_not_power_onoff(self):

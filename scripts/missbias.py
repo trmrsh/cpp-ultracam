@@ -132,7 +132,7 @@ for run in sorted(nonbias.keys()):
         print '%-20s %s' % (run,nonbias[run])
 
 if not ignore:
-    print '\nRuns marked "data caution" are probably acquisition runs which don\'t need biases; use -i to ignore these'
+    print '\nRuns marked "[data caution]" are probably acquisition runs which don\'t need biases; use -i to ignore these'
 else:
     print
 
