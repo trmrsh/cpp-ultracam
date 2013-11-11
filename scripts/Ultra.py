@@ -639,12 +639,12 @@ class Run(object):
                     if self.ra is not None and self.dec is not None and self.telescope is not None and \
                             self.utstart is not None and self.utend is not None and self.date is not None and self.date != 'UNDEF':
                         try:
-                            (tel,obs,longitude,latitude,height) = subs.observatory(self.telescope)
-                            (ra,dec,system) = subs.str2radec(self.ra + ' ' + self.dec)
+                            tel,obs,longitude,latitude,height = subs.observatory(self.telescope)
+                            ra,dec,system = subs.str2radec(self.ra + ' ' + self.dec)
                             uts = subs.hms2d(self.utstart)
-                            (d,m,y) = self.date.split('/')
+                            d,m,y = self.date.split('/')
                             mjd = sla.cldj(int(y), int(m), int(d))
-                            (ams,alt,az,ha,pa,delz) = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)                    
+                            ams,alt,az,ha,pa,delz = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)                    
                             if ha > 12.:
                                 self.hastart = ha - 24.
                             else:
@@ -652,7 +652,7 @@ class Run(object):
                             ute = subs.hms2d(self.utend)
                             if ute < uts:
                                 mjd += 1
-                            (ame,alt,az,ha,pa,delz) = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)                    
+                            ame,alt,az,ha,pa,delz = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)                    
                             if ha < self.hastart:
                                 self.haend = ha + 24.
                             else:
@@ -684,7 +684,6 @@ class Run(object):
                         self.nx[0]     = '540'
                         self.ny[0]     = '1032'
                     else:
-
                         self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
                         self.xleft[0]  = param['X1L_START'] if 'X1L_START' in param else None
                         self.xright[0] = param['X1R_START'] if 'X1R_START' in param else None
@@ -709,20 +708,45 @@ class Run(object):
 
                     self.speed    = ('F' if param['SPEED'] == '0' else \
                                          ('M' if param['SPEED'] == '1' else 'S')) if 'SPEED' in param else None
-                    self.en_clr   = ('Y' if param['EN_CLR'] == '1' else 'N') if 'EN_CLR' in param else None
+                    self.en_clr   = ('Y' if param['EN_CLR'] == '1' else 'N') if 'EN_CLR' in param else 'N'
                     self.hv_gain  = param['HV_GAIN'] if 'HV_GAIN' in param else None
                     self.output   = ('N' if param['OUTPUT'] == '0' else 'A') if 'OUTPUT' in param else None
 
-                    self.xstart[0] = param['X1_START'] if 'X1_START' in param else None
-                    self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
-                    self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
-                    self.ny[0]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
+                    if self.mode.startswith('USPEC'):
+                        self.xstart[0] = param['X1_START'] if 'X1_START' in param else None
+                        self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
+                        self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
+                        self.ny[0]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
 
-                    if self.nwindow > 1:
+                        if self.nwindow > 1:
+                            self.xstart[1] = param['X2_START'] if 'X2_START' in param else None
+                            self.ystart[1] = param['Y2_START'] if 'Y2_START' in param else None
+                            self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
+                            self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
+
+                        elif self.nwindow > 2:
+                            self.xstart[2] = param['X3_START'] if 'X3_START' in param else None
+                            self.ystart[2] = param['Y3_START'] if 'Y3_START' in param else None
+                            self.nx[2]     = param['X3_SIZE'] if 'X3_SIZE' in param else None
+                            self.ny[2]     = param['Y3_SIZE'] if 'Y3_SIZE' in param else None
+
+                        elif self.nwindow > 3:
+                            self.xstart[3] = param['X4_START'] if 'X4_START' in param else None
+                            self.ystart[3] = param['Y4_START'] if 'Y4_START' in param else None
+                            self.nx[3]     = param['X4_SIZE'] if 'X4_SIZE' in param else None
+                            self.ny[3]     = param['Y4_SIZE'] if 'Y4_SIZE' in param else None
+
+                    else:
+                        # drift mode, two windows
+                        self.xstart[0] = param['X1_START'] if 'X1_START' in param else None
+                        self.ystart[0] = param['Y1_START'] if 'Y1_START' in param else None
+                        self.nx[0]     = param['X1_SIZE'] if 'X1_SIZE' in param else None
+                        self.ny[0]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
+
                         self.xstart[1] = param['X2_START'] if 'X2_START' in param else None
-                        self.ystart[1] = param['Y2_START'] if 'Y2_START' in param else None
+                        self.ystart[1] = param['Y1_START'] if 'Y1_START' in param else None
                         self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
-                        self.ny[1]     = param['Y2_SIZE'] if 'Y2_SIZE' in param else None
+                        self.ny[1]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
 
             if warn and self.id is None and self.is_science() and self.target not in sskip:
                 sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.target + '\n')
@@ -972,7 +996,6 @@ class Run(object):
                 ((self.y_bin is None and other.y_bin is None) or self.y_bin == other.y_bin) and \
                 ((self.nwindow is None and other.nwindow is None) or self.nwindow == other.nwindow) and \
                 ((self.speed is None and other.speed is None) or self.speed == other.speed) and \
-                ((self.en_clr is None and other.en_clr is None) or self.en_clr == other.en_clr) and \
                 (not Run.FUSSY or (self.hv_gain is None and other.hv_gain is None) or self.hv_gain == other.hv_gain) and \
                 ((self.output is None and other.output is None) or self.output == other.output)
 
@@ -1051,10 +1074,10 @@ class Run(object):
             return NotImplemented
 
     def __str__(self):
-        st = '%-25s %3s %1d %1s %1s %7s' % (self.target,self.instrument,self.nwindow,self.x_bin,self.y_bin,self.mode)
+        st = '%-25s %3s %1d %1s %1s %-7s' % (self.target,self.instrument,self.nwindow,self.x_bin,self.y_bin,self.mode)
         if self.instrument == 'USP':
             st += ' %s %s %s %s' % (self.speed,self.en_clr,self.hv_gain,self.output)
-            for i in range(2):
+            for i in range(self.nwindow):
                 st += ' %4s %4s %4s %4s' % (self.xstart[i],self.ystart[i],self.nx[i],self.ny[i])
         elif self.instrument == 'UCM':
             st += ' %s' % (self.speed,)
