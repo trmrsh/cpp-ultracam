@@ -403,12 +403,13 @@ int main(int argc, char* argv[]){
 		Ultracam::Mdefect defect;
 		std::vector<Ultracam::Transform> transform;
 		if(def){
-			std::string sdef;
-			input.get_value("defect", sdef, "defect", "name of defect file");
-			defect.rasc(sdef);
-			if(defect.size() != mwindow.size())
-				throw Ultracam::Input_Error("Conflicting numbers of CCDs between defect and data file");
-	
+		    std::string sdef;
+		    input.get_value("defect", sdef, "defect", "name of defect file");
+		    defect.rasc(sdef);
+		    if(defect.size() != mwindow.size())
+			throw Ultracam::Input_Error("Conflicting numbers of CCDs between defect and data file");
+		    
+		    if(data.size() > 1){
 			std::string strans;
 			input.get_value("transform", strans, "transform", "name of CCD orientation file");
 			std::ifstream ifstr(strans.c_str());
@@ -416,35 +417,35 @@ int main(int argc, char* argv[]){
 			double scale, angle, dx, dy;
 			size_t ncount = 0;
 			while(ifstr){
-				c = ifstr.peek();
-				if(c == '#' || c == ' '){
-		
-					ifstr.ignore(100000, '\n');
-		
-				}else{
-		
-					ifstr >> scale >> angle >> dx >> dy;
-					if(ifstr){
-						ifstr.ignore(100000, '\n');
-						transform.push_back(Ultracam::Transform(scale, angle, dx, dy));
-						ncount++;
-					}
+			    c = ifstr.peek();
+			    if(c == '#' || c == ' '){
+				ifstr.ignore(100000, '\n');
+				
+			    }else{
+				ifstr >> scale >> angle >> dx >> dy;
+				if(ifstr){
+				    ifstr.ignore(100000, '\n');
+				    transform.push_back(Ultracam::Transform(scale, angle, dx, dy));
+				    ncount++;
 				}
+			    }
 			}
 			ifstr.close();
 			if(ncount != data.size())
-				throw Ultracam::Input_Error("Transformation file has incorrect number of CCDs = " + Subs::str(ncount) +
-											" cf the expected number = " + Subs::str(data.size()));
-	
+			    throw Ultracam::Input_Error("Transformation file has incorrect number of CCDs = " 
+							+ Subs::str(ncount) + " cf the expected number = " + 
+							Subs::str(data.size()));
+			
 			// Transform all defects onto the coordinates of the CCD to be displayed
 			if(!allccds){
-				for(size_t nc=0; nc<defect.size(); nc++){
-					for(size_t io=0; io<defect[nc].size(); io++){
-						defect[nc][io].transform(transform[nc],false);
-						defect[nc][io].transform(transform[nccd],true);
-					}
+			    for(size_t nc=0; nc<defect.size(); nc++){
+				for(size_t io=0; io<defect[nc].size(); io++){
+				    defect[nc][io].transform(transform[nc],false);
+				    defect[nc][io].transform(transform[nccd],true);
 				}
+			    }
 			}
+		    }
 		}
     
 		bool setup;
