@@ -41,7 +41,7 @@ gentemp_SOURCES    = gentemp.cc
 
 ## special case for this routine which does not need other libraries
 gettime_SOURCES   = gettime.cc
-gettime: gettime.cc
+gettime$(EXEEXT): gettime.cc
 	g++ -o gettime gettime.cc
 
 grab_SOURCES       = grab.cc 
