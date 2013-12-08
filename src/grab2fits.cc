@@ -109,7 +109,7 @@ Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{fits2ucm.html}{fits2ucm}
 #include <fstream>
 #include "trm/subs.h"
 #include "trm/time.h"
-#include "fitsio.h"
+#include "cfitsio/fitsio.h"
 #include "trm/input.h"
 #include "trm/header.h"
 #include "trm/frame.h"

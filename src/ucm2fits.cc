@@ -52,7 +52,7 @@ Related routines: !!ref{grab2fits.html}{grab2fits}, !!ref{fits2ucm.html}{fits2uc
 #include <string>
 #include <sstream>
 #include <vector>
-#include "fitsio.h"
+#include "cfitsio/fitsio.h"
 #include "trm/subs.h"
 #include "trm/input.h"
 #include "trm/frame.h"
