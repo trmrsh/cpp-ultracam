@@ -114,6 +114,22 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
     bool first_plot;
     if(first){
 
+        // check all_ccds -- if no valid times, bail out.
+        bool bail_out = true; 
+        for(size_t nccd=0; nccd<all_ccds.size(); nccd++){ 
+            for(size_t naper=0; naper<all_ccds[nccd].size(); naper++){
+                if(all_ccds[nccd][naper].time_ok){
+                    bail_out = false;
+                    break;
+                }
+            }
+            if(!bail_out) break;
+        }
+        if(bail_out) return;
+    
+
+
+
 	x = time_since_start = 0.f;
 	lc_buffer.push_back(std::make_pair(time_since_start, all_ccds));
 	first_point = all_ccds;
@@ -520,19 +536,19 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 	    cpglab(" ", "X", " ");
       
 	    for(LCBIT lcbi=lc_buffer.begin(); lcbi != lc_buffer.end(); lcbi++){
-		for(LPIT lpi=Reduce::position_targ.begin(); lpi != Reduce::position_targ.end(); lpi++){
-	  
-		    if(ok_to_plot_pos(lpi, lcbi->second)){
-	    
-			xp   = lcbi->second[lpi->nccd][lpi->targ].xpos + lpi->off -
-			    first_point[lpi->nccd][lpi->targ].xpos;
-	    
-			if(lpi->colour){
-			    cpgsci(lpi->colour);
-			    cpgpt1(lcbi->first,xp,plot_symb(lcbi->second[lpi->nccd][lpi->targ].code));
-			}
-		    }
-		}
+            for(LPIT lpi=Reduce::position_targ.begin(); lpi != Reduce::position_targ.end(); lpi++){
+                
+                if(ok_to_plot_pos(lpi, lcbi->second)){
+                    
+                    xp   = lcbi->second[lpi->nccd][lpi->targ].xpos + lpi->off -
+                        first_point[lpi->nccd][lpi->targ].xpos;
+                    
+                    if(lpi->colour){
+                        cpgsci(lpi->colour);
+                        cpgpt1(lcbi->first,xp,plot_symb(lcbi->second[lpi->nccd][lpi->targ].code));
+                    }
+                }
+            }
 	    }
       
 	    // Y position data
@@ -548,16 +564,18 @@ void Ultracam::light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::
 	    cpglab(" ", "Y", " ");
     
 	    for(LCBIT lcbi=lc_buffer.begin(); lcbi != lc_buffer.end(); lcbi++){
-		for(LPIT lpi=Reduce::position_targ.begin(); lpi != Reduce::position_targ.end(); lpi++){
-		    if(code_ok_to_plot(lcbi->second[lpi->nccd][lpi->targ].code)){
-			yp   = lcbi->second[lpi->nccd][lpi->targ].ypos + lpi->off -
-			    first_point[lpi->nccd][lpi->targ].ypos;
-			if(lpi->colour >= 0){
-			    cpgsci(lpi->colour);
-			    cpgpt1(lcbi->first,yp,plot_symb(lcbi->second[lpi->nccd][lpi->targ].code));
-			}
-		    }
-		}
+            for(LPIT lpi=Reduce::position_targ.begin(); lpi != Reduce::position_targ.end(); lpi++){
+
+                if(ok_to_plot_pos(lpi, lcbi->second)){
+                    yp   = lcbi->second[lpi->nccd][lpi->targ].ypos + lpi->off -
+                        first_point[lpi->nccd][lpi->targ].ypos;
+
+                    if(lpi->colour){
+                        cpgsci(lpi->colour);
+                        cpgpt1(lcbi->first,yp,plot_symb(lcbi->second[lpi->nccd][lpi->targ].code));
+                    }
+                }
+            }
 	    }
 	}
 
