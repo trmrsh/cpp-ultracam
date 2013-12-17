@@ -37,18 +37,26 @@ dnl Third-party software checks
 
 dnl First headers
 
-AC_CHECK_HEADERS([stdlib.h float.h math.h sstream string fstream iostream], [], AC_MSG_ERROR(missing header; please fix))
+AC_CHECK_HEADERS([stdlib.h float.h math.h sstream string fstream iostream], [], AC_MSG_ERROR([missing header; please fix]))
 
-AC_CHECK_HEADERS([pcrecpp.h slalib.h cfitsio/fitsio.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR(missing header; please fix))
+AC_CHECK_HEADERS([pcrecpp.h slalib.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR([missing header; please fix]))
+
+dnl cope with two possible locations for fitsio.h
+AC_CHECK_HEADERS([fitsio.h cfitsio/fitsio.h], [break])
+
+if test x"$ac_cv_header_cfitsio_fitsio_h" != xyes -a x"$ac_cv_header_fitsio_h" != xyes
+then
+    AC_MSG_ERROR([fitsio.h missing or unusable; please fix])
+fi
 
 dnl Now libraries
-AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR(cannot find the pcre C++ library))
+AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR([cannot find the pcre C++ library]))
 
-AC_CHECK_LIB([xerces-c], [main], [], AC_MSG_ERROR(cannot find the xerces-c library))
+AC_CHECK_LIB([xerces-c], [main], [], AC_MSG_ERROR([cannot find the xerces-c library]))
 
-AC_CHECK_LIB([csla], [main], [], AC_MSG_ERROR(cannot find the sla C library))
+AC_CHECK_LIB([csla], [main], [], AC_MSG_ERROR([cannot find the sla C library]))
 
-AC_CHECK_LIB([cfitsio], [main], [], AC_MSG_ERROR(cannot find the cfitsio library))
+AC_CHECK_LIB([cfitsio], [main], [], AC_MSG_ERROR([cannot find the cfitsio library]))
 
 LIBCURL_CHECK_CONFIG
 
@@ -59,6 +67,6 @@ dnl Installation program
 AC_PROG_INSTALL
 
 dnl The Makefiles to create
-AC_CONFIG_FILES([Makefile include/Makefile src/Makefile scripts/Makefile doc/Makefile]) 
+AC_CONFIG_FILES([Makefile include/Makefile src/Makefile scripts/Makefile doc/Makefile])
 
 AC_OUTPUT

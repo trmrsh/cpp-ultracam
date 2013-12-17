@@ -72,11 +72,18 @@ Related routines: !!ref{ucm2fits.html}{ucm2fits}, !!ref{grab2fits.html}{grab2fit
 
 // Every time you see READ THIS, there will be comments on what to do.
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 #include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <vector>
-#include "cfitsio/fitsio.h"
+#ifdef HAVE_CFITSIO_FITSIO_H
+# include "cfitsio/fitsio.h"
+#else
+# include "fitsio.h"
+#endif
 #include "trm/subs.h"
 #include "trm/input.h"
 #include "trm/frame.h"
