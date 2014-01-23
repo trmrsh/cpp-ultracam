@@ -143,12 +143,12 @@ for rdir in rdirs:
     fg.close()
 
     runs  = []
-    
+
     # now to the night-by-night files
     for inight,ndir in enumerate(ndirs):
 
         npath = os.path.join(rdir, ndir)
-            
+
         # Read night log (does not matter if none exists, although a warning will be printed)
         nlog = Ultra.Log(os.path.join(npath, ndir + '.dat'))
 
@@ -160,13 +160,13 @@ for rdir in rdirs:
         htlog_s = os.path.join(npath, ndir + '_short.html')
         if os.path.exists(htlog_f) and os.path.exists(htlog_s) and not args.all: continue
 
-        if not os.path.exists(htlog_f) or args.all: 
+        if not os.path.exists(htlog_f) or args.all:
             print 'Generating',htlog_f
             fh_f = open(htlog_f, 'w')
         else:
             fh_f = None
 
-        if not os.path.exists(htlog_s) or args.all: 
+        if not os.path.exists(htlog_s) or args.all:
             print 'Generating',htlog_s
             fh_s = open(htlog_s, 'w')
         else:
@@ -190,34 +190,34 @@ for rdir in rdirs:
                     if fh_s: fh_s.write('\n' + run.html_start(False, previous, next) + '\n')
                     first = False
 
-                if fh_f: fh_f.write('\n' + run.html_table_row(True) + '\n')            
+                if fh_f: fh_f.write('\n' + run.html_table_row(True) + '\n')
                 if fh_s: fh_s.write('\n' + run.html_table_row(False) + '\n')
-            
+
                 expose += float(run.expose) if run.expose is not None and run.expose != ' ' else 0.
                 runs.append(run)
             except Exception, err:
                 print 'XML error: ',err,'in',xml
 
         # Shut down html file(s)
-        if fh_f: 
+        if fh_f:
             fh_f.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
             fh_f.write("""
 <p>
 <table>
 <tr><th class="left">Nb</th><td>nblue, number of u-band co-adds</td></tr>
 <tr><th class="left">Auto ID</th><td>automated look-up of positions
-through a combination of string matching and SIMBAD lookups, this shows the identified object 
+through a combination of string matching and SIMBAD lookups, this shows the identified object
 name</td></tr>
 <tr><th class="left">Dwell</th><td>total time on target</td></tr>
 <tr><th class="left">Cycle</th><td>time from one exposure to the next</td></tr>
-<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the 
+<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the
 data in this parameter.</td></tr>
 </table>
 
 """)
             fh_f.write('</body>\n</html>')
             fh_f.close()
-        if fh_s: 
+        if fh_s:
             fh_s.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
             fh_s.write("""
 <p>
@@ -225,7 +225,7 @@ data in this parameter.</td></tr>
 <tr><th class="left">Nb</th><td>nblue, number of u-band co-adds</td></tr>
 <tr><th class="left">Dwell</th><td>total time on target</td></tr>
 <tr><th class="left">Cycle</th><td>time from one exposure to the next</td></tr>
-<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the 
+<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' = fast. Bias frames must match the
 data in this parameter.</td></tr>
 </table>
 
