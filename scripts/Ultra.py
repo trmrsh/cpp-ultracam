@@ -115,15 +115,15 @@ class Times(object):
 
 class Targets(dict):
     """
-    Class to read and store the target positions and regular expressions. 
+    Class to read and store the target positions and regular expressions.
 
     It is a dictionary keyed on target names. Each item is in turn a dictionary
     with the following keys:
 
     'ra'     -- RA (decimal hours)
     'dec'    -- Dec (decimal degrees)
-    'names'  -- A list of matching names. These are names from the logs with 
-                their typos etc that will we identified with the object. 
+    'names'  -- A list of matching names. These are names from the logs with
+                their typos etc that will we identified with the object.
     """
 
     def __init__(self, *fnames):
@@ -132,9 +132,9 @@ class Targets(dict):
         dictionaries if none found and reports an error. Multiple
         file names can be specified; any which do not exist will be skipped.
         The files must have the format
-        
+
         name hh:mm:ss.ss [+-]dd:mm:ss.s lname1 lname2 .. lnameN
-       
+
         where name is the name that will be attached to the target, and
         lname1, lname2 etc, are the names in the log that will be matched to
         give name. The set of 'name's must be unique as must the set of 'lname's
@@ -159,7 +159,7 @@ class Targets(dict):
                         # prepare data
                         target,ra,dec = tokens[:3]
                         target = target.replace('~',' ')
-                        ra,dec,system = subs.str2radec(ra + ' ' + dec) 
+                        ra,dec,system = subs.str2radec(ra + ' ' + dec)
                         names = [token.replace('~',' ') for token in tokens[3:]]
 
                         # check that, if the target has been entered before, as is possible,
@@ -297,16 +297,16 @@ class Run(object):
                      target fails to avoid stressing the Simbad server.
 
         warn      -- If True, and the data is thought to be science (not bias, dark, 
-                     flat, etc) to get message of targets with no match in the 
-                     'targets' (all of them if targets=None, so only sensible 
+                     flat, etc) to get message of targets with no match in the
+                     'targets' (all of them if targets=None, so only sensible
                      to set this if you have a targets object defined)
 
         noid      -- make no effort to ID a target
 
-        At the end there are a whole stack of attributes. Not all will 
+        At the end there are a whole stack of attributes. Not all will
         be set, and if they are not they will be 'None'. Some are specific
-        to either ULTRACAM or ULTRASPEC. If calling this constructor 
-        repeatedly, 'targets' should be updated with any found in Simbad as 
+        to either ULTRACAM or ULTRASPEC. If calling this constructor
+        repeatedly, 'targets' should be updated with any found in Simbad as
         indicated by the simbad flag.
 
         fname      -- name of xml file the run was constructed from
@@ -451,9 +451,9 @@ class Run(object):
                 elif telescope.find('Thai National Observatory 2.4m') > -1:
                     self.telescope = 'TNT'
                 else:
-                    sys.stderr.write('File = ' + self.fname + 
+                    sys.stderr.write('File = ' + self.fname +
                                      ' failed to identify telescope = ' + telescope + '\n')
-            
+
             # identify power ons & offs
             self.poweron  = (self.application.find('poweron') > -1) or \
                 (self.application.find('pon_app') > -1) or \
@@ -502,10 +502,10 @@ class Run(object):
                         qsim = simbad.Query(self.target).query()
                         if len(qsim) == 0:
                             sys.stderr.write('Warning: SIMBAD returned no matches to ' + self.target + '\n')
-                            failures[self.target] = (self.run, self.night, self.number) 
+                            failures[self.target] = (self.run, self.night, self.number)
                         elif len(qsim) > 1:
                             sys.stderr.write('Warning: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
-                            failures[self.target] = (self.run, self.night, self.number) 
+                            failures[self.target] = (self.run, self.night, self.number)
                         else:
                             # OK we have found one, but we are still not done --
                             # some SIMBAD lookup are no good
@@ -513,7 +513,7 @@ class Run(object):
                             pos  = qsim[0]['Position']
                             name = name.strip()
                             name = re.sub(Run.RESPC, ' ', name)
-                            print 'Matched with',name,pos
+                            print 'Matched with name =',name,'position =',pos
                             try:
                                 ms = pos.find('-')
                                 if ms > -1:
@@ -530,13 +530,13 @@ class Run(object):
                                         raise ValueError()
 
                                 # At this point all is OK. Try updating the targets to save repeated lookups ..
-                                if targets:
+                                if targets is not None:
                                     targets.lnames[self.target] = self.id
                                     if self.id in targets:
                                         targets[self.id]['names'].append(self.target)
                                     else:
                                         targets[self.id] = {'ra' : subs.hms2d(self.ra), 'dec' : subs.hms2d(self.dec), 'names' : [self.target,]}
-                                
+
                                 # store the extra names in sims for later storage in AUTO_TARGETS
                                 if self.id in sims:
                                     sims[self.id].append(self.target)
@@ -545,7 +545,7 @@ class Run(object):
 
                             except ValueError, err:
                                 sys.stderr.write('Failed to parse target = ' + name + ', position = ' + pos + '\n')
-                                failures[self.target] = (self.run, self.night, self.number) 
+                                failures[self.target] = (self.run, self.night, self.number)
 
                 if self.id is None:
                     # short-circuit repeated SIMBAD lookups
@@ -616,7 +616,7 @@ class Run(object):
                     self.nwindow = 2
 
                 else:
-                    sys.stderr.write('File = ' + self.fname + 
+                    sys.stderr.write('File = ' + self.fname +
                                      ' failed to identify application = ' + app + '\n')
 
                 if times is not None:
@@ -644,7 +644,7 @@ class Run(object):
                             uts = subs.hms2d(self.utstart)
                             d,m,y = self.date.split('/')
                             mjd = sla.cldj(int(y), int(m), int(d))
-                            ams,alt,az,ha,pa,delz = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)                    
+                            ams,alt,az,ha,pa,delz = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)
                             if ha > 12.:
                                 self.hastart = ha - 24.
                             else:
@@ -652,16 +652,16 @@ class Run(object):
                             ute = subs.hms2d(self.utend)
                             if ute < uts:
                                 mjd += 1
-                            ame,alt,az,ha,pa,delz = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)                    
+                            ame,alt,az,ha,pa,delz = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)
                             if ha < self.hastart:
                                 self.haend = ha + 24.
                             else:
                                 self.haend = ha
-                            amax = ams if ams > ame else ame 
+                            amax = ams if ams > ame else ame
                             if self.hastart < 0 and self.haend > 0.:
                                 amin = 1./cosd(latitude-dec)
                             else:
-                                amin = ams if ams < ame else ame 
+                                amin = ams if ams < ame else ame
                             self.amassmax = '%5.2f' % (amax,)
                             self.amassmin = '%5.2f' % (amin,)
                         except subs.SubsError, err:
@@ -829,17 +829,18 @@ class Run(object):
         previous -- date of previous night of run (None for first night)
         next     -- date of next night of run (None for last night)
         """
-        
-        inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USPC' else None
+
+        inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USP' else None
 
         # build up start with small table indicating the telescope and instrument
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="../ultracam_logs.css" />\n' + \
+            '<link rel="stylesheet" type="text/css" href="../ultra' + \
+            ('spec' if inst == 'ULTRASPEC' else 'cam') + '_logs.css" />\n' + \
             '</head>\n<body>' + \
             '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
             '<tr><td class="left">Instrument:</td>' + td(inst,'left') + '</tr>\n' + \
-            '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table><br>\n' 
+            '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table><br>\n'
 
         # link to the opposite version of the log, i.e. to the full one if this is short, and vice versa
         st += '<a href="' + self.night
@@ -871,13 +872,13 @@ class Run(object):
         # Finally the main table
 
         # First header line
-        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left') 
-        if full: st += th('Auto ID','left') 
+        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left')
+        if full: st += th('Auto ID','left')
         st += th('RA') + th('Dec')
 
-        if full: st += th('Date') 
+        if full: st += th('Date')
 
-        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + th('Frame') + th('Airmass',colspan=2) 
+        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + th('Frame') + th('Airmass',colspan=2)
 
         if self.instrument == 'UCM':
             st += th('Filts')
@@ -885,26 +886,26 @@ class Run(object):
         st += th('Mode') + th('Speed') + th('Bin') + th('Nb')
 
         if self.instrument == 'UCM' and full:
-            st += th('Size1') + th('XLl') + th('XR1') + th('YS1') 
-            st += th('Size2') + th('XL2') + th('XR2') + th('YS2') 
-            st += th('Size3') + th('XL2') + th('XR3') + th('YS3') 
+            st += th('Size1') + th('XLl') + th('XR1') + th('YS1')
+            st += th('Size2') + th('XL2') + th('XR2') + th('YS2')
+            st += th('Size3') + th('XL2') + th('XR3') + th('YS3')
         elif self.instrument == 'USP':
             st += th('Clear')
             st += th("O'put")
             st += th('Gain')
             st += th('X1') + th('Y1') + th('NX1') + th('NY1')
             st += th('X2') + th('Y2') + th('NX2') + th('NY2')
-        
-        st += th('ID') + th('PI') 
+
+        st += th('ID') + th('PI')
         if full: st += th('Observers')
         st += th('Run') + th('Comment','left') + '</tr>\n'
 
         # Second header line
-        st += '<tr>\n' + th('no.') + th('') 
-        if full: st += th('') 
-        st += th('') + th('') 
+        st += '<tr>\n' + th('no.') + th('')
+        if full: st += th('')
+        st += th('') + th('')
 
-        if full: st+= th('Start of run') 
+        if full: st+= th('Start of run')
 
         st += th('start') + th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
 
@@ -914,12 +915,12 @@ class Run(object):
         st += th('') + th('') + th('') + th('')
 
         if self.instrument == 'UCM' and full:
-            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') 
+            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
         elif self.instrument == 'USP':
             st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
 
-        st += th('') + th('') 
-        if full: st += th('') 
+        st += th('') + th('')
+        if full: st += th('')
         st += th('no.') + th('') + '</tr>\n'
 
         return st
@@ -927,7 +928,7 @@ class Run(object):
     def html_table_row(self, full):
         """
         Returns a row of table data. Must be kept consistent with previous header routine
-        
+
         full -- True for full output of windows sizes.
         """
 
@@ -944,8 +945,8 @@ class Run(object):
         else:
             st += td(None if self.ra is None else self.ra[:10])
             st += td(None if self.dec is None else self.dec[:9])
-    
-        if full: 
+
+        if full:
             st += td(self.date)
             st += td(self.utstart)
             st += td(self.utend)
@@ -977,7 +978,7 @@ class Run(object):
             st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
             st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
 
-        st += td(self.pid) + td(self.pi) 
+        st += td(self.pid) + td(self.pi)
         if full: st += tdnw(self.observers.replace(' ', ''))
         st += td('%03d' % self.number)
         st += td(self.comment,'left')
@@ -990,7 +991,7 @@ class Run(object):
         (same instrument, windows, readout speed etc.). Differences in target names, exposure times do
         not matter
         """
-	if (isinstance(other, Run)):
+        if (isinstance(other, Run)):
             ok = self.instrument == other.instrument and same_mode(self,other) and \
                 ((self.x_bin is None and other.x_bin is None) or  self.x_bin == other.x_bin) and \
                 ((self.y_bin is None and other.y_bin is None) or self.y_bin == other.y_bin) and \
