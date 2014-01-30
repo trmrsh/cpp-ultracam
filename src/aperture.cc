@@ -20,23 +20,23 @@ using Ultracam::Ultracam_Error;
  * \param rstar radius of star aperture, unbinned pixels
  * \param rsky1 radius of inner sky aperture
  * \param rsky2 radius of outer sky aperture
- * \param ref   true/false according to whether this is an aperture for referencing positions. That is when 
+ * \param ref   true/false according to whether this is an aperture for referencing positions. That is when
  * apertures are positioned first with a global shift from a few special apertures, is this aperture one of
  * those?
  */
-Ultracam::Aperture::Aperture(double xr, double yr, double xoff, 
-		   double yoff, float rstar, 
-		   float rsky1, float rsky2,
-		   bool ref) : 
+Ultracam::Aperture::Aperture(double xr, double yr, double xoff,
+           double yoff, float rstar,
+           float rsky1, float rsky2,
+           bool ref) :
   x_r(xr), y_r(yr), x_off(xoff), y_off(yoff), r_star(rstar),
   r_sky1(rsky1), r_sky2(rsky2), ref_star(ref), ap_ok(true), mask_(), extra_() {
- 
+
   if(bad_aper(rstar,rsky1,rsky2))
-    throw 
+    throw
       Ultracam_Error("Invalid aperture radii in "
-			       "Ultracam::Aperture::Aperture(double,"
-			       " double, double,"
-			       " float, float, float)");
+                   "Ultracam::Aperture::Aperture(double,"
+                   " double, double,"
+                   " float, float, float)");
 }
 
 /** Sets the radius of the star aperture
@@ -89,13 +89,13 @@ void Ultracam::Aperture::set_radii(float rstar, float rsky1, float rsky2) {
  * \param rsky1 inner radius of sky annulus
  * \param rsky2 outer radius of sky annulus
  */
-void Ultracam::Aperture::set(double xr, double yr, double xoff, 
-		   double yoff, float rstar, float rsky1, 
-		   float rsky2){
+void Ultracam::Aperture::set(double xr, double yr, double xoff,
+           double yoff, float rstar, float rsky1,
+           float rsky2){
     if(bad_aper(rstar,rsky1,rsky2))
       throw Ultracam_Error("Invalid aperture radii in "
-		   "void Ultracam::Aperture::set(double, double, double,"
-		   " double, float, float, float)");
+           "void Ultracam::Aperture::set(double, double, double,"
+           " double, float, float, float)");
     x_r = xr;
     y_r = yr;
     x_off = xoff;
@@ -113,8 +113,8 @@ void Ultracam::Aperture::set(double xr, double yr, double xoff,
  * \param y Y coordinate of point to test
  * \return number to determine the relative closeness of the point to the aperture.
  */
-float Ultracam::Aperture::how_far(float x, 
-				    float y) const {
+float Ultracam::Aperture::how_far(float x,
+                    float y) const {
   using Subs::sqr;
   float d = sqrt(sqr(x-xpos()) + sqr(y-ypos()));
   if(d < r_star){
@@ -166,8 +166,8 @@ void Ultracam::Aperture::del_extra(int i){
  * \param rsky2 outer sky annulus radius
  * \relates Ultracam::Aperture
  */
-bool Ultracam::bad_aper(float rstar, float rsky1, 
-	      float rsky2){
+bool Ultracam::bad_aper(float rstar, float rsky1,
+          float rsky2){
   return (rstar <= 0. || rsky1 <= 0. || rsky1 >= rsky2);
 }
 
@@ -219,7 +219,7 @@ void Ultracam::pgptxt(const Ultracam::Aperture& aperture, const std::string& lab
   cpgqwin(&x1,&x2,&y1,&y2);
   float xr = (x2-x1)/20., yr = (y2-y1)/20.;
   x1 -= xr;
-  x2 += xr; 
+  x2 += xr;
   y1 -= yr;
   y2 += yr;
 
@@ -247,14 +247,14 @@ void Ultracam::pgptxt(const Ultracam::Aperture& aperture, const std::string& lab
 std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Aperture& obj){
   s << "x,y = " << obj.xref() << ", " << obj.yref()
     << "; x_off,y_off = " << obj.xoff() << ", " << obj.yoff()
-    << "; rstar,rsky1,rsky2 = " << obj.rstar() << ", " 
-    << obj.rsky1() << ", " << obj.rsky2() << "; ref = " 
+    << "; rstar,rsky1,rsky2 = " << obj.rstar() << ", "
+    << obj.rsky1() << ", " << obj.rsky2() << "; ref = "
     << obj.ref() << "; state = " << obj.ap_ok;
 
   s << "; masked =";
   for(int i=0; i<obj.nmask(); i++)
     s << " " << obj.mask(i);
-  
+
   s << "; extra =";
   for(int i=0; i<obj.nextra(); i++)
     s << " " << obj.extra(i);
@@ -269,40 +269,40 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Aperture& obj){
   bool refstar, apok;
   std::vector<Ultracam::sky_mask> mask;
   std::vector<Ultracam::extra_star> extra;
-  
+
   // x,y
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> xr) || !s.get(ch) || !(s >> yr)) 
+  if(!s || !(s >> xr) || !s.get(ch) || !(s >> yr))
     throw Ultracam_Error("Invalid input into Ultracam::Aperture::operator>> (1)");
-  
+
   // xoff,yoff
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> xoff) || !s.get(ch) || !(s >> yoff)) 
-    throw 
+  if(!s || !(s >> xoff) || !s.get(ch) || !(s >> yoff))
+    throw
       Ultracam_Error("Invalid input into Ultracam::Aperture::operator>> (2)");
-  
+
   // aperture radii
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> rstar) || !s.get(ch) || !(s >> rsky1) 
-     || !s.get(ch) || !(s >> rsky2)) 
-    throw 
+  if(!s || !(s >> rstar) || !s.get(ch) || !(s >> rsky1)
+     || !s.get(ch) || !(s >> rsky2))
+    throw
       Ultracam_Error("Invalid input into Ultracam::Aperture::operator>> (3)");
 
   if(bad_aper(rstar,rsky1,rsky2))
-    throw 
+    throw
       Ultracam_Error("Invalid aperture radii in "
-			       "istream& operator>>(std::istream&, Ultracam::Aperture&)");
+                   "istream& operator>>(std::istream&, Ultracam::Aperture&)");
 
   // reference or not
   while(s.get(ch) && ch != '=');
   if(!s || !(s >> refstar))
-    throw 
+    throw
       Ultracam_Error("Invalid input into Ultracam::Aperture::operator>> (4)");
 
   // aperture ok or not
   while(s.get(ch) && ch != '=');
   if(!s || !(s >> apok))
-    throw 
+    throw
       Ultracam_Error("Invalid input into Ultracam::Aperture::operator>> (5)");
 
   // offset masks

@@ -16,11 +16,11 @@
 !!emph{badgen} generates a frame in which all pixels within an input frame that lie within
 a certain range of values are set to 1 while all the others are set to zero. This can be used
 to generate bad pixel masks. A bad pixel mask is an ordinary ultracam frame in which good
-pixels have been set = 0, while bad pixels are set to integral positive values. For instance, 
+pixels have been set = 0, while bad pixels are set to integral positive values. For instance,
 take a flat field, smooth it with !!ref{boxavg.html}{boxavg} and/or !!ref{boxmed.html}{boxmed}
-and divide by its smoothed version. Then you can 
-identify all pixels with value below 0.8 (or something) as bad using this routine. You can define several 
-levels of badness with multiple runs of this routine, and add the resulting frames together after multiplication 
+and divide by its smoothed version. Then you can
+identify all pixels with value below 0.8 (or something) as bad using this routine. You can define several
+levels of badness with multiple runs of this routine, and add the resulting frames together after multiplication
 of the individual frames by an integer denoting the level of badness. Avoid the value 10 which I
 reserve for possible cosmic ray IDs in the future.
 !!ref{reduce.html}{reduce} then stores the worst bad pixel encountered in each aperture in the log file.
@@ -84,15 +84,15 @@ int main(int argc, char* argv[]){
 
     for(size_t ic=0; ic<frame.size(); ic++){
       for(size_t iw=0; iw<frame[ic].size(); iw++){
-	Ultracam::Windata &dwin = frame[ic][iw];
-	for(int iy=0; iy<frame[ic][iw].ny(); iy++){
-	  for(int ix=0; ix<frame[ic][iw].nx(); ix++){
-	    if(dwin[iy][ix] >= vmin && dwin[iy][ix] <= vmax)
-	      dwin[iy][ix] = 1;
-	    else
-	      dwin[iy][ix] = 0;
-	  }
-	}
+    Ultracam::Windata &dwin = frame[ic][iw];
+    for(int iy=0; iy<frame[ic][iw].ny(); iy++){
+      for(int ix=0; ix<frame[ic][iw].nx(); ix++){
+        if(dwin[iy][ix] >= vmin && dwin[iy][ix] <= vmax)
+          dwin[iy][ix] = 1;
+        else
+          dwin[iy][ix] = 0;
+      }
+    }
       }
     }
 

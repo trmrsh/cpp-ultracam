@@ -26,7 +26,7 @@ cadd input constant output [nccd nwin]!!break
 !!arg{input}{Input frame}
 !!arg{constant}{Constant to add}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be added, except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be added, except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to be processed.}
 !!table
@@ -63,8 +63,8 @@ csub input constant output [nccd nwin]!!break
 !!arg{input}{Input frame}
 !!arg{constant}{Constant to subtract}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be subtracted, except 
-that 0 means all but then allows a particular window of each 
+!!arg{nccd}{CCD number if only one to be subtracted, except
+that 0 means all but then allows a particular window of each
 CCD to be handled.}
 !!arg{nwin}{Window number if only one to be processed.}
 !!table
@@ -101,8 +101,8 @@ cmul input constant output [nccd nwin]!!break
 !!arg{input}{Input frame}
 !!arg{constant}{Constant to multiply by}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be multiplied, 
-except that 0 means all but  then allows a particular 
+!!arg{nccd}{CCD number if only one to be multiplied,
+except that 0 means all but  then allows a particular
 window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to processed.}
 !!table
@@ -139,7 +139,7 @@ cdiv input constant output [nccd nwin]!!break
 !!arg{input}{Input frame}
 !!arg{constant}{Second input frame}
 !!arg{output}{Constant to divide by}
-!!arg{nccd}{CCD number if only one to be divided, except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be divided, except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to be processed.}
 !!table
@@ -153,7 +153,7 @@ See also !!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 
 !!begin
 
-!!title   cset 
+!!title   cset
 !!author  T.R. Marsh
 !!created 16 May 2001
 !!revised 11 February 2002
@@ -179,7 +179,7 @@ cset input constant output [nccd nwin]!!break
 !!arg{input}{Input frame}
 !!arg{constant}{Constant to set}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be set, except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be set, except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to be processed.}
 !!table
@@ -218,8 +218,8 @@ int main(int argc, char* argv[]){
     if(slash != std::string::npos) comm.erase(0,slash+1);
 
     const int NCOM = 5;
-    std::string command[NCOM] = {"cadd", "csub", "cmul", "cdiv", 
-			    "cset"};
+    std::string command[NCOM] = {"cadd", "csub", "cmul", "cdiv",
+                "cset"};
 
     bool recog = false;
     for(int i=0; i<NCOM && !recog; i++) recog = (comm == command[i]);
@@ -278,93 +278,93 @@ int main(int argc, char* argv[]){
 
     if(comm == "cadd"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame[nccd][nwin] += constant;
-	}else{
-	  for(size_t iw=0; iw<frame[nccd].size(); iw++)
-	    frame[nccd][iw] += constant;
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame[nccd][nwin] += constant;
+    }else{
+      for(size_t iw=0; iw<frame[nccd].size(); iw++)
+        frame[nccd][iw] += constant;
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame.size(); ic++)
-	  if(nwin < frame[ic].size())
-	    frame[ic][nwin] += constant;
+    nwin--;
+    for(size_t ic=0; ic<frame.size(); ic++)
+      if(nwin < frame[ic].size())
+        frame[ic][nwin] += constant;
       }else{
-	frame += constant;
+    frame += constant;
       }
     }else if(comm == "csub"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame[nccd][nwin] -= constant;
-	}else{
-	  for(size_t iw=0; iw<frame[nccd].size(); iw++)
-	    frame[nccd][iw] -= constant;
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame[nccd][nwin] -= constant;
+    }else{
+      for(size_t iw=0; iw<frame[nccd].size(); iw++)
+        frame[nccd][iw] -= constant;
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame.size(); ic++)
-	  if(nwin < frame[ic].size())
-	    frame[ic][nwin] -= constant;
+    nwin--;
+    for(size_t ic=0; ic<frame.size(); ic++)
+      if(nwin < frame[ic].size())
+        frame[ic][nwin] -= constant;
       }else{
-	frame -= constant;
+    frame -= constant;
       }
     }else if(comm == "cmul"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame[nccd][nwin] *= constant;
-	}else{
-	  for(size_t iw=0; iw<frame[nccd].size(); iw++)
-	    frame[nccd][iw] *= constant;
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame[nccd][nwin] *= constant;
+    }else{
+      for(size_t iw=0; iw<frame[nccd].size(); iw++)
+        frame[nccd][iw] *= constant;
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame.size(); ic++)
-	  if(nwin < frame[ic].size())
-	    frame[ic][nwin] *= constant;
+    nwin--;
+    for(size_t ic=0; ic<frame.size(); ic++)
+      if(nwin < frame[ic].size())
+        frame[ic][nwin] *= constant;
       }else{
-	frame *= constant;
+    frame *= constant;
       }
     }else if(comm == "cdiv"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame[nccd][nwin] /= constant;
-	}else{
-	  for(size_t iw=0; iw<frame[nccd].size(); iw++)
-	    frame[nccd][iw] /= constant;
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame[nccd][nwin] /= constant;
+    }else{
+      for(size_t iw=0; iw<frame[nccd].size(); iw++)
+        frame[nccd][iw] /= constant;
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame.size(); ic++)
-	  if(nwin < frame[ic].size())
-	    frame[ic][nwin] /= constant;
+    nwin--;
+    for(size_t ic=0; ic<frame.size(); ic++)
+      if(nwin < frame[ic].size())
+        frame[ic][nwin] /= constant;
       }else{
-	frame /= constant;
+    frame /= constant;
       }
     }else if(comm == "cset"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame[nccd][nwin] = constant;
-	}else{
-	  for(size_t iw=0; iw<frame[nccd].size(); iw++)
-	    frame[nccd][iw] = constant;
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame[nccd][nwin] = constant;
+    }else{
+      for(size_t iw=0; iw<frame[nccd].size(); iw++)
+        frame[nccd][iw] = constant;
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame.size(); ic++)
-	  if(nwin < frame[ic].size())
-	    frame[ic][nwin] = constant;
+    nwin--;
+    for(size_t ic=0; ic<frame.size(); ic++)
+      if(nwin < frame[ic].size())
+        frame[ic][nwin] = constant;
       }else{
-	frame = constant;
+    frame = constant;
       }
     }else{
       std::string disaster = "Can't process command ";

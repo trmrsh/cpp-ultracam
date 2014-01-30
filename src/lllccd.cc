@@ -7,7 +7,7 @@
 
 /** Subroutine to generate probability distributions of L3 CCDs for use in simulating
  * their noise characteristics.
- * 
+ *
  * \param nstage the number of multiplication steps in the avalanche serial register, e.g. 591
  * \param p      the multiplication probability per stage, e.g. 0.015
  * \param pcic   the probability of a CIC per stage
@@ -20,7 +20,7 @@
  * maximum dimension.
  */
 
-void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Array1D<double> >& cdf){ 
+void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Array1D<double> >& cdf){
 
   std::cout << "Now computing CDFs. This can take a while." << std::endl;
   const int NIMAX = cdf.size();
@@ -43,17 +43,17 @@ void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Ar
   // Number of points for the FFTs.
   const int NFFT = int(pow(2.,int(log(2.*NMAX)/log(2.))+1));
 
-  // Grab memory. 
+  // Grab memory.
   Subs::Array1D<double> prob(NFFT), fft(NFFT), cfft(NFFT);
-  
+
   // Initialise the single electron probability array which is 1 for n = 1,
-  // but zero otherwise. Note that for a weird reason I do not understand, 
+  // but zero otherwise. Note that for a weird reason I do not understand,
   // g++ seems to run faster if the numbers are not set to precisely zero
   for(int i=0; i<NMAX; i++)
     prob[i] = DBL_MIN;
   prob[1] = 1.;
 
-  // Initialise the cumulative DFT for the CIC probabilities with the DFT of 
+  // Initialise the cumulative DFT for the CIC probabilities with the DFT of
   // a delta function at zero representing the initial 0 electrons
   fft[0] = fft[1] = 1;
   for(int i=2; i<NFFT; i+=2){
@@ -73,14 +73,14 @@ void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Ar
     // Copy the probabilities into the maximum length CDF
     for(int i=0; i<NMAX; i++)
       cdf[NSTORE][i] = prob[i];
-    
+
     // Set probability to (almost) zero beyond NMAX to avoid wrap round errors
     for(int i=NMAX; i<NFFT; i++)
       prob[i] = DBL_MIN;
-    
+
     // FFT the probability array
     Subs::fftr(prob, NFFT, 1);
-    
+
     // Multiply this in accounting for probability of form (1-p_c)\delta_{0n} + p_c P_r(n)
     // This is the convolution needed for the CIC probabilities
     fft[0] *= CICCOMP+pcic*prob[0];
@@ -101,11 +101,11 @@ void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Ar
       prob[i]     = real;
       prob[i+1]   = imag;
     }
-    
+
     // Now inverse FFT
     Subs::fftr(prob, NFFT, -1);
-    
-    // Finally apply the recurrence relation (the 2/NFFT factor is to normalise the FFT/inverse FFT pair) 
+
+    // Finally apply the recurrence relation (the 2/NFFT factor is to normalise the FFT/inverse FFT pair)
     for(int n=0; n<NMAX; n++)
       prob[n] = COMP*cdf[NSTORE][n] + 2*p*prob[n]/NFFT;
 
@@ -139,10 +139,10 @@ void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Ar
     // Set probability to (almost) zero beyond NMAX to avoid wrap round errors
     for(int i=NMAX; i<NFFT; i++)
       prob[i] = DBL_MIN;
-    
+
     // FFT the final single electron probability array in order to be able to convolve it
     Subs::fftr(prob, NFFT, 1);
-    
+
     // Store it (fft no longer needed)
     fft = prob;
 
@@ -151,23 +151,23 @@ void Ultracam::lllccd(int nstage, double p, double pcic, Subs::Buffer1D<Subs::Ar
       fft[0] *= prob[0];
       fft[1] *= prob[1];
       for(int i=2; i<NFFT; i += 2){
-	double real = fft[i]*prob[i]   - fft[i+1]*prob[i+1];
-	double imag = fft[i]*prob[i+1] + fft[i+1]*prob[i];
-	fft[i]     = real;
-	fft[i+1]   = imag;
+    double real = fft[i]*prob[i]   - fft[i+1]*prob[i+1];
+    double imag = fft[i]*prob[i+1] + fft[i+1]*prob[i];
+    fft[i]     = real;
+    fft[i+1]   = imag;
       }
 
       // Copy to buffer which can be inverse FFT-ed without destroying the fft
       cfft = fft;
-      
+
       // Now inverse the buffer
       Subs::fftr(cfft, NFFT, -1);
 
       // Store the result as a CDF
       sum = 0.;
       for(int i=0; i<cdf[n].size(); i++){
-	sum += std::max(0.,2*cfft[i]/NFFT);
-	cdf[n][i] = sum;
+    sum += std::max(0.,2*cfft[i]/NFFT);
+    cdf[n][i] = sum;
       }
     }
   }

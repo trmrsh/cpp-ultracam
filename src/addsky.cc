@@ -37,7 +37,7 @@ brightness, telescope size etc. 1 implies no change.}
 !!arg{seed}{Random number seed. This and succedding arguments is only prompted for
 if there is more than one data file}
 
-!!arg{xdrift, ydrift}{Drift per image in x and y. Note that X is the dispersion direction and therefore represents flexure while 
+!!arg{xdrift, ydrift}{Drift per image in x and y. Note that X is the dispersion direction and therefore represents flexure while
 Y includes guiding as well.}
 
 !!arg{yrms}{RMS scatter in Y.}
@@ -106,10 +106,10 @@ int main(int argc, char* argv[]){
     std::vector<std::string> flist;
     if(Ultracam::Frame::is_ultracam(name)){
       flist.push_back(name);
-    }else{      
+    }else{
       std::ifstream istr(name.c_str());
       while(istr >> name){
-	flist.push_back(name);
+    flist.push_back(name);
       }
       istr.close();
       if(flist.size() == 0) throw Input_Error("No file names loaded");
@@ -152,38 +152,38 @@ int main(int argc, char* argv[]){
       // Now add sky lines to each window of each CCD
       for(size_t nccd=0; nccd<data.size(); nccd++){ // CCDs
 
-	for(size_t nwin=0; nwin<data[nccd].size(); nwin++){ // windows
+    for(size_t nwin=0; nwin<data[nccd].size(); nwin++){ // windows
 
-	  Ultracam::Windata& win = data[nccd][nwin];
-	  int nxs = win.xbin()*xover;
+      Ultracam::Windata& win = data[nccd][nwin];
+      int nxs = win.xbin()*xover;
 
-	  for(size_t nline=0; nline<mskyline[nccd].size(); nline++){ // lines
+      for(size_t nline=0; nline<mskyline[nccd].size(); nline++){ // lines
 
-	    Ultracam::Skyline& line = mskyline[nccd][nline];
+        Ultracam::Skyline& line = mskyline[nccd][nline];
 
-	    // Now add in the sky line to every pixel
-	    for(int iy=0; iy<win.ny(); iy++){
+        // Now add in the sky line to every pixel
+        for(int iy=0; iy<win.ny(); iy++){
 
-	      // X, Y position of the centre of the pixel relative to the spectrum
-	      double y  = win.xccd(iy) + yoff;
-	      double x  = line.get_position(y) + xoff;
+          // X, Y position of the centre of the pixel relative to the spectrum
+          double y  = win.xccd(iy) + yoff;
+          double x  = line.get_position(y) + xoff;
 
-	      // Compute total counts for this column and width
-	      double width = line.get_fwhm(y);
-	      double total = line.get_strength()/sqrt(Constants::TWOPI*width/Constants::EFAC);
+          // Compute total counts for this column and width
+          double width = line.get_fwhm(y);
+          double total = line.get_strength()/sqrt(Constants::TWOPI*width/Constants::EFAC);
 
-	      for(int ix=0; ix<win.nx(); ix++){
-		double dx  = win.xccd(ix) - x;
-		double sum = 0.;
-		for(int ixs=0; ixs<nxs; ixs++){
-		  double diff = Subs::sqr((dx + (ixs+0.5)/nxs - 0.5)/(width/Constants::EFAC))/2;
-		  if(diff < 80.) sum += total*exp(-diff);
-		}
-		win[iy][ix] += sum/nxs;
-	      }
-	    }
-	  }
-	}
+          for(int ix=0; ix<win.nx(); ix++){
+        double dx  = win.xccd(ix) - x;
+        double sum = 0.;
+        for(int ixs=0; ixs<nxs; ixs++){
+          double diff = Subs::sqr((dx + (ixs+0.5)/nxs - 0.5)/(width/Constants::EFAC))/2;
+          if(diff < 80.) sum += total*exp(-diff);
+        }
+        win[iy][ix] += sum/nxs;
+          }
+        }
+      }
+    }
       }
 
       data.write(flist[im]);

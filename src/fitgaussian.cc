@@ -4,9 +4,9 @@
 #include "trm/ultracam.h"
 #include "trm/windata.h"
 
-void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
-		     int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha, 
-		     Subs::Buffer1D<double>& beta, double& chisq, int nvar);
+void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params,
+             int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha,
+             Subs::Buffer1D<double>& beta, double& chisq, int nvar);
 /**
  * Uses the Levenburg-Marquardt method to fit a single 2D gaussian + constant background
  * to a single Windata. Based upon mrqmin from Numerical Recipes
@@ -24,24 +24,24 @@ void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, co
  * iterations proceed, alambda should decrease. If it increases, the last attempt to improve the fit failed, and
  * you should carry on iterating. If it decreases, then look at the change in Chi**2 to see if it worth further
  * iterations. \c alambda should be set -ve on the first call, and should not be altered between subsequent calls.
- * Set -ve again every time you want to re-fit from scratch. Once convergence has occurred, set \c alambda = 0 
+ * Set -ve again every time you want to re-fit from scratch. Once convergence has occurred, set \c alambda = 0
  * to get the covariances sorted properly.
  * \param covar 2D array of covariances. Like \ alambda, these should be left unchanged during a sequence of calls. At the
  * end, after a call with alambda set = 0, they give the covariances on the fitted parameters. The size is automatically
  * increased if necessary by the program to cope with all the parameters.
  */
 
-void Ultracam::fitgaussian(const Windata& data, Windata& sigma, 
-			   int xlo, int xhi, int ylo, int yhi, 
-			   Ultracam::Ppars& params, double& chisq, double& alambda, Subs::Buffer2D<double>& covar){
+void Ultracam::fitgaussian(const Windata& data, Windata& sigma,
+               int xlo, int xhi, int ylo, int yhi,
+               Ultracam::Ppars& params, double& chisq, double& alambda, Subs::Buffer2D<double>& covar){
 
   // function defined at the end
-  
+
 
 
   // Static parameters whose value must be preserved between calls. In the case of the arrays,
   // they must be allocated to the maximum number of parameters to prevent segmentation faults
-  // if the program is called multiple times with varying numbers of parameters. 
+  // if the program is called multiple times with varying numbers of parameters.
 
   static Ultracam::Ppars atry;
   static int nvar;
@@ -58,13 +58,13 @@ void Ultracam::fitgaussian(const Windata& data, Windata& sigma,
     covar.resize(npar,npar);
   }else if(npar > int(covar.nrow()) || npar > int(covar.ncol())){
     throw Ultracam_Error("void Ultracam::fitgaussian(const Windata&, Windata&, int, int, "
-			 "int, int, Ultracam::Ppars&, double&, double&, Subs::Buffer2D<double>&): "
-			 "covariance matrix too small in midst of a sequence -- should not have happened");
+             "int, int, Ultracam::Ppars&, double&, double&, Subs::Buffer2D<double>&): "
+             "covariance matrix too small in midst of a sequence -- should not have happened");
   }
 
   // Initialise a few things if alambda is set negative indicating a restart
   if (alambda < 0.0) {
-    
+
     // Number of variable parameters
     nvar = 0;
     for (int j=0; j<npar; j++)
@@ -114,13 +114,13 @@ void Ultracam::fitgaussian(const Windata& data, Windata& sigma,
   }
 }
 
-void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
-		     int xlo, int xhi, int ylo, int yhi, 
-		     Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar){
+void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params,
+             int xlo, int xhi, int ylo, int yhi,
+             Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar){
 
   int npar = params.npar();
   Subs::Buffer1D<double> dyda(npar);
-  
+
   // Initialise alpha and beta
   for(int j=0; j<nvar; j++){
     for(int k=0; k<=j; k++) alpha[j][k] = 0.;
@@ -145,70 +145,70 @@ void fitgaussian_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, co
     }
     for(int ix=xlo; ix<=xhi; ix++){
       if((sig = sigma[iy][ix]) > 0.){
-	wgt   = 1./Subs::sqr(sig);
-	xoff  = data.xccd(ix)-params.x;
-	if(params.symm){
-	  efac  = params.a*xoff*xoff + yefac;
-	}else{
-	  efac  = xoff*(params.a*xoff+2.*params.b*yoff) + yefac;
-	}
+    wgt   = 1./Subs::sqr(sig);
+    xoff  = data.xccd(ix)-params.x;
+    if(params.symm){
+      efac  = params.a*xoff*xoff + yefac;
+    }else{
+      efac  = xoff*(params.a*xoff+2.*params.b*yoff) + yefac;
+    }
 
-	if(efac < params.thresh()){
-	  expon1 = exp(-efac);
-	  expon2 = params.height*expon1;
-	  diff   = data[iy][ix] - params.sky - expon2;
-	}else{
-	  diff   = data[iy][ix] - params.sky;
-	}
-	
-	// Derivative vector
-	dyda[params.sky_index()] = 1.;
+    if(efac < params.thresh()){
+      expon1 = exp(-efac);
+      expon2 = params.height*expon1;
+      diff   = data[iy][ix] - params.sky - expon2;
+    }else{
+      diff   = data[iy][ix] - params.sky;
+    }
 
-	if(efac < params.thresh()){
+    // Derivative vector
+    dyda[params.sky_index()] = 1.;
 
-	  dyda[params.height_index()] =  expon1;
-	  
-	  if(params.symm){
-	    dyda[params.x_index()]    =  2.*expon2*params.a*xoff;
-	    dyda[params.y_index()]    =  2.*expon2*params.a*yoff;
-	    dyda[params.a_index()]    =    -expon2*(xoff*xoff+yoff*yoff);
-	  }else{
-	    dyda[params.x_index()]    =  2.*expon2*(params.a*xoff + params.b*yoff);
-	    dyda[params.y_index()]    =  2.*expon2*(params.b*xoff + params.c*yoff);
-	    dyda[params.a_index()]    =    -expon2*xoff*xoff;
-	    dyda[params.b_index()]    = -2.*expon2*xoff*yoff;
-	    dyda[params.c_index()]    =    -expon2*yoff*yoff;
-	  }
+    if(efac < params.thresh()){
 
-	}else{
+      dyda[params.height_index()] =  expon1;
 
-	  dyda[params.x_index()]      =  0.;
-	  dyda[params.y_index()]      =  0.;
-	  dyda[params.height_index()] =  0.;
-	  
-	  if(params.symm){
-	    dyda[params.a_index()]    =  0.;
-	  }else{
-	    dyda[params.a_index()]    =  0.;
-	    dyda[params.b_index()]    =  0.;
-	    dyda[params.c_index()]    =  0.;
-	  }
+      if(params.symm){
+        dyda[params.x_index()]    =  2.*expon2*params.a*xoff;
+        dyda[params.y_index()]    =  2.*expon2*params.a*yoff;
+        dyda[params.a_index()]    =    -expon2*(xoff*xoff+yoff*yoff);
+      }else{
+        dyda[params.x_index()]    =  2.*expon2*(params.a*xoff + params.b*yoff);
+        dyda[params.y_index()]    =  2.*expon2*(params.b*xoff + params.c*yoff);
+        dyda[params.a_index()]    =    -expon2*xoff*xoff;
+        dyda[params.b_index()]    = -2.*expon2*xoff*yoff;
+        dyda[params.c_index()]    =    -expon2*yoff*yoff;
+      }
 
-	}	      
+    }else{
 
-	for(int j=0, l=0; l<npar; l++){
-	  if(tsave[l]){
-	    wt = wgt*dyda[l];
-	    for(int k=0, m=0; m<=l; m++)
-	      if(tsave[m]) alpha[j][k++] += wt*dyda[m];
-	    beta[j++] += wt*diff;
-	  }
-	}
-	chisq += wgt*Subs::sqr(diff);
+      dyda[params.x_index()]      =  0.;
+      dyda[params.y_index()]      =  0.;
+      dyda[params.height_index()] =  0.;
+
+      if(params.symm){
+        dyda[params.a_index()]    =  0.;
+      }else{
+        dyda[params.a_index()]    =  0.;
+        dyda[params.b_index()]    =  0.;
+        dyda[params.c_index()]    =  0.;
+      }
+
+    }
+
+    for(int j=0, l=0; l<npar; l++){
+      if(tsave[l]){
+        wt = wgt*dyda[l];
+        for(int k=0, m=0; m<=l; m++)
+          if(tsave[m]) alpha[j][k++] += wt*dyda[m];
+        beta[j++] += wt*diff;
+      }
+    }
+    chisq += wgt*Subs::sqr(diff);
       }
     }
   }
-  
+
   delete[] tsave;
 
   for(int j=1; j<nvar; j++)

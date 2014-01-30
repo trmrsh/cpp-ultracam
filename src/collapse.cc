@@ -18,11 +18,11 @@
 
 !!emph{collapse} collapses an Ultracam frame in either the X or Y direction
 by summing or averaging over a specified range of X or Y. The window structure
-is retained, such that a window of nx by ny will become 1 by ny if collapsed in the 
+is retained, such that a window of nx by ny will become 1 by ny if collapsed in the
 X direction, or 0 by ny if collapsed in the X direction over an X range that does not
-overlap. This allows later use of the command !!ref{expand.html}{expand}. A simple operation such 
+overlap. This allows later use of the command !!ref{expand.html}{expand}. A simple operation such
 as a collapse becomes complex for multiple windows. One may in some cases want to treat each window
-separately but in others combine results. !!emph{collapse} has various options to make this 
+separately but in others combine results. !!emph{collapse} has various options to make this
 possible. The lower-left corner coordinates of the windows are left untouched by this routine.
 
 !!head2 Invocation
@@ -36,9 +36,9 @@ collapse input dirn method bridge (x1 x2)/(y1 y2) medfilt output!!break
 !!arg{dirn}{Direction to collapse in, 'X' or 'Y'. dirn='X' means summing columns for instance.}
 !!arg{method}{'S' for sum, 'A' for average.}
 !!arg{bridge}{true if the profile is to cross adjacent windows, false if the collapse is only
-on a per window basis. The meaning of this is as follows. Say there are two windows of 100x100, one of which has a lower 
+on a per window basis. The meaning of this is as follows. Say there are two windows of 100x100, one of which has a lower
 Y limit of 11 and the other 31, and you collapse in the X direction. If you don't bridge then each window ends up with an
-X dimension of 1, and a profile equal to the sum or average of its 2D equivalent. If you do bridge, the profiles will be summed or averaged 
+X dimension of 1, and a profile equal to the sum or average of its 2D equivalent. If you do bridge, the profiles will be summed or averaged
 in their region of overlap and this part will end up being the same for each window. In this case a window must have all its pixels covered
 by the combined profile to end up with a non-zero dimension in the collapse direction.}
 !!arg{x1}{If dirn='X', this is the first X value to include. Unbinned pixels. In the case of binning, a pixel must be
@@ -70,399 +70,399 @@ See also !!ref{expand.html}{expand}
 #include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
-    
+
     using Ultracam::Ultracam_Error;
-    
+
     try{
-	
-	// Construct Input object
-	Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
 
-	// Sign-in input variables
-	input.sign_in("input",  Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("dirn",   Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("method", Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("bridge", Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("x1",     Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("x2",     Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("y1",     Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("y2",     Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("medfilt",Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("output", Subs::Input::LOCAL, Subs::Input::PROMPT);
+    // Construct Input object
+    Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
 
-	// Get inputs
-	std::string sinput;
-	input.get_value("input", sinput, "input", "file to collapse");
-	Ultracam::Frame indata(sinput);
+    // Sign-in input variables
+    input.sign_in("input",  Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("dirn",   Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("method", Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("bridge", Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("x1",     Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("x2",     Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("y1",     Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("y2",     Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("medfilt",Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("output", Subs::Input::LOCAL, Subs::Input::PROMPT);
 
-	char dirn;
-	input.get_value("dirn", dirn, 'x', "xXyY", "direction to collapse in X or Y");
-	dirn = std::toupper(dirn);
+    // Get inputs
+    std::string sinput;
+    input.get_value("input", sinput, "input", "file to collapse");
+    Ultracam::Frame indata(sinput);
 
-	char method;
-	input.get_value("method", method, 'a', "aAsS", "method, S(um) or A(verage)");
-	method = std::toupper(method);
+    char dirn;
+    input.get_value("dirn", dirn, 'x', "xXyY", "direction to collapse in X or Y");
+    dirn = std::toupper(dirn);
 
-	bool bridge;
-	input.get_value("bridge", bridge, true, "average/sum the profile across windows?");
+    char method;
+    input.get_value("method", method, 'a', "aAsS", "method, S(um) or A(verage)");
+    method = std::toupper(method);
 
-	int x1, x2, y1, y2;
-	if(dirn == 'X'){
-	    input.get_value("x1", x1, 1, 0, indata[0].nxtot(), "first X value to include in collapse");
-	    input.get_value("x2", x2, indata[0].nxtot(), x1, indata[0].nxtot(), "last X value to include in collapse");
-	}else{
-	    input.get_value("y1", y1, 1, 0, indata[0].nytot(), "first Y value to include in collapse");
-	    input.get_value("y2", y2, indata[0].nytot(), y1, indata[0].nytot(), "last Y value to include in collapse");
-	}
+    bool bridge;
+    input.get_value("bridge", bridge, true, "average/sum the profile across windows?");
 
-	int medfilt;
-	input.get_value("medfilt", medfilt, 0, 0, 1000, "half width of median filter in binned pixels (0 for no filter)");
+    int x1, x2, y1, y2;
+    if(dirn == 'X'){
+        input.get_value("x1", x1, 1, 0, indata[0].nxtot(), "first X value to include in collapse");
+        input.get_value("x2", x2, indata[0].nxtot(), x1, indata[0].nxtot(), "last X value to include in collapse");
+    }else{
+        input.get_value("y1", y1, 1, 0, indata[0].nytot(), "first Y value to include in collapse");
+        input.get_value("y2", y2, indata[0].nytot(), y1, indata[0].nytot(), "last Y value to include in collapse");
+    }
 
-	std::string output;
-	input.get_value("output", output, "output", "file to dump result to");
+    int medfilt;
+    input.get_value("medfilt", medfilt, 0, 0, 1000, "half width of median filter in binned pixels (0 for no filter)");
 
-	if(bridge){
+    std::string output;
+    input.get_value("output", output, "output", "file to dump result to");
 
-	    // First we need to check that this is even possible, which means that
-	    // all windows on a given CCD must be in step
-	    for(size_t nccd=0; nccd<indata.size(); nccd++){
-		if(indata[nccd].size()){
-		    const Ultracam::Windata& refwin = indata[nccd][0];
-		    for(size_t nwin=1; nwin<indata[nccd].size(); nwin++){
-			const Ultracam::Windata& win = indata[nccd][nwin];
-			if(dirn == 'X'){
-			    if(win.ybin() != refwin.ybin() || (win.lly() - refwin.lly()) % win.ybin() != 0)
-				throw Ultracam::Ultracam_Error("Windows have different Y binning factors or are not in step in the Y direction");
-			}else{
-			    if(win.xbin() != refwin.xbin() || (win.llx() - refwin.llx()) % win.xbin() != 0)
-				throw Ultracam::Ultracam_Error("Windows have different X binning factors or are not in step in the X direction");
-			}
-		    }
-		}
-	    }
+    if(bridge){
 
-	    // We are OK; now we will create a single grand profile for each CCD
-	    for(size_t nccd=0; nccd<indata.size(); nccd++){
-	    
-		if(indata[nccd].size()){
+        // First we need to check that this is even possible, which means that
+        // all windows on a given CCD must be in step
+        for(size_t nccd=0; nccd<indata.size(); nccd++){
+        if(indata[nccd].size()){
+            const Ultracam::Windata& refwin = indata[nccd][0];
+            for(size_t nwin=1; nwin<indata[nccd].size(); nwin++){
+            const Ultracam::Windata& win = indata[nccd][nwin];
+            if(dirn == 'X'){
+                if(win.ybin() != refwin.ybin() || (win.lly() - refwin.lly()) % win.ybin() != 0)
+                throw Ultracam::Ultracam_Error("Windows have different Y binning factors or are not in step in the Y direction");
+            }else{
+                if(win.xbin() != refwin.xbin() || (win.llx() - refwin.llx()) % win.xbin() != 0)
+                throw Ultracam::Ultracam_Error("Windows have different X binning factors or are not in step in the X direction");
+            }
+            }
+        }
+        }
 
-		    // Derive range of grand profile. 
-		    int lwin = 0, uwin = 0, bin = 0;
-		    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-			const Ultracam::Windata& win = indata[nccd][nwin];
-			if(nwin == 0){
-			    if(dirn == 'X'){
-				lwin = win.lly();
-				uwin = win.lly()  + win.ybin()*win.ny();
-				bin  = win.ybin();
-			    }else{
-				lwin = win.llx();
-				uwin = win.llx()  + win.xbin()*win.nx();
-				bin  = win.xbin();
-			    }
-			}else{
-			    if(dirn == 'X'){
-				lwin = win.lly() < lwin ? win.lly() : lwin;
-				uwin = win.lly()  + win.ybin()*win.ny() > uwin ? win.lly()  + win.ybin()*win.ny() : uwin;
-			    }else{
-				lwin = win.llx() < lwin ? win.llx() : lwin;
-				uwin = win.llx()  + win.xbin()*win.nx() > uwin ? win.llx()  + win.xbin()*win.nx() : uwin;
-			    }
-			}
-		    }
-		    
-		    // Median filter prior to anything else
-		    if(medfilt){
-			Subs::Array1D<float> buff, filtbuff;
+        // We are OK; now we will create a single grand profile for each CCD
+        for(size_t nccd=0; nccd<indata.size(); nccd++){
 
-			if(dirn == 'X'){
-			    // Loop over every y pixel with potential data in it, extracting all valid
-			    // pixels any row into the buffer 'buff'
-			    for(int iy=lwin; iy<uwin; iy+=bin){			       
-				for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-				    const Ultracam::Windata& win = indata[nccd][nwin];
-				    int ny = (iy - win.lly())/bin;
-				    if(ny >= 0 && ny < win.ny()){
-					int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
-					nx1 = nx1 > 0 ? nx1 : 0;
-					int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
-					nx2 = nx2 <= win.nx() ? nx2 : win.nx();
-					for(int nx=nx1; nx<nx2; nx++)
-					    buff.push_back(win[ny][nx]);
-				    }
-				}
-				
-				// Apply the median filter and transfer back into frame
-				if(buff.size()){
+        if(indata[nccd].size()){
 
-				    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
+            // Derive range of grand profile.
+            int lwin = 0, uwin = 0, bin = 0;
+            for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+            const Ultracam::Windata& win = indata[nccd][nwin];
+            if(nwin == 0){
+                if(dirn == 'X'){
+                lwin = win.lly();
+                uwin = win.lly()  + win.ybin()*win.ny();
+                bin  = win.ybin();
+                }else{
+                lwin = win.llx();
+                uwin = win.llx()  + win.xbin()*win.nx();
+                bin  = win.xbin();
+                }
+            }else{
+                if(dirn == 'X'){
+                lwin = win.lly() < lwin ? win.lly() : lwin;
+                uwin = win.lly()  + win.ybin()*win.ny() > uwin ? win.lly()  + win.ybin()*win.ny() : uwin;
+                }else{
+                lwin = win.llx() < lwin ? win.llx() : lwin;
+                uwin = win.llx()  + win.xbin()*win.nx() > uwin ? win.llx()  + win.xbin()*win.nx() : uwin;
+                }
+            }
+            }
 
-				    int ibp = 0;
-				    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-					Ultracam::Windata& win = indata[nccd][nwin];
-					int ny = (iy - win.lly())/bin;
-					if(ny >= 0 && ny < win.ny()){
-					    int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
-					    nx1 = nx1 > 0 ? nx1 : 0;
-					    int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
-					    nx2 = nx2 <= win.nx() ? nx2 : win.nx();
-					    for(int nx=nx1; nx<nx2; nx++)
-						win[ny][nx] = filtbuff[ibp++];
-					}
-				    }
-				    buff.clear();
-				}
-			    }
+            // Median filter prior to anything else
+            if(medfilt){
+            Subs::Array1D<float> buff, filtbuff;
 
-			}else{
+            if(dirn == 'X'){
+                // Loop over every y pixel with potential data in it, extracting all valid
+                // pixels any row into the buffer 'buff'
+                for(int iy=lwin; iy<uwin; iy+=bin){
+                for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+                    const Ultracam::Windata& win = indata[nccd][nwin];
+                    int ny = (iy - win.lly())/bin;
+                    if(ny >= 0 && ny < win.ny()){
+                    int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
+                    nx1 = nx1 > 0 ? nx1 : 0;
+                    int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
+                    nx2 = nx2 <= win.nx() ? nx2 : win.nx();
+                    for(int nx=nx1; nx<nx2; nx++)
+                        buff.push_back(win[ny][nx]);
+                    }
+                }
 
-			    // Loop over every x pixel with potential data in it, extracting all valid
-			    // pixels in any column into the buffer 'buff'
-			    for(int ix=lwin; ix<uwin; ix+=bin){			       
+                // Apply the median filter and transfer back into frame
+                if(buff.size()){
 
-				for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-				    const Ultracam::Windata& win = indata[nccd][nwin];
-				    int nx = (ix - win.llx())/bin;
-				    if(nx >= 0 && nx < win.nx()){
-					int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
-					ny1 = ny1 > 0 ? ny1 : 0;
-					int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
-					ny2 = ny2 <= win.ny() ? ny2 : win.ny();
-					for(int ny=ny1; ny<ny2; ny++)
-					    buff.push_back(win[ny][nx]);
-				    }
-				}
-				
-				// Apply the median filter and transfer back into frame
-				if(buff.size()){
+                    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
 
-				    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
+                    int ibp = 0;
+                    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+                    Ultracam::Windata& win = indata[nccd][nwin];
+                    int ny = (iy - win.lly())/bin;
+                    if(ny >= 0 && ny < win.ny()){
+                        int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
+                        nx1 = nx1 > 0 ? nx1 : 0;
+                        int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
+                        nx2 = nx2 <= win.nx() ? nx2 : win.nx();
+                        for(int nx=nx1; nx<nx2; nx++)
+                        win[ny][nx] = filtbuff[ibp++];
+                    }
+                    }
+                    buff.clear();
+                }
+                }
 
-				    int ibp = 0;
-				    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-					Ultracam::Windata& win = indata[nccd][nwin];
-					int nx = (ix - win.llx())/bin;
-					if(nx >= 0 && nx < win.nx()){
-					    int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
-					    ny1 = ny1 > 0 ? ny1 : 0;
-					    int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
-					    ny2 = ny2 <= win.ny() ? ny2 : win.ny();
-					    for(int ny=ny1; ny<ny2; ny++)
-						win[ny][nx] = filtbuff[ibp++];
-					}
-				    }
-				    buff.clear();
-				}
-			    }
-			}
-		    }
+            }else{
 
-		    // Grab sufficient space
-		    int npx = (uwin-lwin)/bin;
-		    Subs::Array1D<int>   npix(npx);
-		    Subs::Array1D<float> sum(npx);
-		    npix = 0;
-		    sum  = 0;
+                // Loop over every x pixel with potential data in it, extracting all valid
+                // pixels in any column into the buffer 'buff'
+                for(int ix=lwin; ix<uwin; ix+=bin){
 
-		    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-			const Ultracam::Windata& win = indata[nccd][nwin];
-			if(dirn == 'X'){
-			    int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
-			    nx1 = nx1 > 0 ? nx1 : 0;
-			    int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
-			    nx2 = nx2 <= win.nx() ? nx2 : win.nx();
+                for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+                    const Ultracam::Windata& win = indata[nccd][nwin];
+                    int nx = (ix - win.llx())/bin;
+                    if(nx >= 0 && nx < win.nx()){
+                    int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
+                    ny1 = ny1 > 0 ? ny1 : 0;
+                    int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
+                    ny2 = ny2 <= win.ny() ? ny2 : win.ny();
+                    for(int ny=ny1; ny<ny2; ny++)
+                        buff.push_back(win[ny][nx]);
+                    }
+                }
 
-			    // Register this window correctly in the grand sum
-			    // Potential for page faults here 
-			    int off = (win.lly()-lwin)/win.ybin();
-			    for(int ny=0; ny<win.ny(); ny++){
-				for(int nx=nx1; nx<nx2; nx++){
-				    npix[ny+off]++;
-				    sum[ny+off] += win[ny][nx];
-				}
-			    }
+                // Apply the median filter and transfer back into frame
+                if(buff.size()){
 
-			}else{
+                    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
 
-			    int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
-			    ny1 = ny1 > 0 ? ny1 : 0;
-			    int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
-			    ny2 = ny2 <= win.ny() ? ny2 : win.ny();
-			    int off = (win.llx()-lwin)/win.xbin();
-			    for(int ny=ny1; ny<ny2; ny++){
-				for(int nx=0; nx<win.nx(); nx++){
-				    npix[nx+off]++;
-				    sum[nx+off] += win[ny][nx];
-				}
-			    }
-			}
-		    }
+                    int ibp = 0;
+                    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+                    Ultracam::Windata& win = indata[nccd][nwin];
+                    int nx = (ix - win.llx())/bin;
+                    if(nx >= 0 && nx < win.nx()){
+                        int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
+                        ny1 = ny1 > 0 ? ny1 : 0;
+                        int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
+                        ny2 = ny2 <= win.ny() ? ny2 : win.ny();
+                        for(int ny=ny1; ny<ny2; ny++)
+                        win[ny][nx] = filtbuff[ibp++];
+                    }
+                    }
+                    buff.clear();
+                }
+                }
+            }
+            }
 
-		    // Normalise in the averaging case
-		    if(method == 'A'){
-			for(int i=0; i<npx; i++)
-			    if(npix[i]) sum[i] /= npix[i];
-		    }
+            // Grab sufficient space
+            int npx = (uwin-lwin)/bin;
+            Subs::Array1D<int>   npix(npx);
+            Subs::Array1D<float> sum(npx);
+            npix = 0;
+            sum  = 0;
 
-		    // Now we go through window by window to see if they are covered
-		    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-			Ultracam::Windata& win = indata[nccd][nwin];
-			if(dirn == 'X'){
+            for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+            const Ultracam::Windata& win = indata[nccd][nwin];
+            if(dirn == 'X'){
+                int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
+                nx1 = nx1 > 0 ? nx1 : 0;
+                int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
+                nx2 = nx2 <= win.nx() ? nx2 : win.nx();
 
-			    int off = (win.lly()-lwin)/win.ybin();
-			    bool covered = true;
-			    for(int ny=0; ny<win.ny(); ny++)
-				if(!(covered = npix[ny+off] > 0)) break;
+                // Register this window correctly in the grand sum
+                // Potential for page faults here
+                int off = (win.lly()-lwin)/win.ybin();
+                for(int ny=0; ny<win.ny(); ny++){
+                for(int nx=nx1; nx<nx2; nx++){
+                    npix[ny+off]++;
+                    sum[ny+off] += win[ny][nx];
+                }
+                }
 
-			    if(covered){
-				// Collapse window to width 1 in X and transfer data
-				win.resize(win.ny(),1);
-				for(int ny=0; ny<win.ny(); ny++)
-				    win[ny][0] = sum[ny+off];
-			    }else{
-				// Collapse window to width 0 in X
-				win.resize(win.ny(),0);
-			    }
+            }else{
 
-			}else{
+                int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
+                ny1 = ny1 > 0 ? ny1 : 0;
+                int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
+                ny2 = ny2 <= win.ny() ? ny2 : win.ny();
+                int off = (win.llx()-lwin)/win.xbin();
+                for(int ny=ny1; ny<ny2; ny++){
+                for(int nx=0; nx<win.nx(); nx++){
+                    npix[nx+off]++;
+                    sum[nx+off] += win[ny][nx];
+                }
+                }
+            }
+            }
 
-			    int off = (win.llx()-lwin)/win.xbin();
-			    bool covered = true;
-			    for(int nx=0; nx<win.nx(); nx++)
-				if(!(covered = npix[nx+off] > 0)) break;
+            // Normalise in the averaging case
+            if(method == 'A'){
+            for(int i=0; i<npx; i++)
+                if(npix[i]) sum[i] /= npix[i];
+            }
 
-			    if(covered){
-				// Collapse window to width 1 in Y and transfer data
-				win.resize(1, win.nx());
-				for(int nx=0; nx<win.nx(); nx++)
-				    win[0][nx] = sum[nx+off];
-			    }else{
-				// Collapse window to width 0 in Y
-				win.resize(0, win.nx());
-			    }
-			}
-		    }
-		}
-	    }
+            // Now we go through window by window to see if they are covered
+            for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+            Ultracam::Windata& win = indata[nccd][nwin];
+            if(dirn == 'X'){
 
-	}else{
+                int off = (win.lly()-lwin)/win.ybin();
+                bool covered = true;
+                for(int ny=0; ny<win.ny(); ny++)
+                if(!(covered = npix[ny+off] > 0)) break;
 
-	    // Collapse each window, one by one.
-	    Subs::Array1D<float> sum, buff, filtbuff;
+                if(covered){
+                // Collapse window to width 1 in X and transfer data
+                win.resize(win.ny(),1);
+                for(int ny=0; ny<win.ny(); ny++)
+                    win[ny][0] = sum[ny+off];
+                }else{
+                // Collapse window to width 0 in X
+                win.resize(win.ny(),0);
+                }
 
-	    for(size_t nccd=0; nccd<indata.size(); nccd++){
-		for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-		    Ultracam::Windata& win = indata[nccd][nwin];
-		    if(dirn == 'X'){
-			sum.resize(win.ny());
-			sum  = 0.;
-			int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
-			nx1 = nx1 > 0 ? nx1 : 0;
-			int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
-			nx2 = nx2 <= win.nx() ? nx2 : win.nx();
-			int npix = nx2-nx1;
+            }else{
 
-			if(npix){
+                int off = (win.llx()-lwin)/win.xbin();
+                bool covered = true;
+                for(int nx=0; nx<win.nx(); nx++)
+                if(!(covered = npix[nx+off] > 0)) break;
 
-			    buff.resize(npix);
-			    for(int ny=0; ny<win.ny(); ny++){
+                if(covered){
+                // Collapse window to width 1 in Y and transfer data
+                win.resize(1, win.nx());
+                for(int nx=0; nx<win.nx(); nx++)
+                    win[0][nx] = sum[nx+off];
+                }else{
+                // Collapse window to width 0 in Y
+                win.resize(0, win.nx());
+                }
+            }
+            }
+        }
+        }
 
-				// Extract row
-				for(int nx=nx1; nx<nx2; nx++)
-				    buff[nx-nx1] = win[ny][nx];
+    }else{
 
-				// Median filter
-				if(medfilt){
-				    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
-				    buff = filtbuff;
-				}
+        // Collapse each window, one by one.
+        Subs::Array1D<float> sum, buff, filtbuff;
 
-				// Add into sum
-				for(int nx=nx1; nx<nx2; nx++)
-				    sum[ny] += buff[nx-nx1];
-			    }
+        for(size_t nccd=0; nccd<indata.size(); nccd++){
+        for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+            Ultracam::Windata& win = indata[nccd][nwin];
+            if(dirn == 'X'){
+            sum.resize(win.ny());
+            sum  = 0.;
+            int nx1 = (x1 - win.llx() + win.xbin() - 1)/win.xbin();
+            nx1 = nx1 > 0 ? nx1 : 0;
+            int nx2 = (x2 - win.llx() - win.xbin() + 1)/win.xbin() + 1;
+            nx2 = nx2 <= win.nx() ? nx2 : win.nx();
+            int npix = nx2-nx1;
 
-			    if(method == 'A'){
-				for(int ny=0; ny<win.ny(); ny++)
-				    sum[ny] /= npix;
-			    }
+            if(npix){
 
-			    // Collapse window to width 1 in X and transfer data
-			    win.resize(win.ny(),1);
-			    for(int ny=0; ny<win.ny(); ny++)
-				win[ny][0] = sum[ny];
-			}else{
-			    // Collapse window to width 0 in X
-			    win.resize(win.ny(),0);
-			}
+                buff.resize(npix);
+                for(int ny=0; ny<win.ny(); ny++){
 
-		    }else{
+                // Extract row
+                for(int nx=nx1; nx<nx2; nx++)
+                    buff[nx-nx1] = win[ny][nx];
 
-			sum.resize(win.nx());
-			sum  = 0.;
-			int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
-			ny1 = ny1 > 0 ? ny1 : 0;
-			int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
-			ny2 = ny2 <= win.ny() ? ny2 : win.ny();
-			int npix = ny2-ny1;
-			if(npix){
+                // Median filter
+                if(medfilt){
+                    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
+                    buff = filtbuff;
+                }
 
-			    buff.resize(npix);
-			    for(int nx=0; nx<win.nx(); nx++){
+                // Add into sum
+                for(int nx=nx1; nx<nx2; nx++)
+                    sum[ny] += buff[nx-nx1];
+                }
 
-				// Extract column
-				for(int ny=ny1; ny<ny2; ny++)
-				    buff[ny-ny1] = win[ny][nx];
+                if(method == 'A'){
+                for(int ny=0; ny<win.ny(); ny++)
+                    sum[ny] /= npix;
+                }
 
-				// Median filter
-				if(medfilt){
-				    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
-				    buff = filtbuff;
-				}
+                // Collapse window to width 1 in X and transfer data
+                win.resize(win.ny(),1);
+                for(int ny=0; ny<win.ny(); ny++)
+                win[ny][0] = sum[ny];
+            }else{
+                // Collapse window to width 0 in X
+                win.resize(win.ny(),0);
+            }
 
-				// Add into sum
-				for(int ny=ny1; ny<ny2; ny++)
-				    sum[nx] += buff[ny-ny1];
-			    }
+            }else{
 
-			    if(method == 'A'){
-				for(int nx=0; nx<win.nx(); nx++)
-				    sum[nx] /= npix;
-			    }
+            sum.resize(win.nx());
+            sum  = 0.;
+            int ny1 = (y1 - win.lly() + win.ybin() - 1)/win.ybin();
+            ny1 = ny1 > 0 ? ny1 : 0;
+            int ny2 = (y2 - win.lly() - win.ybin() + 1)/win.ybin() + 1;
+            ny2 = ny2 <= win.ny() ? ny2 : win.ny();
+            int npix = ny2-ny1;
+            if(npix){
 
-			    // Collapse window to width 1 in X and transfer data
-			    win.resize(1, win.nx());
-			    for(int nx=0; nx<win.nx(); nx++)
-				win[0][nx] = sum[nx];
-			}else{
-			    // Collapse window to width 0 in X
-			    win.resize(0,win.nx());
-			}
-		    }
-		}
-	    }
-	}
-    
-	// Write out the result	
-	indata.write(output);
-    
-    
+                buff.resize(npix);
+                for(int nx=0; nx<win.nx(); nx++){
+
+                // Extract column
+                for(int ny=ny1; ny<ny2; ny++)
+                    buff[ny-ny1] = win[ny][nx];
+
+                // Median filter
+                if(medfilt){
+                    Subs::medfilt(buff, filtbuff, 2*medfilt+1);
+                    buff = filtbuff;
+                }
+
+                // Add into sum
+                for(int ny=ny1; ny<ny2; ny++)
+                    sum[nx] += buff[ny-ny1];
+                }
+
+                if(method == 'A'){
+                for(int nx=0; nx<win.nx(); nx++)
+                    sum[nx] /= npix;
+                }
+
+                // Collapse window to width 1 in X and transfer data
+                win.resize(1, win.nx());
+                for(int nx=0; nx<win.nx(); nx++)
+                win[0][nx] = sum[nx];
+            }else{
+                // Collapse window to width 0 in X
+                win.resize(0,win.nx());
+            }
+            }
+        }
+        }
+    }
+
+    // Write out the result
+    indata.write(output);
+
+
     }
 
     catch(const Ultracam::Input_Error& err){
-	std::cerr << "Ultracam::Input_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Input_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Ultracam::Ultracam_Error& err){
-	std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Subs::Subs_Error& err){
-	std::cerr << "Subs::Subs_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Subs::Subs_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const std::string& err){
-	std::cerr << err << std::endl;
+    std::cerr << err << std::endl;
     }
 }
 

@@ -17,23 +17,23 @@
 #include "trm/aperture.h"
 #include "trm/ultracam.h"
 
-void Ultracam::plot_apers(const Maperture& apers, float x1, float x2, float y1, float y2, 
-			  bool all, char stackdirn, int nccd){
+void Ultracam::plot_apers(const Maperture& apers, float x1, float x2, float y1, float y2,
+              bool all, char stackdirn, int nccd){
   if(all){
     if(stackdirn == 'X'){
       cpgsubp(apers.size(),1);
     }else if(stackdirn == 'Y'){
-      cpgsubp(1,apers.size());  
+      cpgsubp(1,apers.size());
     }else{
       throw Ultracam_Error(std::string("void Ultracam::plot_apers(const Maperture&, float, float,"
-				  " float, float, bool, char, int nccd): "
-				  " invalid stacking option = ") + stackdirn);
+                  " float, float, bool, char, int nccd): "
+                  " invalid stacking option = ") + stackdirn);
     }
     for(size_t ic=0; ic<apers.size(); ic++){
       if(stackdirn == 'X'){
-	cpgpanl(ic+1,1);
+    cpgpanl(ic+1,1);
       }else{
-	cpgpanl(1,ic+1);
+    cpgpanl(1,ic+1);
       }
       cpgwnad(x1,x2,y1,y2);
       cpgsci(Subs::WHITE);

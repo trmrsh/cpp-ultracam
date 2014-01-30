@@ -73,9 +73,9 @@ int main(int argc, char* argv[]){
 
     for(size_t nccd=0; nccd<frame.size(); nccd++){
       for(size_t nwin=0; nwin<frame[nccd].size(); nwin++){
-	float back;
-	frame[nccd][nwin].centile(centile/100.f, back); 
-	frame[nccd][nwin] -= back;
+    float back;
+    frame[nccd][nwin].centile(centile/100.f, back);
+    frame[nccd][nwin] -= back;
       }
     }
 

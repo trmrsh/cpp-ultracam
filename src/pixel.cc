@@ -80,8 +80,8 @@ int main(int argc, char* argv[]){
 
     std::cout
       << "Pixel " << ix << ", " << iy << " of "
-      << "CCD " << nccd+1 
-      << ", window " << nwin+1 << " covers unbinned range of " 
+      << "CCD " << nccd+1
+      << ", window " << nwin+1 << " covers unbinned range of "
       << " X: "  << data[nccd][nwin].xcomp(ix-0.5f) << " to " << data[nccd][nwin].xcomp(ix+0.5f)
       << ", Y: " << data[nccd][nwin].ycomp(iy-0.5f) << " to " << data[nccd][nwin].ycomp(iy+0.5f)
       << " and has value = " << data[nccd][nwin][iy-1][ix-1] << std::endl;

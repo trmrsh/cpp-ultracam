@@ -14,9 +14,9 @@
  * \param nrej the number of pixels rejected (returned)
  */
 
-void Ultracam::gauss_reject(const Windata& data, Windata& sigwin, int xlo, int xhi, 
-			    int ylo, int yhi, const Ultracam::Ppars& params, float thresh, int& nrej){
-  
+void Ultracam::gauss_reject(const Windata& data, Windata& sigwin, int xlo, int xhi,
+                int ylo, int yhi, const Ultracam::Ppars& params, float thresh, int& nrej){
+
   double xoff, yoff, efac, model, yefac;
   nrej = 0;
   for(int iy=ylo; iy<=yhi; iy++){
@@ -28,21 +28,21 @@ void Ultracam::gauss_reject(const Windata& data, Windata& sigwin, int xlo, int x
     }
     for(int ix=xlo; ix<=xhi; ix++){
       if(sigwin[iy][ix] > 0.){
-	xoff  = data.xccd(ix)-params.x;
-	if(params.symm){
-	  efac  = params.a*xoff*xoff + yefac;
-	}else{
-	  efac  = xoff*(params.a*xoff+2.*params.b*yoff) + yefac;
-	}
-	if(efac < Ultracam::Ppars::thresh()){
-	  model = params.sky + params.height*exp(-efac);
-	}else{
-	  model = params.sky;
-	}
-	if(fabs(data[iy][ix]-model) > thresh*sigwin[iy][ix]){
-	  sigwin[iy][ix] = - sigwin[iy][ix];
-	  nrej++;
-	}
+    xoff  = data.xccd(ix)-params.x;
+    if(params.symm){
+      efac  = params.a*xoff*xoff + yefac;
+    }else{
+      efac  = xoff*(params.a*xoff+2.*params.b*yoff) + yefac;
+    }
+    if(efac < Ultracam::Ppars::thresh()){
+      model = params.sky + params.height*exp(-efac);
+    }else{
+      model = params.sky;
+    }
+    if(fabs(data[iy][ix]-model) > thresh*sigwin[iy][ix]){
+      sigwin[iy][ix] = - sigwin[iy][ix];
+      nrej++;
+    }
       }
     }
   }

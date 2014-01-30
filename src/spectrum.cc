@@ -25,7 +25,7 @@ float Ultracam::Spectrum::how_far(float x, float y) const {
  * using this outside of CCD<Obj>
  * \param spectrum1 first Spectrum
  * \param spectrum2 second Spectrum
- * \return \c true if they clash (they never do). 
+ * \return \c true if they clash (they never do).
  */
 bool Ultracam::clash(const Ultracam::Spectrum& spectrum1, const Ultracam::Spectrum& spectrum2){
   return false;
@@ -103,7 +103,7 @@ double Ultracam::Spectrum::get_line(double x, double time) {
       xcen[i]       = lines[i].centre + lines[i].semiamp*sin(Constants::TWOPI*phase);
     }
   }
-    
+
   // Now computations that happen every time
   double sum = 0.;
   for(int i=0; i<lines.size(); i++){
@@ -130,7 +130,7 @@ void Ultracam::Spectrum::add_line(const Line& line) {
   lines.push_back(line);
   compute_positions = true;
 }
-  
+
 void Ultracam::Spectrum::set_position(const Subs::Poly& position){
   this->position = position;
 }

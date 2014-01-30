@@ -125,10 +125,10 @@ int main(int argc, char* argv[]){
     std::vector<std::string> flist;
     if(Ultracam::Frame::is_ultracam(name)){
       flist.push_back(name);
-    }else{      
+    }else{
       std::ifstream istr(name.c_str());
       while(istr >> name){
-	flist.push_back(name);
+    flist.push_back(name);
       }
       istr.close();
       if(flist.size() == 0) throw Input_Error("No file names loaded");
@@ -183,71 +183,71 @@ int main(int argc, char* argv[]){
 
       if(flist.size() > 1){
 
-	xoff  += xrms*Subs::gauss2(seed);
-	yoff  += yrms*Subs::gauss2(seed);
+    xoff  += xrms*Subs::gauss2(seed);
+    yoff  += yrms*Subs::gauss2(seed);
 
-	// blurr the star field and modulate whichever star was chosen to vary
-	seeing = seeing1 + (seeing2-seeing1)*im/(flist.size()-1);
-	field  = mfield;
-	double time = data["UT_date"]->get_double();
-	for(size_t nc=0; nc<field.size(); nc++){ // CCDs
-	  for(size_t ns=0; ns<field[nc].size(); ns++){ // stars
-	    field[nc][ns].blurr(seeing);
-	    if(int(ns) == nvary)
-	      field[nc][ns].set_counts(field[nc][ns].get_counts()*(1.+avary*cos(Constants::TWOPI*(time-tvary)/pvary)));
-	  }
-	} 
+    // blurr the star field and modulate whichever star was chosen to vary
+    seeing = seeing1 + (seeing2-seeing1)*im/(flist.size()-1);
+    field  = mfield;
+    double time = data["UT_date"]->get_double();
+    for(size_t nc=0; nc<field.size(); nc++){ // CCDs
+      for(size_t ns=0; ns<field[nc].size(); ns++){ // stars
+        field[nc][ns].blurr(seeing);
+        if(int(ns) == nvary)
+          field[nc][ns].set_counts(field[nc][ns].get_counts()*(1.+avary*cos(Constants::TWOPI*(time-tvary)/pvary)));
+      }
+    }
       }
 
       // Now add stars
       for(size_t nc=0; nc<data.size(); nc++){ // CCDs
 
-	for(size_t nw=0; nw<data[nc].size(); nw++){ // windows
+    for(size_t nw=0; nw<data[nc].size(); nw++){ // windows
 
-	  Ultracam::Windata& win = data[nc][nw];
-	  nxs = win.xbin()*over;
-	  nys = win.ybin()*over;
+      Ultracam::Windata& win = data[nc][nw];
+      nxs = win.xbin()*over;
+      nys = win.ybin()*over;
 
-	  for(size_t ns=0; ns<field[nc].size(); ns++){ // stars
+      for(size_t ns=0; ns<field[nc].size(); ns++){ // stars
 
-	    // Add x,y offset and determine region over which to add star.
-	    star = field[nc][ns];
-	    star.set_xc(star.get_xc()+xoff);
-	    star.set_yc(star.get_yc()+yoff);
-	    star.dist(CLEVEL, dx, dy);
-	    xlo  = star.get_xc()-dx;
-	    xhi  = star.get_xc()+dx;
-	    ylo  = star.get_yc()-dy;
-	    yhi  = star.get_yc()+dy;
-	    pxlo = int(floor(win.xcomp(xlo)));
-	    pxhi = int(ceil(win.xcomp(xhi)));
-	    pylo = int(floor(win.ycomp(ylo)));
-	    pyhi = int(ceil(win.ycomp(yhi)));
+        // Add x,y offset and determine region over which to add star.
+        star = field[nc][ns];
+        star.set_xc(star.get_xc()+xoff);
+        star.set_yc(star.get_yc()+yoff);
+        star.dist(CLEVEL, dx, dy);
+        xlo  = star.get_xc()-dx;
+        xhi  = star.get_xc()+dx;
+        ylo  = star.get_yc()-dy;
+        yhi  = star.get_yc()+dy;
+        pxlo = int(floor(win.xcomp(xlo)));
+        pxhi = int(ceil(win.xcomp(xhi)));
+        pylo = int(floor(win.ycomp(ylo)));
+        pyhi = int(ceil(win.ycomp(yhi)));
 
-	    // truncate to valid pixel range
-	    pxlo = pxlo > 0 ? pxlo : 0;
-	    pxhi = pxhi < win.nx() ? pxhi : win.nx() - 1;
-	    pylo = pylo > 0 ? pylo : 0;
-	    pyhi = pyhi < win.ny() ? pyhi : win.ny() - 1;
+        // truncate to valid pixel range
+        pxlo = pxlo > 0 ? pxlo : 0;
+        pxhi = pxhi < win.nx() ? pxhi : win.nx() - 1;
+        pylo = pylo > 0 ? pylo : 0;
+        pyhi = pyhi < win.ny() ? pyhi : win.ny() - 1;
 
-	    // now add in star
-	    for(int iy=pylo; iy<pyhi; iy++){
-	      dy = win.yccd(iy) - star.get_yc();
-	      for(int ix=pxlo; ix<pxhi; ix++){
-		dx = win.xccd(ix) - star.get_xc();
-		sum = 0.;
-		for(int iys=0; iys<nys; iys++){
-		  dys = dy + (iys+0.5)/nys - 0.5;
-		  for(int ixs=0; ixs<nys; ixs++){
-		    dxs  = dx + (ixs+0.5)/nxs - 0.5;
-		    sum += star.height(dxs, dys);
-		  }
-		}
-		win[iy][ix] += sum/Subs::sqr(over);
-	      }
-	    }
-	  }
-	}
+        // now add in star
+        for(int iy=pylo; iy<pyhi; iy++){
+          dy = win.yccd(iy) - star.get_yc();
+          for(int ix=pxlo; ix<pxhi; ix++){
+        dx = win.xccd(ix) - star.get_xc();
+        sum = 0.;
+        for(int iys=0; iys<nys; iys++){
+          dys = dy + (iys+0.5)/nys - 0.5;
+          for(int ixs=0; ixs<nys; ixs++){
+            dxs  = dx + (ixs+0.5)/nxs - 0.5;
+            sum += star.height(dxs, dys);
+          }
+        }
+        win[iy][ix] += sum/Subs::sqr(over);
+          }
+        }
+      }
+    }
       }
 
       data.write(flist[im]);

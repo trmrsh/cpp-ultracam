@@ -83,7 +83,7 @@ int main(int argc, char* argv[]){
       int magic;
       istr.read((char*)&magic,sizeof(int));
       if(!istr)
-	throw Ultracam::Ultracam_Error("Dailed to read ucm magic number");
+    throw Ultracam::Ultracam_Error("Dailed to read ucm magic number");
 
       // Check for non-native data
       bool swap_bytes = (Subs::byte_swap(magic) == Ultracam::MAGIC);
@@ -92,9 +92,9 @@ int main(int argc, char* argv[]){
       bool old = !swap_bytes && (magic != Ultracam::MAGIC);
 
       // If it is old, and we are on a bigendian machine, then
-      // we will have to swap bytes 
+      // we will have to swap bytes
       if(old && Subs::is_big_endian()) swap_bytes = true;
-      
+
       // If 'old' then no magic number and we should wind back to start
       if(old) istr.seekg(0);
 

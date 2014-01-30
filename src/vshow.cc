@@ -82,10 +82,10 @@ int main(int argc, char* argv[]){
     std::ifstream istr(def_file.c_str(), std::ios::binary);
     if(istr){
       try{
-	head.read(istr, false);
+    head.read(istr, false);
       }
       catch(...){
-	throw Ultracam::Ultracam_Error("Error occurred while trying to read default file = " + def_file);
+    throw Ultracam::Ultracam_Error("Error occurred while trying to read default file = " + def_file);
       }
     }else{
       throw Ultracam::Ultracam_Error("Error occurred trying to open default file = " + def_file);

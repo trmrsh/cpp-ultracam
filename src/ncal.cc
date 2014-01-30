@@ -13,7 +13,7 @@
 !!head1   ncal - analyses noise in Ultracam frames
 
 This program performs a noise analysis similar to pamela's !!emph{noise}. i.e. it
-makes local estimates of the noise using the mean of the absolute value of the 
+makes local estimates of the noise using the mean of the absolute value of the
 differences of the values of each pixel and the mean of its 8 surrounding neighbours.
 The measn is taken over all pixels in boxes over the images. The idea here is not to take overall
 RMS values which are sensitive to image structure. To relate the mean of the absolute value to the
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]){
     // Factor to account for the way the scatter is estimated using absolute deviations
     // rather than RMS and also to allow for the variance of the 8 surrounding pixels.
     const float SCALE = sqrt(4.*Constants::PI/9.);
-    
+
     // Set up plot
     Subs::Plot plot(device);
     cpgsci(Subs::BLUE);
@@ -149,55 +149,55 @@ int main(int argc, char* argv[]){
 
       frame.read(flist[nf]);
       if(frame.size() != mwindow.size())
-	throw Ultracam::Input_Error("Data frame = " + flist[nf] + " and window file have differing numbers of CCDs");
-      
+    throw Ultracam::Input_Error("Data frame = " + flist[nf] + " and window file have differing numbers of CCDs");
+
       // window frame
       frame.window(mwindow);
 
       // loop over all windows
       for(size_t iw=0; iw<frame[nccd].size(); iw++){
 
-	const Ultracam::Windata &win = frame[nccd][iw];
-	
-	// loop over every pixel of every box
-	for(int iyb=0; iyb<(win.ny()-2)/ybox; iyb++){
-	  for(int ixb=0; ixb<(win.nx()-2)/xbox; ixb++){
-	    sum1 = 0.;
-	    sum2 = 0.;
-	    num_pix = 0;
-	    for(int iy=1+ybox*iyb; iy<=ybox*(iyb+1); iy++){
-	      for(int ix=1+xbox*ixb; ix<=xbox*(ixb+1); ix++){
-		cval  = win[iy][ix];
+    const Ultracam::Windata &win = frame[nccd][iw];
 
-		// Form the mean of the 8 surrounding pixels.
-		mean  = 0.;
-		mean += win[iy-1][ix-1];
-		mean += win[iy-1][ix];
-		mean += win[iy-1][ix+1];
-		mean += win[iy][ix-1];
-		mean += win[iy][ix+1];
-		mean += win[iy+1][ix-1];
-		mean += win[iy+1][ix];
-		mean += win[iy+1][ix+1];
-		mean /= 8.;
-		sum1 += mean;
-		sum2 += fabs(cval-mean);
-		num_pix++;
-	      }
-	    }
-	    if(num_pix){
-	      sum1 /= num_pix;
-	      sum2 /= num_pix;
-	      sum2 *= SCALE;
-	      float x = log10(std::max(sum1,0.11));
-	      float y = log10(std::max(sum2,1.));
-	      cpgpt1(x,y,1);
-	    }
-	  }
-	}
+    // loop over every pixel of every box
+    for(int iyb=0; iyb<(win.ny()-2)/ybox; iyb++){
+      for(int ixb=0; ixb<(win.nx()-2)/xbox; ixb++){
+        sum1 = 0.;
+        sum2 = 0.;
+        num_pix = 0;
+        for(int iy=1+ybox*iyb; iy<=ybox*(iyb+1); iy++){
+          for(int ix=1+xbox*ixb; ix<=xbox*(ixb+1); ix++){
+        cval  = win[iy][ix];
+
+        // Form the mean of the 8 surrounding pixels.
+        mean  = 0.;
+        mean += win[iy-1][ix-1];
+        mean += win[iy-1][ix];
+        mean += win[iy-1][ix+1];
+        mean += win[iy][ix-1];
+        mean += win[iy][ix+1];
+        mean += win[iy+1][ix-1];
+        mean += win[iy+1][ix];
+        mean += win[iy+1][ix+1];
+        mean /= 8.;
+        sum1 += mean;
+        sum2 += fabs(cval-mean);
+        num_pix++;
+          }
+        }
+        if(num_pix){
+          sum1 /= num_pix;
+          sum2 /= num_pix;
+          sum2 *= SCALE;
+          float x = log10(std::max(sum1,0.11));
+          float y = log10(std::max(sum2,1.));
+          cpgpt1(x,y,1);
+        }
       }
     }
-    
+      }
+    }
+
     // Plot model
     const int MAXPLOT = 200;
     float xp[MAXPLOT], yp[MAXPLOT];
@@ -209,7 +209,7 @@ int main(int argc, char* argv[]){
     }
     cpgsci(Subs::RED);
     cpgline(MAXPLOT, xp, yp);
-    
+
   }
 
   catch(const Ultracam::Input_Error& err){

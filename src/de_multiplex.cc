@@ -8,36 +8,36 @@
 
 /**
 
-This function is completely ULTRACAM specific. It de-multiplexes the data stored in the buffer 
+This function is completely ULTRACAM specific. It de-multiplexes the data stored in the buffer
 sent back by the fileserver. This comes back in the order:
 
 \verbatim
-CCD=0, window=0, iy=0, ix=0 
-CCD=0, window=1, iy=0, ix=nx-1 
-CCD=1, window=0, iy=0, ix=0 
-CCD=1, window=1, iy=0, ix=nx-1 
-CCD=2, window=0, iy=0, ix=0 
-CCD=2, window=1, iy=0, ix=nx-1 
+CCD=0, window=0, iy=0, ix=0
+CCD=0, window=1, iy=0, ix=nx-1
+CCD=1, window=0, iy=0, ix=0
+CCD=1, window=1, iy=0, ix=nx-1
+CCD=2, window=0, iy=0, ix=0
+CCD=2, window=1, iy=0, ix=nx-1
 
-CCD=0, window=0, iy=0, ix=1 
-CCD=0, window=1, iy=0, ix=nx-2 
+CCD=0, window=0, iy=0, ix=1
+CCD=0, window=1, iy=0, ix=nx-2
 CCD=1, window=0, iy=0, ix=1
-CCD=1, window=1, iy=0, ix=nx-2 
+CCD=1, window=1, iy=0, ix=nx-2
 CCD=2, window=0, iy=0, ix=1
-CCD=2, window=1, iy=0, ix=nx-2 
+CCD=2, window=1, iy=0, ix=nx-2
 .
 .
 .
 
-CCD=0, window=0, iy=1, ix=0 
-CCD=0, window=0, iy=1, ix=nx-1 
+CCD=0, window=0, iy=1, ix=0
+CCD=0, window=0, iy=1, ix=nx-1
 CCD=1, window=0, iy=1, ix=0
-CCD=1, window=0, iy=1, ix=nx-1 
+CCD=1, window=0, iy=1, ix=nx-1
 CCD=2, window=0, iy=1, ix=0
-CCD=2, window=0, iy=1, ix=nx-1 
+CCD=2, window=0, iy=1, ix=nx-1
 \endverbatim
 
-etc until all iy are done, and then onto the next window pair until the end. 
+etc until all iy are done, and then onto the next window pair until the end.
 This routine puts all of this into the standard arrays inside the Frame passed to it.
 \param buffer a buffer of data returned by the server, without a header
 \param data   a data frame to store it into. Needs its format to have been defined
@@ -50,8 +50,8 @@ if it is thought to be big-endian (as opposed to intel / linux little endian)
 
 void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
 
-    // Initialise. 
-    // PIX_SHIFT accounts for a problem that was present until May 2007 the cure for which 
+    // Initialise.
+    // PIX_SHIFT accounts for a problem that was present until May 2007 the cure for which
     // is to remove the outermost pixel of all windows.
     const int  PIX_SHIFT = data["Instrument.version"]->get_int() < 0 ? 1 : 0;
     const bool TRIM      = data["Trimming.applied"]->get_bool();
@@ -74,173 +74,173 @@ void Ultracam::de_multiplex_ultracam(char *buffer, Frame& data){
 
     if(normal){
 
-	register int NX = data[0][nwin1].nx();
-	register int ix1=0, ix2 = NX-1;
-	iy = 0;
+    register int NX = data[0][nwin1].nx();
+    register int ix1=0, ix2 = NX-1;
+    iy = 0;
 
-	// Advance buffer pointer if trimming enabled. The factor 4 comes from 2 bytes for
-	// each pixel and 2 windows. Should not have been done in overscan mode
-	if(STRIP){
-	    ip += 4*NCCD*(NX+NCOL)*NROW;
-	    ip += 4*NCCD*NCOL;
-	}
+    // Advance buffer pointer if trimming enabled. The factor 4 comes from 2 bytes for
+    // each pixel and 2 windows. Should not have been done in overscan mode
+    if(STRIP){
+        ip += 4*NCCD*(NX+NCOL)*NROW;
+        ip += 4*NCCD*NCOL;
+    }
 
-	for(;;){
+    for(;;){
 
-	    // Add in pixels from the left of the left window and from the right of the right window for each window
-	    // pair and CCD in turn. The pointer to char is cast to a pointer to an unsigned 2-byte integer and then the value 
-	    // of the thing pointed at is converted to the internal data type of ULTRACAM, and the pointer is advanced 
-	    // appropriately. This loop is the critical one for speed. 
+        // Add in pixels from the left of the left window and from the right of the right window for each window
+        // pair and CCD in turn. The pointer to char is cast to a pointer to an unsigned 2-byte integer and then the value
+        // of the thing pointed at is converted to the internal data type of ULTRACAM, and the pointer is advanced
+        // appropriately. This loop is the critical one for speed.
 
-	    for(nccd=0; nccd<NCCD; nccd++){	
-		if(LITTLE){
-		    data[nccd][nwin1][iy][ix1] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		    ip += 2;
-		    data[nccd][nwin2][iy][ix2] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		    ip += 2;
-		}else{
-		    cbuff[1] = buffer[ip++];
-		    cbuff[0] = buffer[ip++];
-		    data[nccd][nwin1][iy][ix1] = internal_data(*(Subs::UINT2*)cbuff);
-		    cbuff[1] = buffer[ip++];
-		    cbuff[0] = buffer[ip++];
-		    data[nccd][nwin2][iy][ix2] = internal_data(*(Subs::UINT2*)cbuff);
-		}
-	    }
-      
-	    // Update pointers for next round. 
-	    ix1++;
-	    ix2--;
-	    if(ix1 == NX){
-		ix1 = 0;
-		ix2 = NX-1;
-		iy++;
-		if(iy == data[0][nwin1].ny()){
-		    nwin2 += 2;
-	  
-		    // Finished
-		    if(nwin2 > data[0].size()) break;
-	  
-		    nwin1 += 2;
-		    iy     = 0;
-		    NX     = data[0][nwin1].nx();
-		    ix2    = NX-1;
-	  
-		    // skip lower rows 
-		    if(STRIP) ip += 4*NCCD*(NX+NCOL)*NROW;
-	  
-		}
-	
-		// skip columns on left of left window, right of right window
-		if(STRIP) ip += 4*NCCD*NCOL;
-	    }
-	}
+        for(nccd=0; nccd<NCCD; nccd++){
+        if(LITTLE){
+            data[nccd][nwin1][iy][ix1] = internal_data(*(Subs::UINT2*)(buffer+ip));
+            ip += 2;
+            data[nccd][nwin2][iy][ix2] = internal_data(*(Subs::UINT2*)(buffer+ip));
+            ip += 2;
+        }else{
+            cbuff[1] = buffer[ip++];
+            cbuff[0] = buffer[ip++];
+            data[nccd][nwin1][iy][ix1] = internal_data(*(Subs::UINT2*)cbuff);
+            cbuff[1] = buffer[ip++];
+            cbuff[0] = buffer[ip++];
+            data[nccd][nwin2][iy][ix2] = internal_data(*(Subs::UINT2*)cbuff);
+        }
+        }
+
+        // Update pointers for next round.
+        ix1++;
+        ix2--;
+        if(ix1 == NX){
+        ix1 = 0;
+        ix2 = NX-1;
+        iy++;
+        if(iy == data[0][nwin1].ny()){
+            nwin2 += 2;
+
+            // Finished
+            if(nwin2 > data[0].size()) break;
+
+            nwin1 += 2;
+            iy     = 0;
+            NX     = data[0][nwin1].nx();
+            ix2    = NX-1;
+
+            // skip lower rows
+            if(STRIP) ip += 4*NCCD*(NX+NCOL)*NROW;
+
+        }
+
+        // skip columns on left of left window, right of right window
+        if(STRIP) ip += 4*NCCD*NCOL;
+        }
+    }
 
     }else{
 
-	// Overscan mode is a bit of a bugger. 24 columns on left of left window and right
-	// of right window, plus 4 on right of left window and left of right window
-	// plus another 8 rows at the top. Very specific implementation here to split
-	// between 6 windows with the two parts of the overscan combined into single strips
-	// which appear on the right of the main windows and an extra part at the top. This
-	// way the mapping of real pixels to image pixel is preserved so object positions stay
-	// the same.
-    
-	register int ix;
-	const int  XBIN      = data[0][0].xbin();
-	const int  YBIN      = data[0][0].ybin();
+    // Overscan mode is a bit of a bugger. 24 columns on left of left window and right
+    // of right window, plus 4 on right of left window and left of right window
+    // plus another 8 rows at the top. Very specific implementation here to split
+    // between 6 windows with the two parts of the overscan combined into single strips
+    // which appear on the right of the main windows and an extra part at the top. This
+    // way the mapping of real pixels to image pixel is preserved so object positions stay
+    // the same.
 
-	for(iy=0; iy<1032/YBIN; iy++){
-	    for(ix=0; ix<540/XBIN; ix++){
-		for(nccd=0; nccd<NCCD; nccd++){
-		    if(ix < 24/XBIN){
-	    
-			// left and right overscan windows
-			if(LITTLE){
-			    data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)(buffer+ip));	 
-			    ip += 2;
-			    data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-			    ip += 2;
-			}else{
-			    cbuff[1] = buffer[ip++];
-			    cbuff[0] = buffer[ip++];
-			    data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)cbuff);
-			    cbuff[1] = buffer[ip++];
-			    cbuff[0] = buffer[ip++];
-			    data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
-			}
+    register int ix;
+    const int  XBIN      = data[0][0].xbin();
+    const int  YBIN      = data[0][0].ybin();
 
-		    }else if(ix < 536/XBIN){
-	    
-			if(iy < 1024/YBIN){
-			    // left and right data windows
-			    if(LITTLE){
-				data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-				ip += 2;
-				data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-				ip += 2;
-			    }else{
-				cbuff[1] = buffer[ip++];
-				cbuff[0] = buffer[ip++];
-				data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
-				cbuff[1] = buffer[ip++];
-				cbuff[0] = buffer[ip++];
-				data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff); 
-			    }
+    for(iy=0; iy<1032/YBIN; iy++){
+        for(ix=0; ix<540/XBIN; ix++){
+        for(nccd=0; nccd<NCCD; nccd++){
+            if(ix < 24/XBIN){
 
-			}else{
+            // left and right overscan windows
+            if(LITTLE){
+                data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+            }else{
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][2][iy][ix]   = internal_data(*(Subs::UINT2*)cbuff);
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][3][iy][28/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
+            }
 
-			    // top left and right overscan windows
-			    if(LITTLE){
-				data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-				ip += 2;
-				data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-				ip += 2;
-			    }else{
-				cbuff[1] = buffer[ip++];
-				cbuff[0] = buffer[ip++];
-				data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
-				cbuff[1] = buffer[ip++];
-				cbuff[0] = buffer[ip++];
-				data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);  
-			    }
-			}
-	    
-		    }else{
+            }else if(ix < 536/XBIN){
 
-			// left and right overscan windows again
-			if(LITTLE){
-			    data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-			    ip += 2;
-			    data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));	  
-			    ip += 2;
-			}else{
-			    cbuff[1] = buffer[ip++];
-			    cbuff[0] = buffer[ip++];
-			    data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)cbuff);
-			    cbuff[1] = buffer[ip++];
-			    cbuff[0] = buffer[ip++];
-			    data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);  
-			}
-		    }
-		}	
-	    }
-	}
+            if(iy < 1024/YBIN){
+                // left and right data windows
+                if(LITTLE){
+                data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                }else{
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][0][iy][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][1][iy][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
+                }
+
+            }else{
+
+                // top left and right overscan windows
+                if(LITTLE){
+                data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                }else{
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][4][iy-1024/YBIN][ix-24/XBIN]  = internal_data(*(Subs::UINT2*)cbuff);
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][5][iy-1024/YBIN][536/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
+                }
+            }
+
+            }else{
+
+            // left and right overscan windows again
+            if(LITTLE){
+                data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+                data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+                ip += 2;
+            }else{
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][2][iy][ix-512/XBIN] = internal_data(*(Subs::UINT2*)cbuff);
+                cbuff[1] = buffer[ip++];
+                cbuff[0] = buffer[ip++];
+                data[nccd][3][iy][540/XBIN-1-ix] = internal_data(*(Subs::UINT2*)cbuff);
+            }
+            }
+        }
+        }
+    }
     }
 }
 
 
 /**
 
-This function is ULTRASPEC specific. It de-multiplexes the data stored in the buffer 
+This function is ULTRASPEC specific. It de-multiplexes the data stored in the buffer
 sent back by the fileserver. It is designed for windows strung out in the Y direction
 with no overlap. This is the standard ULTRASPEC mode. See later for a drift mode version.
 
 In the standard mode the pixels come back in the order:
 
 \verbatim
-window=0, iy=0, ix=0 
-window=0, iy=0, ix=1 
+window=0, iy=0, ix=0
+window=0, iy=0, ix=1
 window=0, iy=0, ix=2
 .
 .
@@ -284,130 +284,130 @@ void Ultracam::de_multiplex_ultraspec(char *buffer, Frame& data, const std::vect
 
     if(normal){
 
-	register size_t nwin = 0;
-	register int NX = data[0][0].nx();
-	register int ix=0;
-	iy = 0;
+    register size_t nwin = 0;
+    register int NX = data[0][0].nx();
+    register int ix=0;
+    iy = 0;
 
-	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
-	if(TRIM){
-	    ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
-	    ip += 2*NCOL;
-	}
-	
-	// Skip overscan pixels
-	ip += 2*nchop[nwin];
+    // Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
+    if(TRIM){
+        ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
+        ip += 2*NCOL;
+    }
 
-	for(;;){
+    // Skip overscan pixels
+    ip += 2*nchop[nwin];
 
-	    // 'normal' mode we assume that the first pixel read out is the left-most 
-	    if(LITTLE){
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		ip += 2;
-	    }else{
-		cbuff[1] = buffer[ip++];
-		cbuff[0] = buffer[ip++];
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
-	    }
+    for(;;){
 
-	    // Update pointers for next round. 
-	    ix++;
-	    if(ix == NX){
-		ix = 0;
-		iy++;
-		if(iy == data[0][nwin].ny()){
+        // 'normal' mode we assume that the first pixel read out is the left-most
+        if(LITTLE){
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+        ip += 2;
+        }else{
+        cbuff[1] = buffer[ip++];
+        cbuff[0] = buffer[ip++];
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
+        }
 
-		    nwin++;
+        // Update pointers for next round.
+        ix++;
+        if(ix == NX){
+        ix = 0;
+        iy++;
+        if(iy == data[0][nwin].ny()){
 
-		    // Finished
-		    if(nwin >= data[0].size()) break;
-	  	  
-		    iy     = 0;
-		    NX     = data[0][nwin].nx();
-	  
-		    // skip lower rows 
-		    if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
-	  
-		}
-	
-		// skip columns on left of window
-		if(TRIM) ip += 2*NCOL;
+            nwin++;
 
-		// Skip overscan pixels
-		ip += 2*nchop[nwin];
-	    }
-	}
-    
+            // Finished
+            if(nwin >= data[0].size()) break;
+
+            iy     = 0;
+            NX     = data[0][nwin].nx();
+
+            // skip lower rows
+            if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
+
+        }
+
+        // skip columns on left of window
+        if(TRIM) ip += 2*NCOL;
+
+        // Skip overscan pixels
+        ip += 2*nchop[nwin];
+        }
+    }
+
     }else{
-      
-	register size_t nwin = 0;
-	register int NX = data[0][nwin].nx();
-	register int ix = NX-1;
-	iy = 0;
 
-	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
-	if(TRIM){
-	    ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
-	    ip += 2*NCOL;
-	}
-      
-	// Skip overscan pixels
-	ip += 2*nchop[nwin];
+    register size_t nwin = 0;
+    register int NX = data[0][nwin].nx();
+    register int ix = NX-1;
+    iy = 0;
 
-	for(;;){
-	  
-	    // 'abnormal' mode we assume that the first pixel read out is the right-most 
-	    if(LITTLE){
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		ip += 2;
-	    }else{
-		cbuff[1] = buffer[ip++];
-		cbuff[0] = buffer[ip++];
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
-	    }
+    // Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
+    if(TRIM){
+        ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
+        ip += 2*NCOL;
+    }
 
-	    // Update pointers for next round. 
-	    ix--;
-	    if(ix < 0){
-		iy++;
-		if(iy == data[0][nwin].ny()){
+    // Skip overscan pixels
+    ip += 2*nchop[nwin];
 
-		    nwin++;
+    for(;;){
 
-		    // Finished
-		    if(nwin >= data[0].size()) break;
-	  	  
-		    iy     = 0;
-		    NX     = data[0][nwin].nx();
-	  
-		    // skip lower rows 
-		    if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
-	  
-		}
+        // 'abnormal' mode we assume that the first pixel read out is the right-most
+        if(LITTLE){
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+        ip += 2;
+        }else{
+        cbuff[1] = buffer[ip++];
+        cbuff[0] = buffer[ip++];
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
+        }
 
-		ix = NX-1;
-	
-		// skip columns on right window
-		if(TRIM) ip += 2*NCOL;
+        // Update pointers for next round.
+        ix--;
+        if(ix < 0){
+        iy++;
+        if(iy == data[0][nwin].ny()){
 
-		// Skip overscan pixels
-		ip += 2*nchop[nwin];
-	    }
-	}
+            nwin++;
+
+            // Finished
+            if(nwin >= data[0].size()) break;
+
+            iy     = 0;
+            NX     = data[0][nwin].nx();
+
+            // skip lower rows
+            if(TRIM) ip += 2*(NX+nchop[nwin]+NCOL)*NROW;
+
+        }
+
+        ix = NX-1;
+
+        // skip columns on right window
+        if(TRIM) ip += 2*NCOL;
+
+        // Skip overscan pixels
+        ip += 2*nchop[nwin];
+        }
+    }
     }
 }
 
 /**
 
-This function is ULTRASPEC specific. It de-multiplexes the data stored in the buffer 
+This function is ULTRASPEC specific. It de-multiplexes the data stored in the buffer
 sent back by the fileserver. It is designed for window pairs in the x direction as in the
 ULTRASPEC drift mode.
 
 In the drift mode the pixels come back in the order:
 
 \verbatim
-window=0, iy=0, ix=0 
-window=0, iy=0, ix=1 
+window=0, iy=0, ix=0
+window=0, iy=0, ix=1
 window=0, iy=0, ix=2
 .
 .
@@ -425,7 +425,7 @@ window=0, iy=1, ix=0
 There are two possible read out modes however, and in one of them the read out order is reversed in the X direction, so
 that it starts with nx-1. This function swaps this case so that the images will appear the same on the screen. It also has
 to make sure that a given format is compatible whether normal or avalanche. It turns out that the only way to ensure this
-is to remove any pixels if they are amongst the first 16 that can be read out by either port (overscan pixels). These are 
+is to remove any pixels if they are amongst the first 16 that can be read out by either port (overscan pixels). These are
 thus ignored and never appear at any stage.
 
 */
@@ -448,10 +448,10 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
     if(normal){
 
         // Must deal with window pairs now.
-	size_t nwin1 = 0, nwin2 = 1;
-	const int NX1 = data[0][nwin1].nx();
-	const int NX2 = data[0][nwin2].nx();
-	register int iy  = 0;
+    size_t nwin1 = 0, nwin2 = 1;
+    const int NX1 = data[0][nwin1].nx();
+    const int NX2 = data[0][nwin2].nx();
+    register int iy  = 0;
         register int ix = 0;
 
         // At the start we are dealing with the first window
@@ -459,33 +459,33 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
         size_t nwin     = nwin1;
         bool   first    = true;
 
-	// Advance buffer pointer if trimming enabled. The outer factors of 2 come from 2 bytes for each pixel.
+    // Advance buffer pointer if trimming enabled. The outer factors of 2 come from 2 bytes for each pixel.
  	if(TRIM){
-	    ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
-	    ip += 2*NCOL;
-	}
-	
-	// Skip overscan pixels
-	ip += 2*nchop[nwin];
+        ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
+        ip += 2*NCOL;
+    }
+
+    // Skip overscan pixels
+    ip += 2*nchop[nwin];
 
         // pixel input loop
-	for(;;){
+    for(;;){
 
-	    // 'normal' mode we assume that the first pixel read out is the left-most 
+        // 'normal' mode we assume that the first pixel read out is the left-most
             // here we read and squirrel away a pixel's-worth of data:
-	    if(LITTLE){
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		ip += 2;
-	    }else{
-		cbuff[1] = buffer[ip++];
-		cbuff[0] = buffer[ip++];
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
-	    }
+        if(LITTLE){
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+        ip += 2;
+        }else{
+        cbuff[1] = buffer[ip++];
+        cbuff[0] = buffer[ip++];
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
+        }
 
-	    // Move to next x
-	    ix++;
-	    if(ix == NX){
-		ix = 0;
+        // Move to next x
+        ix++;
+        if(ix == NX){
+        ix = 0;
                 if(first){
                     // switch to second window
                     first = false;
@@ -499,54 +499,54 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
                     if(iy == data[0][nwin].ny()) break;
                     NX    = NX1;
                 }
-	
-		// skip columns on left of window
-		if(TRIM) ip += 2*NCOL;
 
-		// Skip overscan pixels
-		ip += 2*nchop[nwin];
-	    }
-	}
-    
+        // skip columns on left of window
+        if(TRIM) ip += 2*NCOL;
+
+        // Skip overscan pixels
+        ip += 2*nchop[nwin];
+        }
+    }
+
     }else{
 
       	size_t nwin1 = 0, nwin2 = 1;
-	const int NX1 = data[0][nwin1].nx();
-	const int NX2 = data[0][nwin2].nx();
-	register int iy  = 0;
+    const int NX1 = data[0][nwin1].nx();
+    const int NX2 = data[0][nwin2].nx();
+    register int iy  = 0;
 
         // At the start we are dealing with the first window
         register int NX     = NX1;
         size_t nwin   = nwin1;
         bool   first  = true;
 
-	register int ix = NX-1;
+    register int ix = NX-1;
 
-	// Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
-	if(TRIM){
-	    ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
-	    ip += 2*NCOL;
-	}
-      
-	// Skip overscan pixels
-	ip += 2*nchop[nwin];
+    // Advance buffer pointer if trimming enabled. The factor 2 comes from 2 bytes for each pixel.
+    if(TRIM){
+        ip += 2*(NX1+NX2+nchop[nwin]+2*NCOL)*NROW;
+        ip += 2*NCOL;
+    }
+
+    // Skip overscan pixels
+    ip += 2*nchop[nwin];
 
         // pixel input loop
-	for(;;){
-	  
-	    // 'abnormal' mode we assume that the first pixel read out is the right-most 
-	    if(LITTLE){
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
-		ip += 2;
-	    }else{
-		cbuff[1] = buffer[ip++];
-		cbuff[0] = buffer[ip++];
-		data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
-	    }
+    for(;;){
 
-	    // Move to next x
-	    ix--;
-	    if(ix < 0){
+        // 'abnormal' mode we assume that the first pixel read out is the right-most
+        if(LITTLE){
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)(buffer+ip));
+        ip += 2;
+        }else{
+        cbuff[1] = buffer[ip++];
+        cbuff[0] = buffer[ip++];
+        data[0][nwin][iy][ix] = internal_data(*(Subs::UINT2*)cbuff);
+        }
+
+        // Move to next x
+        ix--;
+        if(ix < 0){
                 if(first){
                     // switch to second window
                     first = false;
@@ -559,17 +559,17 @@ void Ultracam::de_multiplex_ultraspec_drift(char *buffer, Frame& data, const std
                     iy++;
                     if(iy == data[0][nwin].ny()) break;
                     NX    = NX1;
-		}
+        }
 
-		ix = NX-1;
-	
-		// skip columns on right window
-		if(TRIM) ip += 2*NCOL;
+        ix = NX-1;
 
-		// Skip overscan pixels
-		ip += 2*nchop[nwin];
-	    }
-	}
+        // skip columns on right window
+        if(TRIM) ip += 2*NCOL;
+
+        // Skip overscan pixels
+        ip += 2*nchop[nwin];
+        }
+    }
     }
 }
 

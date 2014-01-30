@@ -18,7 +18,7 @@ and is relatively fiddly to set up, so you may want to make a little script for 
 
 !!head2 Invocation
 
-movie [device source] width aspect ((url)/(file) first trim [(ncol nrow) twait tmax])/(flist) 
+movie [device source] width aspect ((url)/(file) first trim [(ncol nrow) twait tmax])/(flist)
 nccd bias (biasframe) xleft xright ylow yhigh iset (ilow ihigh)/(plow phigh) lcurve targ comp scale x1 x2 y1 y2
 skip [fraction csize lwidth cfont pause]
 
@@ -29,8 +29,8 @@ skip [fraction csize lwidth cfont pause]
 !!arg{device}{Display device. If identified as a gif, this will generate a separate one for each image
 so that these can later be merged into a single animated gif}
 
-!!arg{source}{Data source, either 'l' for local, 's' for server or 'u' for a list of ucm files. 
-'Local' means the usual .xml and .dat files accessed directly. Do not add either .xml or .dat 
+!!arg{source}{Data source, either 'l' for local, 's' for server or 'u' for a list of ucm files.
+'Local' means the usual .xml and .dat files accessed directly. Do not add either .xml or .dat
 to the file name; these are assumed.}
 
 !!arg{width}{Width of plots, in cm}
@@ -52,7 +52,7 @@ columns of each window}
 !!arg{ncol}{If trim, then this specifies the number of columns nearest the readouts of each window to be snipped
 off as these can be corrupted.}
 
-!!arg{nrow}{If trim, then this specifies the number of rows to snip off the bottom of each window as these 
+!!arg{nrow}{If trim, then this specifies the number of rows to snip off the bottom of each window as these
 can be corrupted.}
 
 !!arg{twait}{Time to wait between attempts to find a new exposure. (Only for data from a server)}
@@ -65,7 +65,7 @@ temporal order to help the reduction move from one exposure to the next successf
 
 !!arg{nccd}{The particular CCD to display}
 
-!!arg{bias}{true/false according to whether you want to subtract a bias frame. You can specify a full-frame 
+!!arg{bias}{true/false according to whether you want to subtract a bias frame. You can specify a full-frame
 bias because it will be cropped to match whatever your format is. This is useful for ultracam because of
 the different bias levels of the 6 readouts.}
 
@@ -81,7 +81,7 @@ automatically (= min to max), directly or with percentiles.}
 !!arg{ilow ihigh}{If iset='d', ilow and ihigh specify the intensity range to plot}
 
 !!arg{plow phigh}{If iset='p', plow and phigh are percentiles to set the intensity range,
-e.g. 10, 99} 
+e.g. 10, 99}
 
 !!arg{lcurve}{Equivalent List of Ultracam files}
 
@@ -91,7 +91,7 @@ e.g. 10, 99}
 
 !!arg{scale}{Scaling factor to divide into target/comparison}
 
-!!arg{x1}{Lower X limit of light curve plot. This is measured after the subtracting the largest integer less than the 
+!!arg{x1}{Lower X limit of light curve plot. This is measured after the subtracting the largest integer less than the
 first time encountered.}
 
 !!arg{x2}{Upper X limit of light curve plot}
@@ -100,7 +100,7 @@ first time encountered.}
 
 !!arg{y2}{Upper Y limit of plot}
 
-!!arg{skip}{Number of frames to skip between plots, to reduce overall number of images produced. 
+!!arg{skip}{Number of frames to skip between plots, to reduce overall number of images produced.
 Starts from 0}
 
 !!arg{fraction}{Fraction of X range to devote to the images}
@@ -147,7 +147,7 @@ struct Ldata {
 
 // Main program
 int main(int argc, char* argv[]){
-  
+
   using Ultracam::File_Open_Error;
   using Ultracam::Input_Error;
 
@@ -230,28 +230,28 @@ int main(int argc, char* argv[]){
       input.get_value("first", first, size_t(1), size_t(1), size_t(INT_MAX), "first file to access");
       input.get_value("trim", trim, true, "trim junk lower rows from windows?");
       if(trim){
-	input.get_value("ncol", ncol, 0, 0, 100, "number of columns to trim from each window");
-	input.get_value("nrow", nrow, 0, 0, 100, "number of rows to trim from each window");
+    input.get_value("ncol", ncol, 0, 0, 100, "number of columns to trim from each window");
+    input.get_value("nrow", nrow, 0, 0, 100, "number of rows to trim from each window");
       }
       input.get_value("twait", twait, 1., 0., 1000., "time to wait between attempts to find a frame (seconds)");
       input.get_value("tmax", tmax, 2., 0., 1000., "maximum time to wait before giving up trying to find a "
-		      "frame (seconds)");
+              "frame (seconds)");
 
       // Add extra stuff to URL if need be.
       if(url.find("http://") == std::string::npos && source == 'S'){
-	char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
-	if(DEFAULT_URL != NULL){
-	  url = DEFAULT_URL + url;
-	}else{
-	  url = Ultracam::ULTRACAM_LOCAL_URL + url;
-	}
+    char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
+    if(DEFAULT_URL != NULL){
+      url = DEFAULT_URL + url;
+    }else{
+      url = Ultracam::ULTRACAM_LOCAL_URL + url;
+    }
       }else if(url.find("http://") == 0 && source == 'L'){
-	throw Ultracam::Input_Error("Should not specify the local file as a URL");
+    throw Ultracam::Input_Error("Should not specify the local file as a URL");
       }
-      
+
       // Parse the XML file
       Ultracam::parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
-      
+
       // Initialise standard data frame
       data.format(mwindow, header);
 
@@ -266,11 +266,11 @@ int main(int argc, char* argv[]){
       std::string name;
       std::ifstream istr(flist.c_str());
       while(istr >> name){
-	file.push_back(name);
+    file.push_back(name);
       }
       istr.close();
-      if(file.size() == 0) 
-	throw Input_Error("No file names loaded");
+      if(file.size() == 0)
+    throw Input_Error("No file names loaded");
 
       data.read(file[0]);
 
@@ -366,50 +366,50 @@ int main(int argc, char* argv[]){
     double t0 = 0;
     while(fin && (c = fin.peek(), fin) && !fin.eof()){
       if(c == '#'){
-	fin.ignore(10000, '\n');
+    fin.ignore(10000, '\n');
       }else{
 
-	size_t nframe;
-	double time;
-	int flag, nsat;
-	float expose;
-	int ccd;
-	float fwhm, beta;
-	fin >> nframe >> time >> flag >> nsat >> expose >> ccd >> fwhm >> beta;
-	if(fin){
-	  if(ccd == nccd+1){
-	    int nape = 0, nrej, error_flag, nsky, worst;
-	    float counts, sigma, sky;
-	    double xf, yf, xm, ym, ex, ey;
-	    bool tok = false, cok = false;
-	    float ty = 0, te = 0, cy = 0, ce = 0;
-	    for(int nap=0; nap<std::max(targ, comp); nap++){
-	      fin >> nape >> xf >> yf >> xm >> ym >> ex >> ey >> counts >> sigma >> sky >> nsky >> nrej >> worst >> error_flag;
-	      if(!fin) throw Input_Error("Error reading light curve file " + lcurve  + "\nline: " + line);
-	      if(nape == targ){
-		ty  = counts;
-		te  = sigma;
-		tok = true;
-	      }else if(nape == comp){
-		cy  = counts;
-		ce  = sigma;
-		cok = true;
-	      }
-	    }
-	    if(tok && cok){
-	      float y  = ty / cy;
-	      float ye = sqrt(Subs::sqr(te) + Subs::sqr(y*ce)) /cy / scale;
-	      y /= scale;
-	      if(ldata.size() == 0) t0 = floor(time);
-	      float x = time - t0;
-	      ldata[nframe] = new Ldata(x, y, ye);
-	      if(!visible && x > std::min(x1_light, x2_light) && x < std::max(x1_light, x2_light)
-		 && y > std::min(y1_light, y2_light) && y < std::max(y1_light, y2_light)) visible = true;
-	      nfmax = nframe > nfmax ? nframe : nfmax;
-	    }
-	  }
-	  fin.ignore(10000, '\n');
-	}
+    size_t nframe;
+    double time;
+    int flag, nsat;
+    float expose;
+    int ccd;
+    float fwhm, beta;
+    fin >> nframe >> time >> flag >> nsat >> expose >> ccd >> fwhm >> beta;
+    if(fin){
+      if(ccd == nccd+1){
+        int nape = 0, nrej, error_flag, nsky, worst;
+        float counts, sigma, sky;
+        double xf, yf, xm, ym, ex, ey;
+        bool tok = false, cok = false;
+        float ty = 0, te = 0, cy = 0, ce = 0;
+        for(int nap=0; nap<std::max(targ, comp); nap++){
+          fin >> nape >> xf >> yf >> xm >> ym >> ex >> ey >> counts >> sigma >> sky >> nsky >> nrej >> worst >> error_flag;
+          if(!fin) throw Input_Error("Error reading light curve file " + lcurve  + "\nline: " + line);
+          if(nape == targ){
+        ty  = counts;
+        te  = sigma;
+        tok = true;
+          }else if(nape == comp){
+        cy  = counts;
+        ce  = sigma;
+        cok = true;
+          }
+        }
+        if(tok && cok){
+          float y  = ty / cy;
+          float ye = sqrt(Subs::sqr(te) + Subs::sqr(y*ce)) /cy / scale;
+          y /= scale;
+          if(ldata.size() == 0) t0 = floor(time);
+          float x = time - t0;
+          ldata[nframe] = new Ldata(x, y, ye);
+          if(!visible && x > std::min(x1_light, x2_light) && x < std::max(x1_light, x2_light)
+         && y > std::min(y1_light, y2_light) && y < std::max(y1_light, y2_light)) visible = true;
+          nfmax = nframe > nfmax ? nframe : nfmax;
+        }
+      }
+      fin.ignore(10000, '\n');
+    }
       }
     }
     fin.close();
@@ -444,123 +444,123 @@ int main(int argc, char* argv[]){
 
       if((nfile - first) % (skip + 1) == 0){
 
-	if(source == 'S' || source == 'L'){
-	  
-	  if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax)) break;
-	  
-	}else{
-	  
-	  if(nfile >= file.size()) break;
-	  data.read(file[nfile]);
-	  
-	}
-	
-	// Subtract a bias frame
-	if(bias) data -= bias_frame;
-	
-	// Open plot, set up style
-	if(edev == "/xs" || edev == "/xw"){
-	  plot.open(edev);
-	}else{
-	  plot.open(fdev + Subs::str(int(nfile),ndigit) + edev);
-	}
-	cpgpap(width/2.54, aspect);
-	cpgsch(csize);
-	cpgslw(lwidth);
-	cpgscf(cfont);
-	
-	// Fix the viewport for the image to make the pixels square
-	float yborder = 4.*csize/40.;   // border as fraction of Y height
-	float xborder = yborder*aspect; // border as fraction of X width
-	
-	float xtv1=xborder, xtv2=fraction-xborder, ytv1=yborder, ytv2=1.-yborder;
-	if(xtv1 >= xtv2 || ytv1 >= ytv2)
-	  throw Input_Error("Invalid viewport limits (1): is character size too large?");
-	cpgsvp(xtv1,xtv2,ytv1,ytv2);
-	float xv1, xv2, yv1, yv2;
-	cpgqvp(2,&xv1,&xv2,&yv1,&yv2);
-	float pasp = (yv2-yv1)/(xv2-xv1);       // physical aspect ratio
-	float rasp = (y2-y1)/(x2-x1);           // required aspect ratio
-	float nasp = (ytv2-ytv1)/(xtv2-xtv1);   // normalised device coordinates aspect ratio
-	if(rasp > pasp){
-	  float midx   = (xtv1+xtv2)/2.;
-	  float xrange = (ytv2-ytv1)*pasp/rasp/nasp; 
-	  xtv1 = midx - xrange/2.;
-	  xtv2 = midx + xrange/2.;
-	}else{
-	  float midy   = (ytv1+ytv2)/2.;
-	  float yrange = (xtv2-xtv1)/pasp*rasp*nasp; 
-	  ytv1 = midy - yrange/2.;
-	  ytv2 = midy + yrange/2.;
-	}
-	if(xtv1 >= xtv2 || ytv1 >= ytv2)
-	  throw Input_Error("Invalid viewport limits (2): is character size too large?");
-	cpgsvp(xtv1,xtv2,ytv1,ytv2);
-	cpgswin(x1,x2,y1,y2);
-	
-	// Turn plot region into a CCD of windows (with just 1 window)
-	Ultracam::CCD<Ultracam::Window> window;
-	int llx = std::max(int(1), std::min(data[0][0].nxtot(), int(std::min(x1,x2)+0.5)));
-	int lly = std::max(int(1), std::min(data[0][0].nytot(), int(std::min(y1,y2)+0.5)));
-	int nx  = std::min(data[0][0].nxtot()-llx+1, int(fabs(x2-x1)+0.5));
-	int ny  = std::min(data[0][0].nytot()-lly+1, int(fabs(y2-y1)+0.5));
-	window.push_back(Ultracam::Window(llx,lly,nx,ny,1,1,data[0][0].nxtot(),data[0][0].nytot()));
-	
-	// Compute intensity limits
-	if(iset == 'P'){
-	  data[nccd].centile(plow,phigh,ilow,ihigh,window);
-	}else if(iset == 'A'){
-	  ilow  = min(data[nccd],window);
-	  ihigh = max(data[nccd],window);
-	}
-	
-	// Plot
-	cpgsci(Subs::WHITE);
-	pggray(data[nccd],ihigh,ilow);
-	cpgsci(Subs::BLUE);
-	cpgbox("BCNST",0.,0,"BCNST",0.,0);
-	cpgsci(Subs::WHITE);
-	pgline(data[nccd]);
-	pgptxt(data[nccd]);
-	cpgsci(Subs::RED);
-	cpglab("X pixels", "Y pixels", " ");
-	std::cout << "Frame " << nfile << ", image plot range = " << ilow << " to " << ihigh << std::endl;
-	
-	// Light curve part
-	xborder = yborder*aspect; // border as fraction of X width
-	xtv1 = fraction+xborder;
-	xtv2 = 1.-xborder;
-	ytv1 = yborder;
-	ytv2 = 1.-yborder;
-	if(xtv1 >= xtv2 || ytv1 >= ytv2)
-	  throw Input_Error("Invalid viewport limits (3): is character size too large?");
-	cpgsvp(xtv1,xtv2,ytv1,ytv2);
-	
-	cpgsci(Subs::BLUE);
-	cpgswin(x1_light,x2_light,y1_light,y2_light);
-	cpgbox("BCNST",0.,0,"BCNST",0.,0);
-	cpgsci(Subs::RED);
-	std::ostringstream ostr;
-	ostr << "MJD - " << t0;
-	cpglab(ostr.str().c_str(), "Flux", " ");
-	
-	// Plot until current frame number. Assume increases sequentially.
-	Ldata *ptr;
-	for(std::map<size_t,Ldata*>::const_iterator cit=ldata.begin(); cit != ldata.end(); cit++){
-	  if(cit->first <= nfile){
-	    cpgsci(Subs::RED);
-	    ptr = cit->second;
-	    cpgmove(ptr->t, ptr->y - ptr->e);
-	    cpgdraw(ptr->t, ptr->y + ptr->e);
-	    cpgsci(Subs::WHITE);
-	    cpgpt1(ptr->t, ptr->y, 1);
-	  }else{
-	    break;
-	  }
-	}
-	
-	plot.close();
-	Subs::sleep(pause);
+    if(source == 'S' || source == 'L'){
+
+      if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax)) break;
+
+    }else{
+
+      if(nfile >= file.size()) break;
+      data.read(file[nfile]);
+
+    }
+
+    // Subtract a bias frame
+    if(bias) data -= bias_frame;
+
+    // Open plot, set up style
+    if(edev == "/xs" || edev == "/xw"){
+      plot.open(edev);
+    }else{
+      plot.open(fdev + Subs::str(int(nfile),ndigit) + edev);
+    }
+    cpgpap(width/2.54, aspect);
+    cpgsch(csize);
+    cpgslw(lwidth);
+    cpgscf(cfont);
+
+    // Fix the viewport for the image to make the pixels square
+    float yborder = 4.*csize/40.;   // border as fraction of Y height
+    float xborder = yborder*aspect; // border as fraction of X width
+
+    float xtv1=xborder, xtv2=fraction-xborder, ytv1=yborder, ytv2=1.-yborder;
+    if(xtv1 >= xtv2 || ytv1 >= ytv2)
+      throw Input_Error("Invalid viewport limits (1): is character size too large?");
+    cpgsvp(xtv1,xtv2,ytv1,ytv2);
+    float xv1, xv2, yv1, yv2;
+    cpgqvp(2,&xv1,&xv2,&yv1,&yv2);
+    float pasp = (yv2-yv1)/(xv2-xv1);       // physical aspect ratio
+    float rasp = (y2-y1)/(x2-x1);           // required aspect ratio
+    float nasp = (ytv2-ytv1)/(xtv2-xtv1);   // normalised device coordinates aspect ratio
+    if(rasp > pasp){
+      float midx   = (xtv1+xtv2)/2.;
+      float xrange = (ytv2-ytv1)*pasp/rasp/nasp;
+      xtv1 = midx - xrange/2.;
+      xtv2 = midx + xrange/2.;
+    }else{
+      float midy   = (ytv1+ytv2)/2.;
+      float yrange = (xtv2-xtv1)/pasp*rasp*nasp;
+      ytv1 = midy - yrange/2.;
+      ytv2 = midy + yrange/2.;
+    }
+    if(xtv1 >= xtv2 || ytv1 >= ytv2)
+      throw Input_Error("Invalid viewport limits (2): is character size too large?");
+    cpgsvp(xtv1,xtv2,ytv1,ytv2);
+    cpgswin(x1,x2,y1,y2);
+
+    // Turn plot region into a CCD of windows (with just 1 window)
+    Ultracam::CCD<Ultracam::Window> window;
+    int llx = std::max(int(1), std::min(data[0][0].nxtot(), int(std::min(x1,x2)+0.5)));
+    int lly = std::max(int(1), std::min(data[0][0].nytot(), int(std::min(y1,y2)+0.5)));
+    int nx  = std::min(data[0][0].nxtot()-llx+1, int(fabs(x2-x1)+0.5));
+    int ny  = std::min(data[0][0].nytot()-lly+1, int(fabs(y2-y1)+0.5));
+    window.push_back(Ultracam::Window(llx,lly,nx,ny,1,1,data[0][0].nxtot(),data[0][0].nytot()));
+
+    // Compute intensity limits
+    if(iset == 'P'){
+      data[nccd].centile(plow,phigh,ilow,ihigh,window);
+    }else if(iset == 'A'){
+      ilow  = min(data[nccd],window);
+      ihigh = max(data[nccd],window);
+    }
+
+    // Plot
+    cpgsci(Subs::WHITE);
+    pggray(data[nccd],ihigh,ilow);
+    cpgsci(Subs::BLUE);
+    cpgbox("BCNST",0.,0,"BCNST",0.,0);
+    cpgsci(Subs::WHITE);
+    pgline(data[nccd]);
+    pgptxt(data[nccd]);
+    cpgsci(Subs::RED);
+    cpglab("X pixels", "Y pixels", " ");
+    std::cout << "Frame " << nfile << ", image plot range = " << ilow << " to " << ihigh << std::endl;
+
+    // Light curve part
+    xborder = yborder*aspect; // border as fraction of X width
+    xtv1 = fraction+xborder;
+    xtv2 = 1.-xborder;
+    ytv1 = yborder;
+    ytv2 = 1.-yborder;
+    if(xtv1 >= xtv2 || ytv1 >= ytv2)
+      throw Input_Error("Invalid viewport limits (3): is character size too large?");
+    cpgsvp(xtv1,xtv2,ytv1,ytv2);
+
+    cpgsci(Subs::BLUE);
+    cpgswin(x1_light,x2_light,y1_light,y2_light);
+    cpgbox("BCNST",0.,0,"BCNST",0.,0);
+    cpgsci(Subs::RED);
+    std::ostringstream ostr;
+    ostr << "MJD - " << t0;
+    cpglab(ostr.str().c_str(), "Flux", " ");
+
+    // Plot until current frame number. Assume increases sequentially.
+    Ldata *ptr;
+    for(std::map<size_t,Ldata*>::const_iterator cit=ldata.begin(); cit != ldata.end(); cit++){
+      if(cit->first <= nfile){
+        cpgsci(Subs::RED);
+        ptr = cit->second;
+        cpgmove(ptr->t, ptr->y - ptr->e);
+        cpgdraw(ptr->t, ptr->y + ptr->e);
+        cpgsci(Subs::WHITE);
+        cpgpt1(ptr->t, ptr->y, 1);
+      }else{
+        break;
+      }
+    }
+
+    plot.close();
+    Subs::sleep(pause);
       }
       nfile++;
     }

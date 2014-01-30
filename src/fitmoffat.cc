@@ -5,12 +5,12 @@
 #include "trm/windata.h"
 
 // function defined at the end
-void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
-		   int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha, 
-		   Subs::Buffer1D<double>& beta, double& chisq, int nvar);
+void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params,
+           int xlo, int xhi, int ylo, int yhi, Subs::Buffer2D<double>& alpha,
+           Subs::Buffer1D<double>& beta, double& chisq, int nvar);
 
 /**
- * Uses the Levenburg-Marquardt method to fit a Moffat profile to a single Windata. 
+ * Uses the Levenburg-Marquardt method to fit a Moffat profile to a single Windata.
  * Based upon mrqmin from Numerical Recipes
  * \param data the data to fit
  * \param sigma the 1-sigma uncertainties on each point, -ve to mask
@@ -26,19 +26,19 @@ void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, cons
  * iterations proceed, alambda should decrease. If it increases, the last attempt to improve the fit failed, and
  * you should carry on iterating. If it decreases, then look at the change in Chi**2 to see if it worth further
  * iterations. \c alambda should be set -ve on the first call, and should not be altered between subsequent calls.
- * Set -ve again every time you want to re-fit from scratch. Once convergence has occurred, set \c alambda = 0 
+ * Set -ve again every time you want to re-fit from scratch. Once convergence has occurred, set \c alambda = 0
  * to get the covariances sorted properly.
  * \param covar 2D array of covariances. Like \ alambda, these should be left unchanged during a sequence of calls. At the
  * end, after a call with alambda set = 0, they give the covariances on the fitted parameters. The size is automatically
  * increased if necessary by the program to cope with all the parameters.
  */
 
-void Ultracam::fitmoffat(const Ultracam::Windata& data, Ultracam::Windata& sigma, int xlo, int xhi, int ylo, int yhi, 
-			 Ultracam::Ppars& params, double& chisq, double& alambda, Subs::Buffer2D<double>& covar){
+void Ultracam::fitmoffat(const Ultracam::Windata& data, Ultracam::Windata& sigma, int xlo, int xhi, int ylo, int yhi,
+             Ultracam::Ppars& params, double& chisq, double& alambda, Subs::Buffer2D<double>& covar){
 
   // Static parameters whose value must be preserved between calls. In the case of the arrays,
   // they must be allocated to the maximum number of parameters to prevent segmentation faults
-  // if the program is called multiple times with varying numbers of parameters. 
+  // if the program is called multiple times with varying numbers of parameters.
 
   static Ppars atry;
   static int nvar;
@@ -55,13 +55,13 @@ void Ultracam::fitmoffat(const Ultracam::Windata& data, Ultracam::Windata& sigma
     covar.resize(npar,npar);
   }else if(npar > int(covar.nrow()) || npar > int(covar.ncol())){
     throw Ultracam_Error("void Ultracam::fitmoffat(const Windata&, Windata&, int, int, "
-			 "int, int, Ultracam::Ppars&, double&, double&, Subs::Buffer2D<double>&): "
-			 "covariance matrix too small in midst of a sequence -- should not have happened");
+             "int, int, Ultracam::Ppars&, double&, double&, Subs::Buffer2D<double>&): "
+             "covariance matrix too small in midst of a sequence -- should not have happened");
   }
 
   // Initialise a few things if alambda is set negative indicating a restart
   if (alambda < 0.0) {
-    
+
     // Number of variable parameters
     nvar = 0;
     for (int j=0; j<npar; j++)
@@ -113,12 +113,12 @@ void Ultracam::fitmoffat(const Ultracam::Windata& data, Ultracam::Windata& sigma
   }
 }
 
-void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params, 
-		   int xlo, int xhi, int ylo, int yhi, 
-		   Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar){
-  
+void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, const Ultracam::Ppars& params,
+           int xlo, int xhi, int ylo, int yhi,
+           Subs::Buffer2D<double>& alpha, Subs::Buffer1D<double>& beta, double& chisq, int nvar){
+
   int npar = params.npar();
-  
+
   // Initialise alpha and beta
   for(int j=0; j<nvar; j++){
     for(int k=0; k<=j; k++) alpha[j][k] = 0.;
@@ -144,45 +144,45 @@ void fitmoffat_cof(const Ultracam::Windata& data, Ultracam::Windata& sigma, cons
 
     for(int ix=xlo; ix<=xhi; ix++){
       if((sig = sigma[iy][ix]) > 0.){
-	wgt   = 1./Subs::sqr(sig);
-	xoff  = data.xccd(ix)-params.x;
-	if(params.symm){
-	  fac   = 1. + params.a*xoff*xoff + yfac;
-	}else{
-	  fac   = 1. + xoff*(params.a*xoff+2.*params.b*yoff) + yfac;
-	}
+    wgt   = 1./Subs::sqr(sig);
+    xoff  = data.xccd(ix)-params.x;
+    if(params.symm){
+      fac   = 1. + params.a*xoff*xoff + yfac;
+    }else{
+      fac   = 1. + xoff*(params.a*xoff+2.*params.b*yoff) + yfac;
+    }
 
-	val1  = 1./pow(fac,params.beta);
-	val2  = params.height*val1;
-	diff  = data[iy][ix] - val2 - params.sky;
-	dfac  = -params.beta*val2/fac;
-	
-	// Derivative vector
-	dyda[params.sky_index()]    =   1.;
-	dyda[params.height_index()] =   val1;
-	
-	if(params.symm){
-	  dyda[params.x_index()]    =  -2.*dfac*params.a*xoff;
-	  dyda[params.y_index()]    =  -2.*dfac*params.a*yoff;
-	  dyda[params.a_index()]    =   dfac*(xoff*xoff + yoff*yoff);
-	}else{
-	  dyda[params.x_index()]    =  -2.*dfac*(params.a*xoff + params.b*yoff);
-	  dyda[params.y_index()]    =  -2.*dfac*(params.b*xoff + params.c*yoff);
-	  dyda[params.a_index()]    =   dfac*xoff*xoff;
-	  dyda[params.b_index()]    =   2.*dfac*xoff*yoff;
-	  dyda[params.c_index()]    =   dfac*yoff*yoff;
-	}	
-	dyda[params.beta_index()]   =  -val2*log(fac);
+    val1  = 1./pow(fac,params.beta);
+    val2  = params.height*val1;
+    diff  = data[iy][ix] - val2 - params.sky;
+    dfac  = -params.beta*val2/fac;
 
-	for(int j=0, l=0; l<npar; l++){
-	  if(tsave[l]){
-	    wt = wgt*dyda[l];
-	    for(int k=0, m=0; m<=l; m++)
-	      if(tsave[m]) alpha[j][k++] += wt*dyda[m];
-	    beta[j++] += wt*diff;
-	  }
-	}
-	chisq += wgt*Subs::sqr(diff);
+    // Derivative vector
+    dyda[params.sky_index()]    =   1.;
+    dyda[params.height_index()] =   val1;
+
+    if(params.symm){
+      dyda[params.x_index()]    =  -2.*dfac*params.a*xoff;
+      dyda[params.y_index()]    =  -2.*dfac*params.a*yoff;
+      dyda[params.a_index()]    =   dfac*(xoff*xoff + yoff*yoff);
+    }else{
+      dyda[params.x_index()]    =  -2.*dfac*(params.a*xoff + params.b*yoff);
+      dyda[params.y_index()]    =  -2.*dfac*(params.b*xoff + params.c*yoff);
+      dyda[params.a_index()]    =   dfac*xoff*xoff;
+      dyda[params.b_index()]    =   2.*dfac*xoff*yoff;
+      dyda[params.c_index()]    =   dfac*yoff*yoff;
+    }
+    dyda[params.beta_index()]   =  -val2*log(fac);
+
+    for(int j=0, l=0; l<npar; l++){
+      if(tsave[l]){
+        wt = wgt*dyda[l];
+        for(int k=0, m=0; m<=l; m++)
+          if(tsave[m]) alpha[j][k++] += wt*dyda[m];
+        beta[j++] += wt*diff;
+      }
+    }
+    chisq += wgt*Subs::sqr(diff);
       }
     }
   }

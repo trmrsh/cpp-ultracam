@@ -85,33 +85,33 @@ int main(int argc, char* argv[]){
     // Set the values
     for(size_t ic=0; ic<frame.size(); ic++){
       for(size_t iw=0; iw<frame[ic].size(); iw++){
-	Ultracam::Windata &dwin = frame[ic][iw];
-	for(int iy=0; iy<dwin.ny(); iy++){
-	  for(int ix=0; ix<dwin.nx(); ix++){
-	    if(dwin[iy][ix] < 0.5){
+    Ultracam::Windata &dwin = frame[ic][iw];
+    for(int iy=0; iy<dwin.ny(); iy++){
+      for(int ix=0; ix<dwin.nx(); ix++){
+        if(dwin[iy][ix] < 0.5){
 
-	      float sum = 0.f;
+          float sum = 0.f;
 
-	      // A binned pixel gets the worst value of any of its components
-	      int icylo = dwin.lly() + dwin.ybin()*iy;
-	      int icyhi = icylo      + dwin.ybin();
-	      int icxlo = dwin.llx() + dwin.xbin()*ix;
-	      int icxhi = icxlo      + dwin.xbin();
-	      for(int icy=icylo; icy < icyhi; icy++){
-		for(int icx=icxlo; icx < icxhi; icx++){
-		  float worst = 0.f;
-		  for(size_t id=0; id<defect[ic].size(); id++){
-		    float bval = defect[ic][id].bad_value(icx, icy, low, high);
-		    worst = worst <  bval ?  bval : worst;
-		  }
-		  sum += worst;
-		}
-	      }
+          // A binned pixel gets the worst value of any of its components
+          int icylo = dwin.lly() + dwin.ybin()*iy;
+          int icyhi = icylo      + dwin.ybin();
+          int icxlo = dwin.llx() + dwin.xbin()*ix;
+          int icxhi = icxlo      + dwin.xbin();
+          for(int icy=icylo; icy < icyhi; icy++){
+        for(int icx=icxlo; icx < icxhi; icx++){
+          float worst = 0.f;
+          for(size_t id=0; id<defect[ic].size(); id++){
+            float bval = defect[ic][id].bad_value(icx, icy, low, high);
+            worst = worst <  bval ?  bval : worst;
+          }
+          sum += worst;
+        }
+          }
 
-	      dwin[iy][ix] = sum;
-	    }
-	  }
-	}
+          dwin[iy][ix] = sum;
+        }
+      }
+    }
       }
     }
 

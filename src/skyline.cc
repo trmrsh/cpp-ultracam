@@ -24,7 +24,7 @@ float Ultracam::Skyline::how_far(float x, float y) const {
  * using this outside of CCD<Obj>
  * \param skyline1 first Skyline
  * \param skyline2 second Skyline
- * \return \c true if they clash (they never do). 
+ * \return \c true if they clash (they never do).
  */
 bool Ultracam::clash(const Ultracam::Skyline& skyline1, const Ultracam::Skyline& skyline2){
   return false;

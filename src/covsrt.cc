@@ -2,7 +2,7 @@
 #include "trm/buffer2d.h"
 #include "trm/ultracam.h"
 
-/** covsrt sorts the covariances produced during profile fits into correct order, 
+/** covsrt sorts the covariances produced during profile fits into correct order,
  * setting the covariances of fixed parameters to zero and getting the indices correct
  * \param covar the covariance array
  * \param params the profile parameters

@@ -17,8 +17,8 @@
 !!head1   crop - crops Ultracam frames
 
 !!emph{crop} crops an Ultracam frames to match a
-set of windows either from an ASCII file or from another Ultracam frame. 
-The windows in the frame to be cropped must enclose the new windows. Their 
+set of windows either from an ASCII file or from another Ultracam frame.
+The windows in the frame to be cropped must enclose the new windows. Their
 binning factors must divide into those of the new windows and the pixels must be in step.
 
 !!head2 Invocation
@@ -29,8 +29,8 @@ crop input window output!!break
 
 !!table
 !!arg{input}{Input frame}
-!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin} for example) or ULTRACAM file 
-to crop down to. The program first looks for a window file, with extension ".win". Failing this it looks for 
+!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin} for example) or ULTRACAM file
+to crop down to. The program first looks for a window file, with extension ".win". Failing this it looks for
 a file with extension ".ucm" and uses the window from this instead.}
 !!arg{output}{Output, cropped frame}
 !!table
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]){
       window.rasc(swindow);
 
       // Crop
-      indata.crop(window);    
+      indata.crop(window);
     }
 
     // If we fail to find a window file, look for a Frame instead
@@ -88,7 +88,7 @@ int main(int argc, char* argv[]){
       Ultracam::Frame temp(swindow);
 
       // Crop
-      indata.crop(temp);    
+      indata.crop(temp);
     }
 
     indata.write(output);

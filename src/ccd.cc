@@ -46,7 +46,7 @@ void Ultracam::Image::operator+=(const Ultracam::Image& obj){
   }else{
     throw Ultracam_Error("Conflicting numbers of objects in void Ultracam::Image::operator+=(const Ultracam::Image& obj)");
   }
-} 
+}
 
 /**
  * Subtraction in place. The two Ultracam::Image objects must match in format.
@@ -61,7 +61,7 @@ void Ultracam::Image::operator-=(const Ultracam::Image& obj){
   }else{
     throw Ultracam_Error("Conflicting numbers of objects in void Ultracam::Image::operator-=(const Ultracam::Image& obj)");
   }
-} 
+}
 
 /**
  * Multiplication in place. The two Ultracam::Image objects must match in format.
@@ -76,7 +76,7 @@ void Ultracam::Image::operator*=(const Ultracam::Image& obj){
   }else{
     throw Ultracam_Error("Conflicting numbers of objects in void Ultracam::Image::operator*=(const Ultracam::Image& obj)");
   }
-} 
+}
 
 /**
  * Division in place. The two Ultracam::Image objects must match in format.
@@ -91,27 +91,27 @@ void Ultracam::Image::operator/=(const Ultracam::Image& obj){
   }else{
     throw Ultracam_Error("Conflicting numbers of objects in void Ultracam::Image::operator/=(const Ultracam::Image& obj)");
   }
-} 
+}
 
 void Ultracam::Image::operator+=(const Ultracam::internal_data& con){
   for(size_t io=0; io<this->size(); io++)
     (*this)[io] += con;
-} 
+}
 
 void Ultracam::Image::operator-=(const Ultracam::internal_data& con){
   for(size_t io=0; io<this->size(); io++)
     (*this)[io] -= con;
-} 
+}
 
 void Ultracam::Image::operator*=(const Ultracam::internal_data& con){
   for(size_t io=0; io<this->size(); io++)
     (*this)[io] *= con;
-} 
+}
 
 void Ultracam::Image::operator/=(const Ultracam::internal_data& con){
   for(size_t io=0; io<this->size(); io++)
     (*this)[io] /= con;
-} 
+}
 
 int Ultracam::Image::nxtot() const {
   if(this->size())
@@ -168,7 +168,7 @@ Ultracam::internal_data Ultracam::Image::mean() const {
 
 /**
  * This version of \c centile computes a single percentile which can be useful in a number of
- * ways but especially for defining plot limits. 
+ * ways but especially for defining plot limits.
  * \param l the percentile level expressed as a number between 0 and 1
  * \param c the percentile calculated. Set to zero if the frame is blank.
  * \sa Ultracam::Image::centile(float, float, Ultracam::internal_data& , Ultracam::internal_data& )
@@ -201,7 +201,7 @@ void Ultracam::Image::centile(float l, Ultracam::internal_data& c) const {
  * This version of \c centile computes two percentiles. It is more efficient than calling the
  * single value version,  Ultracam::Image::centile(float, Ultracam::internal_data&),  twice. It is
  * most ueful for computing plot limits.
- * ways but especially for defining plot limits. 
+ * ways but especially for defining plot limits.
  * \param l1 the first percentile level expressed as a number between 0 and 1
  * \param l2 the second percentile level expressed as a number between 0 and 1
  * \param c1 the percentile corresponding to l1. Set to zero if the frame is blank.
@@ -218,10 +218,10 @@ void Ultracam::Image::centile(float l1, float l2, Ultracam::internal_data& c1, U
 
     Ultracam::internal_data *p, *t;
     p = t = new Ultracam::internal_data[N];
-    if(!p) 
+    if(!p)
       throw Ultracam::Ultracam_Error("void Ultracam::Image::centile(float, float, Ultracam::internal_data&, "
-				     "Ultracam::internal_data&) const:"
-				     " failed to allocate memory buffer for computation of centiles");
+                     "Ultracam::internal_data&) const:"
+                     " failed to allocate memory buffer for computation of centiles");
     for(size_t io=0; io<this->size(); io++){
       (*this)[io].copy(t);
       t += (*this)[io].ntot();
@@ -275,7 +275,7 @@ void Ultracam::Image::centile(float l, Ultracam::internal_data& c, const Ultraca
  * This version of \c centile computes two percentiles. It is more efficient than calling the
  * single value version,  Ultracam::Image::centile(float, Ultracam::internal_data&),  twice. It is
  * most ueful for computing plot limits.
- * ways but especially for defining plot limits. 
+ * ways but especially for defining plot limits.
  * \param l1 the first percentile level expressed as a number between 0 and 1
  * \param l2 the second percentile level expressed as a number between 0 and 1
  * \param c1 the percentile corresponding to l1. Set to zero if the frame is blank.
@@ -283,8 +283,8 @@ void Ultracam::Image::centile(float l, Ultracam::internal_data& c, const Ultraca
  * \param window the window over which to calculate the percentiles
  * \sa Ultracam::Image::centile(float, Ultracam::internal_data&)
  */
-void Ultracam::Image::centile(float l1, float l2, Ultracam::internal_data& c1, Ultracam::internal_data& c2, 
-		      const Ultracam::CCD<Ultracam::Window>& window) const {
+void Ultracam::Image::centile(float l1, float l2, Ultracam::internal_data& c1, Ultracam::internal_data& c2,
+              const Ultracam::CCD<Ultracam::Window>& window) const {
   Subs::Array1D<internal_data> buff;
   this->buffer(window, buff);
 
@@ -331,12 +331,12 @@ void Ultracam::Image::crop(const Ultracam::Image& ccd){
 
     for(io=0; io<size(); io++){
       bref = &(*this)[io];
-      if(bref->llx() <= sref->llx() && 
-	 bref->lly() <= sref->lly() &&
-	 bref->llx()+bref->xbin()*(bref->nx()-1) >= sref->llx()+sref->xbin()*(sref->nx()-1) &&
-	 bref->lly()+bref->ybin()*(bref->ny()-1) >= sref->lly()+sref->ybin()*(sref->ny()-1)){
-	ok = true;
-	break;
+      if(bref->llx() <= sref->llx() &&
+     bref->lly() <= sref->lly() &&
+     bref->llx()+bref->xbin()*(bref->nx()-1) >= sref->llx()+sref->xbin()*(sref->nx()-1) &&
+     bref->lly()+bref->ybin()*(bref->ny()-1) >= sref->lly()+sref->ybin()*(sref->ny()-1)){
+    ok = true;
+    break;
       }
     }
 
@@ -344,24 +344,24 @@ void Ultracam::Image::crop(const Ultracam::Image& ccd){
     std::string err;
     err = std::string("Ref window ") + Subs::str(iot+1);
     if(!ok) throw Modify_Error(err + "\nNo enclosing window in void Ultracam::CCD"
-				      "<Ultracam::Windata>::crop(const Ultracam::Image& ccd)");
+                      "<Ultracam::Windata>::crop(const Ultracam::Image& ccd)");
 
     err += std::string(", mod window ") + Subs::str(io+1);
 
     // check that the binning factors match up
     if(sref->xbin() % bref->xbin() != 0 || sref->ybin() % bref->ybin() != 0)
       throw Modify_Error(err + "\nIncompatible binning factors in void "
-			 "Ultracam::CCD <Ultracam::Windata>::crop(const Image& ccd). xbin: " +
-			 Subs::str(sref->xbin()) + ", " + Subs::str(bref->xbin()) );
-    
+             "Ultracam::CCD <Ultracam::Windata>::crop(const Image& ccd). xbin: " +
+             Subs::str(sref->xbin()) + ", " + Subs::str(bref->xbin()) );
+
     if((sref->llx()-bref->llx()) % bref->xbin() != 0 ||
        (sref->lly()-bref->lly()) % bref->ybin() != 0)
       throw Modify_Error(err + "\nUltracam::Windows out of step in void "
-			 "Ultracam::CCD <Ultracam::Windata>::crop(const Image& ccd).");
+             "Ultracam::CCD <Ultracam::Windata>::crop(const Image& ccd).");
 
     if(sref->nxtot() != bref->nxtot() || sref->nytot() != bref->nytot())
       throw Modify_Error(err + "\nTotal dimensions clash in void"
-			 " Ultracam::Image::crop(const Ultracam::CCD<Ultracam::Window>& win)");
+             " Ultracam::Image::crop(const Ultracam::CCD<Ultracam::Window>& win)");
 
     // set up buffer for rebinning in the Y direction.
     double *buff = new double[sref->nx()];
@@ -371,7 +371,7 @@ void Ultracam::Image::crop(const Ultracam::Image& ccd){
 
       // initialise X buffer
       for(int ixs=0; ixs<sref->nx(); ixs++)
-	buff[ixs] = 0.;
+    buff[ixs] = 0.;
 
       // add up all contributing pixels from big window. This is written
       // to procede row by row up the big window without having to jump
@@ -380,18 +380,18 @@ void Ultracam::Image::crop(const Ultracam::Image& ccd){
       int iyb2 = iyb1 + sref->ybin()/bref->ybin();
 
       for(int iyb=iyb1; iyb<iyb2; iyb++){
-	for(int ixs=0; ixs<sref->nx(); ixs++){
-	  int ixb1 = (sref->llx() + sref->xbin()*ixs - bref->llx())/bref->xbin();
-	  int ixb2 = ixb1 + sref->xbin()/bref->xbin();
-	  for(int ixb=ixb1; ixb<ixb2; ixb++)
-	    buff[ixs] += (*bref)[iyb][ixb];
+    for(int ixs=0; ixs<sref->nx(); ixs++){
+      int ixb1 = (sref->llx() + sref->xbin()*ixs - bref->llx())/bref->xbin();
+      int ixb2 = ixb1 + sref->xbin()/bref->xbin();
+      for(int ixb=ixb1; ixb<ixb2; ixb++)
+        buff[ixs] += (*bref)[iyb][ixb];
 
-	}
+    }
       }
 
       // now transfer results
       for(int ixs=0; ixs<sref->nx(); ixs++)
-	(*sref)[iys][ixs] = buff[ixs];
+    (*sref)[iys][ixs] = buff[ixs];
     }
 
     delete[] buff;
@@ -434,38 +434,38 @@ void Ultracam::Image::crop(const Ultracam::CCD<Ultracam::Window>& win){
     ok = false;
     for(io=0; io<size(); io++){
       bref = &(*this)[io];
-      if(bref->llx() <= sref->llx() && 
-	 bref->lly() <= sref->lly() &&
-	 bref->llx()+bref->xbin()*(bref->nx()-1) >= sref->llx()+sref->xbin()*(sref->nx()-1) &&
-	 bref->lly()+bref->ybin()*(bref->ny()-1) >= sref->lly()+sref->ybin()*(sref->ny()-1)){
-	ok = true;
-	break;
+      if(bref->llx() <= sref->llx() &&
+     bref->lly() <= sref->lly() &&
+     bref->llx()+bref->xbin()*(bref->nx()-1) >= sref->llx()+sref->xbin()*(sref->nx()-1) &&
+     bref->lly()+bref->ybin()*(bref->ny()-1) >= sref->lly()+sref->ybin()*(sref->ny()-1)){
+    ok = true;
+    break;
       }
     }
 
     // Checks for enclosure and compatibility
     std::string err;
     err = std::string("Ref window ") + Subs::str(iot+1);
-    if(!ok) throw Modify_Error(err + 
-			       "\nNo enclosing window in void Ultracam::CCD"
-			       "<Ultracam::Windata>::crop(const CCD<Ultracam::Window>& win)");
+    if(!ok) throw Modify_Error(err +
+                   "\nNo enclosing window in void Ultracam::CCD"
+                   "<Ultracam::Windata>::crop(const CCD<Ultracam::Window>& win)");
 
     err += std::string(", mod window ") + Subs::str(io+1);
 
     // check that the binning factors match up
     if(sref->xbin() % bref->xbin() != 0 || sref->ybin() % bref->ybin() != 0)
       throw Modify_Error(err + "\nIncompatible binning factors in void "
-			 "CCD <Ultracam::Windata>::crop(const Ultracam::CCD<Ultracam::Window>& win). xbin: " +
-			 Subs::str(sref->xbin()) + ", " + Subs::str(bref->xbin()) );
-    
+             "CCD <Ultracam::Windata>::crop(const Ultracam::CCD<Ultracam::Window>& win). xbin: " +
+             Subs::str(sref->xbin()) + ", " + Subs::str(bref->xbin()) );
+
     if((sref->llx()-bref->llx()) % bref->xbin() != 0 ||
        (sref->lly()-bref->lly()) % bref->ybin() != 0)
       throw Modify_Error(err + "\nUltracam::Windows out of step in void "
-			 "CCD <Ultracam::Windata>::crop(const CCD<Ultracam::Window>& win).");
+             "CCD <Ultracam::Windata>::crop(const CCD<Ultracam::Window>& win).");
 
     if(sref->nxtot() != bref->nxtot() || sref->nytot() != bref->nytot())
       throw Modify_Error(err + "\nTotal dimensions clash in void Ultracam::Image"
-			 "::crop(const Ultracam::CCD<Ultracam::Window>& win)");
+             "::crop(const Ultracam::CCD<Ultracam::Window>& win)");
 
     // set up buffer for rebinning in the Y direction.
     double *buff = new double[sref->nx()];
@@ -475,7 +475,7 @@ void Ultracam::Image::crop(const Ultracam::CCD<Ultracam::Window>& win){
 
       // initialise X buffer
       for(int ixs=0; ixs<sref->nx(); ixs++)
-	buff[ixs] = 0.;
+    buff[ixs] = 0.;
 
       // add up all contributing pixels from big window. This is written
       // to procede row by row up the big window without having to jump
@@ -483,17 +483,17 @@ void Ultracam::Image::crop(const Ultracam::CCD<Ultracam::Window>& win){
       int iyb1 = (sref->lly() + sref->ybin()*iys - bref->lly())/bref->ybin();
       int iyb2 = iyb1 + sref->ybin()/bref->ybin();
       for(int iyb=iyb1; iyb<iyb2; iyb++){
-	for(int ixs=0; ixs<sref->nx(); ixs++){
-	  int ixb1 = (sref->llx() + sref->xbin()*ixs - bref->llx())/bref->xbin();
-	  int ixb2 = ixb1 + sref->xbin()/bref->xbin();
-	  for(int ixb=ixb1; ixb<ixb2; ixb++)
-	    buff[ixs] += (*bref)[iyb][ixb];
-	}
+    for(int ixs=0; ixs<sref->nx(); ixs++){
+      int ixb1 = (sref->llx() + sref->xbin()*ixs - bref->llx())/bref->xbin();
+      int ixb2 = ixb1 + sref->xbin()/bref->xbin();
+      for(int ixb=ixb1; ixb<ixb2; ixb++)
+        buff[ixs] += (*bref)[iyb][ixb];
+    }
       }
 
       // now transfer results
       for(int ixs=0; ixs<sref->nx(); ixs++)
-	(*sref)[iys][ixs] = buff[ixs];
+    (*sref)[iys][ixs] = buff[ixs];
     }
 
     delete[] buff;
@@ -527,7 +527,7 @@ void Ultracam::Image::window(const Ultracam::CCD<Ultracam::Window>& win){
   for(size_t iodat=0; iodat<this->size(); iodat++){
 
     const Ultracam::Windata &dwin = (*this)[iodat];
- 
+
     // loop through each window of the windows
     for(size_t iowin=0; iowin<win.size(); iowin++){
 
@@ -553,7 +553,7 @@ void Ultracam::Image::window(const Ultracam::CCD<Ultracam::Window>& win){
  */
 void Ultracam::Image::step(Ultracam::internal_data thresh) {
     for(size_t nwin=0; nwin<this->size(); nwin++)
-	(*this)[nwin].step(thresh);
+    (*this)[nwin].step(thresh);
 }
 
 // Unformatted I/O
@@ -562,7 +562,7 @@ void Ultracam::Image::step(Ultracam::internal_data thresh) {
  * This function reads an Image stored in binary format. Checks
  * are made for the validity of the resulting Image.
  * \param fin input stream
- * \param swap_bytes whether or not to carry out byte swapping 
+ * \param swap_bytes whether or not to carry out byte swapping
  * \exception An Ultracam::Read_Error is thrown if the CCD is not valid.
  */
 void Ultracam::Image::read(std::ifstream& fin, bool swap_bytes){
@@ -570,36 +570,36 @@ void Ultracam::Image::read(std::ifstream& fin, bool swap_bytes){
     fin.read((char*)&nobj,sizeof(int));
     if(swap_bytes) nobj = Subs::byte_swap(nobj);
     if(nobj != int(this->size())) this->resize(nobj);
-    
+
     for(int io=0; io<nobj; io++){
-	(*this)[io].read(fin, swap_bytes);
-	
-	// Guard against inconsistent objects
-	
-	for(int ib=0; ib<io; ib++)
-	    if(clash((*this)[ib],(*this)[io]))
-		throw Ultracam::Read_Error("Ultracam::Image::read(std::ifstream&): a " + Windata::name() + " clashed with one read earlier");
-    } 
+    (*this)[io].read(fin, swap_bytes);
+
+    // Guard against inconsistent objects
+
+    for(int ib=0; ib<io; ib++)
+        if(clash((*this)[ib],(*this)[io]))
+        throw Ultracam::Read_Error("Ultracam::Image::read(std::ifstream&): a " + Windata::name() + " clashed with one read earlier");
+    }
 }
 
 /**
  * This function skips an Image stored in binary format.
  * \param fin input stream
- * \param swap_bytes whether or not to carry out byte swapping 
+ * \param swap_bytes whether or not to carry out byte swapping
  */
 void Ultracam::Image::skip(std::ifstream& fin, bool swap_bytes){
     int nobj;
     fin.read((char*)&nobj,sizeof(int));
     if(swap_bytes) nobj = Subs::byte_swap(nobj);
     for(int io=0; io<nobj; io++)
-	(*this)[io].skip(fin, swap_bytes); 
+    (*this)[io].skip(fin, swap_bytes);
 }
 
 /**
  * This function reads an Image stored in binary format. Checks
  * are made for the validity of the resulting CCD.
  * \param fin input stream
- * \param swap_bytes whether or not to carry out byte swapping 
+ * \param swap_bytes whether or not to carry out byte swapping
  * \exception An Ultracam::Read_Error is thrown if the CCD is not valid.
  */
 void Ultracam::Image::read_old(std::ifstream& fin, bool swap_bytes){
@@ -608,27 +608,27 @@ void Ultracam::Image::read_old(std::ifstream& fin, bool swap_bytes){
     if(swap_bytes) nobj = Subs::byte_swap(nobj);
     if(nobj != this->size()) this->resize(nobj);
     for(size_t io=0; io<nobj; io++){
-	(*this)[io].read_old(fin, swap_bytes);
-	
-	// Guard against inconsistent objects
-	for(size_t ib=0; ib<io; ib++)
-	    if(clash((*this)[ib],(*this)[io]))
-		throw Ultracam::Read_Error(std::string("Ultracam::Image::read_old(std::ifstream&): a ") + Windata::name() +
-					   std::string(" clashed with one read earlier"));
-    } 
+    (*this)[io].read_old(fin, swap_bytes);
+
+    // Guard against inconsistent objects
+    for(size_t ib=0; ib<io; ib++)
+        if(clash((*this)[ib],(*this)[io]))
+        throw Ultracam::Read_Error(std::string("Ultracam::Image::read_old(std::ifstream&): a ") + Windata::name() +
+                       std::string(" clashed with one read earlier"));
+    }
 }
 
 /**
  * This function skips a CCD stored in binary format.
  * \param fin input stream
- * \param swap_bytes whether or not to carry out byte swapping 
+ * \param swap_bytes whether or not to carry out byte swapping
  */
 void Ultracam::Image::skip_old(std::ifstream& fin, bool swap_bytes){
     Subs::UINT4 nobj;
     fin.read((char*)&nobj,sizeof(Subs::UINT4));
     if(swap_bytes) nobj = Subs::byte_swap(nobj);
     for(Subs::UINT4 io=0; io<nobj; io++)
-	(*this)[io].skip_old(fin,swap_bytes); 
+    (*this)[io].skip_old(fin,swap_bytes);
 }
 
 /**
@@ -677,7 +677,7 @@ Ultracam::Image::Stats Ultracam::Image::statistics(const Ultracam::CCD<Ultracam:
   stats.clipped_rms = rms;
   stats.nrejected = nrej;
   if(compute_median)
-	  stats.median = buff.median();
+      stats.median = buff.median();
   return stats;
 }
 
@@ -688,8 +688,8 @@ Ultracam::Image::Stats Ultracam::Image::statistics(const Ultracam::CCD<Ultracam:
  * \param win  the region of the frame to return pixels values from.
  * \param buff the buffer returned
  */
-void Ultracam::Image::buffer(const Ultracam::CCD<Ultracam::Window>& win, Subs::Array1D<Ultracam::internal_data>& buff) const {    
-  
+void Ultracam::Image::buffer(const Ultracam::CCD<Ultracam::Window>& win, Subs::Array1D<Ultracam::internal_data>& buff) const {
+
   int xlo, xhi, ylo, yhi;
   const Ultracam::Windata *dwin;
   const Ultracam::Window *swin;
@@ -700,11 +700,11 @@ void Ultracam::Image::buffer(const Ultracam::CCD<Ultracam::Window>& win, Subs::A
   // wind through each data window
   for(size_t ndwin=0; ndwin<size(); ndwin++){
     dwin = &(*this)[ndwin];
-    
-    // wind through each stats window 
+
+    // wind through each stats window
     for(size_t nswin=0; nswin<win.size(); nswin++){
       swin = &win[nswin];
-      
+
       // Now determine overlap in terms of data pixels (the hi ones are one more than the max)
       xlo = std::max(0, int(ceil(float(swin->llx()-dwin->llx())/dwin->xbin())));
       xhi = std::min(dwin->nx(), (swin->llx()+swin->xbin()*swin->nx()-dwin->llx())/dwin->xbin());
@@ -716,26 +716,26 @@ void Ultracam::Image::buffer(const Ultracam::CCD<Ultracam::Window>& win, Subs::A
   }
 
   buff.resize(nbuff);
-    
+
   // wind through each data window
   size_t n = 0;
   for(size_t ndwin=0; ndwin<size(); ndwin++){
     dwin = &(*this)[ndwin];
-    
-    // wind through each stats window 
+
+    // wind through each stats window
     for(size_t nswin=0; nswin<win.size(); nswin++){
       swin = &win[nswin];
-      
+
       // Now determine overlap in terms of data pixels (the hi ones are one more than the max)
       xlo = std::max(0, int(ceil(float(swin->llx()-dwin->llx())/dwin->xbin())));
       xhi = std::min(dwin->nx(), (swin->llx()+swin->xbin()*swin->nx()-dwin->llx())/dwin->xbin());
       ylo = std::max(0, int(ceil(float(swin->lly()-dwin->lly())/dwin->ybin())));
       yhi = std::min(dwin->ny(), (swin->lly()+swin->ybin()*swin->ny()-dwin->lly())/dwin->ybin());
-      
+
       for(int iy=ylo; iy<yhi; iy++)
-	for(int ix=xlo; ix<xhi; ix++)
-	  buff[n++] = (*dwin)[iy][ix];
-      
+    for(int ix=xlo; ix<xhi; ix++)
+      buff[n++] = (*dwin)[iy][ix];
+
     }
   }
 }
@@ -755,7 +755,7 @@ Ultracam::Windata& Ultracam::Image::enclose(float x, float y) {
       return (*this)[io];
 
   throw Ultracam::Ultracam_Error("Ultracam::Windata& Ultracam::Image::enclose(float x, float y) const:"
-				 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
+                 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
 }
 
 /** This checks to see if any of the windows of a  Ultracam::CCD enclose a given position, and
@@ -776,7 +776,7 @@ Ultracam::Windata& Ultracam::Image::enclose(float x, float y, int& which) {
     }
 
   throw Ultracam::Ultracam_Error("Ultracam::Windata& Ultracam::Image::enclose(float x, float y, int&) const:"
-				 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
+                 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
 
 }
 
@@ -795,7 +795,7 @@ const Ultracam::Windata& Ultracam::Image::enclose(float x, float y) const {
       return (*this)[io];
 
   throw Ultracam::Ultracam_Error("const Ultracam::Windata& Ultracam::Image::enclose(float x, float y) const:"
-				 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
+                 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
 
 }
 
@@ -817,7 +817,7 @@ const Ultracam::Windata& Ultracam::Image::enclose(float x, float y, int& which) 
     }
 
   throw Ultracam::Ultracam_Error("const Ultracam::Windata& Ultracam::Image::enclose(float x, float y, int&) const:"
-				 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
+                 " position supplied = " + Subs::str(x) + ", " + Subs::str(y) + ", was not inside any window");
 
 }
 
@@ -865,14 +865,14 @@ Ultracam::internal_data Ultracam::max(const Ultracam::Image& obj, const Ultracam
  * format for all of their separate Ultracam::Windata objects. Note it is assumed that
  * they match in storage order too, so two objects with identical windows
  * could fail this test if the windows were stored in a different order.
- * 
+ *
  * \param ccd1 the first Ultracam::Image object
  * \param ccd2 the second Ultracam::Image object
  * \return \c true if the formats match
  * \relates Ultracam::Image
  */
-bool Ultracam::operator==(const Ultracam::Image& ccd1, 
-			  const Ultracam::Image& ccd2){
+bool Ultracam::operator==(const Ultracam::Image& ccd1,
+              const Ultracam::Image& ccd2){
   if(ccd1.size() == ccd2.size()){
     for(size_t nobj=0; nobj<ccd1.size(); nobj++)
       if(ccd1[nobj] != ccd2[nobj]) return false;
@@ -884,14 +884,14 @@ bool Ultracam::operator==(const Ultracam::Image& ccd1,
 
 /** 'Inequality' is defined as the two Ultracam::Image objects having a differnt
  * format for any of their separate Ultracam::Windata objects.
- * 
+ *
  * \param ccd1 the first Ultracam::Image object
  * \param ccd2 the second Ultracam::Image object
  * \return \c true if the formats do no match
  * \relates Ultracam::Image
  */
-bool Ultracam::operator!=(const Ultracam::Image& ccd1, 
-			  const Ultracam::Image& ccd2){
+bool Ultracam::operator!=(const Ultracam::Image& ccd1,
+              const Ultracam::Image& ccd2){
 
   if(ccd1.size() == ccd2.size()){
     for(size_t nobj=0; nobj<ccd1.size(); nobj++)

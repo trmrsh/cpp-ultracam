@@ -12,8 +12,8 @@ int Ultracam::Windata::plevel = 1;
  */
 void Ultracam::Windata::set_print_level(int level){
   if(level < 1 || level > 3) throw
-			       Ultracam::Ultracam_Error("Attempt to set invalid"
-					      " print level for Ultracam::Windata");
+                   Ultracam::Ultracam_Error("Attempt to set invalid"
+                          " print level for Ultracam::Windata");
   plevel = level;
 }
 
@@ -59,12 +59,12 @@ Ultracam::Windata& Ultracam::Windata::operator=(const Ultracam::internal_data& c
 void Ultracam::Windata::resize(int nyd, int nxd){
   if(nx() != nxd || ny() != nyd){
     if(bad_window(llx(), lly(), nxd, nyd, xbin(), ybin(), nxtot(), nytot(), MAX_NXTOT, MAX_NYTOT, MAX_XBIN, MAX_YBIN))
-      throw 
-	Ultracam::Ultracam_Error("Invalid new window dimensions in void Ultracam::Windata<>::resize(int ny, int nx): " +
-				 Subs::str(llx()) + ", " + Subs::str(lly()) + ", " + Subs::str(nxd) + ", " + Subs::str(nyd) + 
-				 ", " + Subs::str(xbin()) + ", " + Subs::str(ybin()) + ", " + Subs::str(nxtot()) + ", " + 
-				 Subs::str(nytot()) );
-    
+      throw
+    Ultracam::Ultracam_Error("Invalid new window dimensions in void Ultracam::Windata<>::resize(int ny, int nx): " +
+                 Subs::str(llx()) + ", " + Subs::str(lly()) + ", " + Subs::str(nxd) + ", " + Subs::str(nyd) +
+                 ", " + Subs::str(xbin()) + ", " + Subs::str(ybin()) + ", " + Subs::str(nxtot()) + ", " +
+                 Subs::str(nytot()) );
+
     this->Window::set_nx(nxd);
     this->Window::set_ny(nyd);
     this->Ultracam::Array::resize(nyd, nxd);
@@ -85,7 +85,7 @@ void Ultracam::Windata::write(std::ofstream& fout, Out_type otype) const {
   Window::write(fout);
   Subs::INT4 iout = Subs::INT4(otype);
   fout.write((char*)&iout,sizeof(Subs::INT4));
-  if(!fout) 
+  if(!fout)
     throw Ultracam::Write_Error("Error writing data type in void Ultracam::Windata<T>::write(std::ofstream&, Out_type) const");
 
   if(otype == NORMAL){
@@ -93,8 +93,8 @@ void Ultracam::Windata::write(std::ofstream& fout, Out_type otype) const {
     // usual case: write out as native type
     for(int iy=0; iy<ny(); iy++){
       fout.write((char*)ptr()[iy],sizeof(Ultracam::internal_data[nx()]));
-      if(!fout) 
-	throw Ultracam::Write_Error("Error writing data in void Ultracam::Windata<T>::write(std::ofstream&, Out_type) const");
+      if(!fout)
+    throw Ultracam::Write_Error("Error writing data in void Ultracam::Windata<T>::write(std::ofstream&, Out_type) const");
     }
 
   }else if(otype == RAW){
@@ -104,17 +104,17 @@ void Ultracam::Windata::write(std::ofstream& fout, Out_type otype) const {
     int n=0;
     for(int iy=0; iy<ny(); iy++)
       for(int ix=0; ix<nx(); ix++)
-	buff[n++] = Ultracam::raw_data(std::max(Ultracam::internal_data(0),ptr()[iy][ix]+Ultracam::internal_data(0.5)));
+    buff[n++] = Ultracam::raw_data(std::max(Ultracam::internal_data(0),ptr()[iy][ix]+Ultracam::internal_data(0.5)));
     fout.write((char*)buff,sizeof(Ultracam::raw_data[ntot()]));
     delete[] buff;
-    if(!fout) 
+    if(!fout)
       throw Ultracam::Write_Error("Error writing data in void Ultracam::Windata::write(std::ofstream&, Out_type) const");
-  }   
+  }
 }
 
 /**
  * This function inputs a Ultracam::Windata in binary form, the usual choice
- * since Ultracam::Windata objects can be large. It copes automatically with 
+ * since Ultracam::Windata objects can be large. It copes automatically with
  * the different types that can be output by void Ultracam::Windata::write(ofstream&, Out_type),
  * carrying out a conversion to the Ultracam::internal_data type used in the
  * software.
@@ -162,17 +162,17 @@ void Ultracam::Windata::read(std::ifstream& fin, bool swap_bytes) {
     int n=0;
     for(int iy=0; iy<ny(); iy++)
       for(int ix=0; ix<nx(); ix++)
-	ptr()[iy][ix] = Ultracam::internal_data(buff[n++]);
+    ptr()[iy][ix] = Ultracam::internal_data(buff[n++]);
 
     delete[] buff;
   }else{
     throw Ultracam_Error("Ultracam::Windata::read(std::ifstream&, bool): unrecognised value of data type");
-  } 
+  }
 }
 
 /**
  * This function skips a Ultracam::Windata in binary form while reading a file.
- * It copes automatically with 
+ * It copes automatically with
  * the different types that can be output by void Ultracam::Windata::write(ofstream&, Out_type).
  * \param fin  input stream, opened for binary I/O
  * \exception Ultracam::Read_Error exceptions may be thrown for a number of reasons
@@ -181,12 +181,12 @@ void Ultracam::Windata::skip(std::ifstream& fin, bool swap_bytes) {
 
   Window t;
   t.read(fin, swap_bytes);
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error reading window in void Ultracam::Windata::skip(std::ifstream&, bool)");
 
   Subs::INT4 iout;
   fin.read((char*)&iout,sizeof(Subs::INT4));
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error reading data type in void Ultracam::Windata::skip(std::ifstream&, bool)");
   if(swap_bytes) iout = Subs::byte_swap(iout);
 
@@ -198,7 +198,7 @@ void Ultracam::Windata::skip(std::ifstream& fin, bool swap_bytes) {
   }else{
     throw Ultracam_Error("Ultracam::Windata::skip(std::ifstream&, bool): unrecognised value of data type");
   }
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error skipping data in void Ultracam::Windata::skip(std::ifstream&, bool)");
 }
 
@@ -211,7 +211,7 @@ void Ultracam::Windata::read_old(std::ifstream& fin, bool swap_bytes) {
 
   Window t;
   t.read_old(fin, swap_bytes);
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error reading window in void Ultracam::Windata::read_old(std::ifstream&, bool)");
 
   if(nx() != t.nx() || ny() != t.ny())
@@ -248,7 +248,7 @@ void Ultracam::Windata::read_old(std::ifstream& fin, bool swap_bytes) {
     int n=0;
     for(int iy=0; iy<ny(); iy++)
       for(int ix=0; ix<nx(); ix++)
-	ptr()[iy][ix] = Ultracam::internal_data(buff[n++]);
+    ptr()[iy][ix] = Ultracam::internal_data(buff[n++]);
 
     delete[] buff;
   }else{
@@ -258,7 +258,7 @@ void Ultracam::Windata::read_old(std::ifstream& fin, bool swap_bytes) {
 
 /**
  * This function skips a Ultracam::Windata in binary form while reading a file.
- * It copes automatically with 
+ * It copes automatically with
  * the different types that can be output by void Ultracam::Windata::write(ofstream&, Out_type).
  * \param fin  input stream, opened for binary I/O
  * \exception Ultracam::Read_Error exceptions may be thrown for a number of reasons
@@ -267,12 +267,12 @@ void Ultracam::Windata::skip_old(std::ifstream& fin, bool swap_bytes) {
 
   Window t;
   t.read_old(fin, swap_bytes);
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error reading data type in void Ultracam::Windata::skip_old(std::ifstream&, bool)");
 
   Subs::INT4 iout;
   fin.read((char*)&iout,sizeof(Subs::INT4));
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error reading data type in void Ultracam::Windata::skip_old(std::ifstream&, bool)");
   if(swap_bytes) iout = Subs::byte_swap(iout);
 
@@ -285,7 +285,7 @@ void Ultracam::Windata::skip_old(std::ifstream& fin, bool swap_bytes) {
   }else{
     throw Ultracam_Error("Ultracam::Windata::skip_old(std::ifstream&, bool): unrecognised value of data type");
   }
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Error skipping data in void Ultracam::Windata::skip(std::ifstream&, bool)");
 }
 
@@ -314,7 +314,7 @@ Ultracam::Windata Ultracam::Windata::window(const Window& win) const {
   // .. and that the windows are in step.
   if((this->llx()-win.llx()) % win.xbin() != 0 || (this->lly()-win.lly()) % win.ybin() != 0)
     throw Ultracam::Modify_Error("Windata::window(const Window&): windows out  of step");
-  
+
   // define new window from overlap between the current two under consideration
   int new_llx = std::max(this->llx(), win.llx());
   int new_lly = std::max(this->lly(), win.lly());
@@ -326,7 +326,7 @@ Ultracam::Windata Ultracam::Windata::window(const Window& win) const {
 
   // Create new Ultracam::Windata
   Ultracam::Windata temp(new_llx, new_lly, new_nx, new_ny, this->xbin(), this->ybin(), this->nxtot(), this->nytot());
- 
+
   // Transfer data
   for(int iynew=0,iyold=(new_lly-this->lly())/this->ybin(); iynew<temp.ny(); iynew++, iyold++)
     for(int ixnew=0,ixold=(new_llx-this->llx())/this->xbin(); ixnew<temp.nx(); ixnew++, ixold++)
@@ -346,17 +346,17 @@ Ultracam::internal_data* Ultracam::Windata::buffer() const {
   return ptr;
 }
 
-// ASCII output 
+// ASCII output
 
 /** ASCII output is not normally what you want with a Ultracam::Windata, but is
  * provided as a last resort. It operates at three levels defined by
  * an integer: (1) minimal -- just prints the Window format. (2) Prints
  * the window format and some statistics of the data. (3) Prints the same
  * as level=2 but also prints out the pixel values, row by row.
- */ 
+ */
 std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Windata& obj) {
   s << (Ultracam::Window&)obj << std::endl;
-  
+
   if(Windata::print_level() > 1){
     internal_data p1, p2;
     obj.Ultracam::Array::centile(0.1f,0.9f,p1,p2);
@@ -365,12 +365,12 @@ std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Windata& obj
   }
 
   if(Windata::print_level() == 3){
-    s << "   Now the data, row by row (starting from the bottom): " 
+    s << "   Now the data, row by row (starting from the bottom): "
       << std::endl;
     for(int iy=0; iy<obj.ny(); iy++){
       s << "  ";
       for(int ix=0; ix<obj.nx(); ix++)
-	s << " " << obj[iy][ix];
+    s << " " << obj[iy][ix];
       if(iy<obj.ny()-1) s << std::endl;
     }
   }

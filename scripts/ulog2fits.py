@@ -50,7 +50,10 @@ if not clobber and os.path.exists(ufits):
     exit(1)
 
 import numpy as npy
-import pyfits
+try:
+    import pyfits as fits
+except:
+    import astropy.io.fits as fits
 
 # OK, now for the real work.
 
@@ -104,10 +107,10 @@ nchunk  = {}
 
 found_all_ccds = False
 
-header = pyfits.Header()
+header = fits.Header()
 header['LOGFILE'] = ulog 
 header.add_comment('File created from ULTRACAM log file. One binary table per CCD.')
-header.add_comment('This was created using ult2fits which is based on pyfits.')
+header.add_comment('This was created using ult2fits which is based on fits.')
 header.add_comment('There follows the comments from the log file, verbatim.')
 
 nline  = 0
@@ -177,12 +180,12 @@ for line in fin:
 
             # Define the columns
             cols[nc] = []
-            cols[nc].append(pyfits.Column(name='MJD', unit='day', format='D'))
-            cols[nc].append(pyfits.Column(name='Flag', format='L'))
-            if format == 1: cols[nc].append(pyfits.Column(name='Nsat', format='I'))
-            cols[nc].append(pyfits.Column(name='Expose', unit='sec', format='E'))
-            cols[nc].append(pyfits.Column(name='FWHM', unit='pix', format='E'))
-            cols[nc].append(pyfits.Column(name='beta', format='E'))
+            cols[nc].append(fits.Column(name='MJD', unit='day', format='D'))
+            cols[nc].append(fits.Column(name='Flag', format='L'))
+            if format == 1: cols[nc].append(fits.Column(name='Nsat', format='I'))
+            cols[nc].append(fits.Column(name='Expose', unit='sec', format='E'))
+            cols[nc].append(fits.Column(name='FWHM', unit='pix', format='E'))
+            cols[nc].append(fits.Column(name='beta', format='E'))
             if format == 1:
                 nap  = (len(svar) - 8 ) / 14
             elif format == 2:
@@ -190,19 +193,19 @@ for line in fin:
 
             for ap in range(nap):
                 snap = str(ap+1)
-                cols[nc].append(pyfits.Column(name='X_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Y_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='XM_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='YM_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='EXM_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='EYM_' + snap, unit='pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Counts_' + snap, unit='DN', format='E'))
-                cols[nc].append(pyfits.Column(name='Sigma_' + snap, unit='DN', format='E'))
-                cols[nc].append(pyfits.Column(name='Sky_' + snap, unit='DN/pix', format='E'))
-                cols[nc].append(pyfits.Column(name='Nsky_' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Nrej_' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Worst_' + snap, format='J'))
-                cols[nc].append(pyfits.Column(name='Eflag_' + snap, format='J'))
+                cols[nc].append(fits.Column(name='X_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='Y_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='XM_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='YM_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='EXM_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='EYM_' + snap, unit='pix', format='E'))
+                cols[nc].append(fits.Column(name='Counts_' + snap, unit='DN', format='E'))
+                cols[nc].append(fits.Column(name='Sigma_' + snap, unit='DN', format='E'))
+                cols[nc].append(fits.Column(name='Sky_' + snap, unit='DN/pix', format='E'))
+                cols[nc].append(fits.Column(name='Nsky_' + snap, format='J'))
+                cols[nc].append(fits.Column(name='Nrej_' + snap, format='J'))
+                cols[nc].append(fits.Column(name='Worst_' + snap, format='J'))
+                cols[nc].append(fits.Column(name='Eflag_' + snap, format='J'))
 
             # Define the lists
             tmjd[nc]    = []
@@ -341,7 +344,7 @@ fin.close()
 # these need to be flushed out
 
 # Create primary HDU, no data but lots of header
-hdus = [pyfits.PrimaryHDU(header=header),]
+hdus = [fits.PrimaryHDU(header=header),]
             
 nccd = tmjd.keys()
 nccd.sort()
@@ -390,10 +393,10 @@ for nc in nccd:
 
     # Create tables
 
-    theader = pyfits.Header()
+    theader = fits.Header()
     theader['NCCD'] = nc
     theader['NAPERTUR'] = x[nc].shape[1]
-    tbhdu = pyfits.new_table(cols[nc], theader, len(x[nc]))
+    tbhdu = fits.new_table(cols[nc], theader, len(x[nc]))
     tbhdu.header['NCCD'] = nc
     tbhdu.header['EXTNAME'] = 'CCD ' + str(nc)
     tbhdu.data.field('MJD')[:]    = mjd[nc]
@@ -439,7 +442,7 @@ for nc in nccd:
     del eflag[nc]
 
 # finally write out the fits file!
-hdulist = pyfits.HDUList(hdus)
+hdulist = fits.HDUList(hdus)
 hdulist.update_extend()
 hdulist.writeto(ufits, clobber=clobber)
 print '\nFinished.'

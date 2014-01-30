@@ -31,7 +31,7 @@ gentemp nccd type name
 !!table
 
 !!arg{nccd}{The number of CCDs to use}
-!!arg{type}{The type of template to generate. Current choices are 'skylines', 'spectra' and 'windows', 
+!!arg{type}{The type of template to generate. Current choices are 'skylines', 'spectra' and 'windows',
 all case insensitive. You should of course be aware that in some cases interactive programs exist such
 as !!ref{setwin.html}{setwin}}
 !!arg{name}{This is the root name of the output file which will have a standard extension such as '.win' for
@@ -39,9 +39,9 @@ window files}
 
 !!table
 
-See also !!ref{addfield.html}{addfield}, !!ref{addsky.html}{addsky}, !!ref{addspec.html}{addspec}, !!ref{setaper.html}{setaper}, 
+See also !!ref{addfield.html}{addfield}, !!ref{addsky.html}{addsky}, !!ref{addspec.html}{addspec}, !!ref{setaper.html}{setaper},
 !!ref{setdefect.html}{setdefect}, !!ref{setfield.html}{setfield}, !!ref{setwin.html}{setwin}.
- 
+
 !!end
 
 */
@@ -133,14 +133,14 @@ int main(int argc, char* argv[]){
       spectrum2.set_continuum(continuum);
       spectrum2.set_fwhm(fwhm);
       std::cout << "Spectrum 2, parallel to spectrum 1, moved to 550; continuum and FWHM the same" << std::endl;
-		       
+
       for(int nc=0; nc<nccd; nc++){
-	spectra[nc].push_back(spectrum1);
-	spectra[nc].push_back(spectrum2);
+    spectra[nc].push_back(spectrum1);
+    spectra[nc].push_back(spectrum2);
       }
 
       if(nccd > 1)
-	std::cout << "Same spectra set in all CCDs" << std::endl;
+    std::cout << "Same spectra set in all CCDs" << std::endl;
 
       // Write it out
       spectra.wasc(name);
@@ -153,9 +153,9 @@ int main(int argc, char* argv[]){
       Ultracam::Window window(10,400,1000,100,1,2,1024,1000);
       std::cout << "Set 1 window with lower-left corner at x=10, y=400, 1000 binned pixels in X, 100 in Y," << std::endl;
       std::cout << "xbin=1, ybin=2, total CCD readout dimensions (unbinned) 1024 by 1000" << std::endl;
-      
+
       for(int nc=0; nc<nccd; nc++)
-	windows[nc].push_back(window);
+    windows[nc].push_back(window);
 
       // Write it out
       windows.wasc(name);
@@ -182,14 +182,14 @@ int main(int argc, char* argv[]){
       quadratic[2] = 1.5;
       skyline1.set_fwhm(Subs::Poly(true, 1, 400, quadratic));
       skyline2.set_fwhm(Subs::Poly(true, 1, 400, quadratic));
-			
+
       skyline1.set_strength(100);
       skyline2.set_strength(500);
 
-			
+
       for(int nc=0; nc<nccd; nc++){
-	skylines[nc].push_back(skyline1);
-	skylines[nc].push_back(skyline2);
+    skylines[nc].push_back(skyline1);
+    skylines[nc].push_back(skyline2);
       }
 
       // Write it out

@@ -13,8 +13,8 @@ Ultracam::Fdisk::Fdisk(const std::string& file, int nbuff, int wccd) : nbuff_(nb
 
   fin.open(Subs::filnam(file,Frame::extnam()).c_str(), std::ios::binary);
   if(!fin)
-    throw Ultracam::File_Open_Error(std::string("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to open ") + 
-				    Subs::filnam(file,Frame::extnam()));
+    throw Ultracam::File_Open_Error(std::string("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to open ") +
+                    Subs::filnam(file,Frame::extnam()));
 
   // Allocate buffer
   buff = new Ultracam::internal_data [nbuff];
@@ -22,7 +22,7 @@ Ultracam::Fdisk::Fdisk(const std::string& file, int nbuff, int wccd) : nbuff_(nb
     throw Ultracam::File_Open_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to allocate read buffer");
 
   // Read and test magic number which is supposed to indicate that this is a ucm file. I don't attempt
-  // backwards compatibility here because I reckon that it is easy to recreate the ucm files for the routines 
+  // backwards compatibility here because I reckon that it is easy to recreate the ucm files for the routines
   // that use 'Ultracam::Fdisk'
   int magic;
   fin.read((char*)&magic,sizeof(int));
@@ -60,28 +60,28 @@ Ultracam::Fdisk::Fdisk(const std::string& file, int nbuff, int wccd) : nbuff_(nb
 
       // Read number of Windows of CCD
       if(!fin.read((char*)&num_win,sizeof(int)))
-	throw Ultracam::Ultracam_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to read number of windows of ccd");
+    throw Ultracam::Ultracam_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to read number of windows of ccd");
       if(swap_bytes) num_win = Subs::byte_swap(num_win);
 
       for(int nw=0; nw<num_win; nw++){
 
-	// Read window formats and data type
-	window.read(fin, swap_bytes);
-	if(!fin) throw Ultracam::Ultracam_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to read window");
-	fin.read((char*)&out_type_,sizeof(Windata::Out_type));
-	if(!fin) 
-	  throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error reading data type");
-	if(swap_bytes) out_type_ = Windata::Out_type(Subs::byte_swap(out_type_));
+    // Read window formats and data type
+    window.read(fin, swap_bytes);
+    if(!fin) throw Ultracam::Ultracam_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to read window");
+    fin.read((char*)&out_type_,sizeof(Windata::Out_type));
+    if(!fin)
+      throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error reading data type");
+    if(swap_bytes) out_type_ = Windata::Out_type(Subs::byte_swap(out_type_));
 
-	// skip data
-	if(out_type_ == Windata::NORMAL){
-	  if(!fin.ignore(sizeof(Ultracam::internal_data[window.ntot()])))
-	    throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error skipping data");
+    // skip data
+    if(out_type_ == Windata::NORMAL){
+      if(!fin.ignore(sizeof(Ultracam::internal_data[window.ntot()])))
+        throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error skipping data");
 
-	}else if(out_type_ == Windata::RAW){
-	  if(!fin.ignore(sizeof(Ultracam::raw_data[window.ntot()])))
-	    throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error skipping data");
-	}
+    }else if(out_type_ == Windata::RAW){
+      if(!fin.ignore(sizeof(Ultracam::raw_data[window.ntot()])))
+        throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error skipping data");
+    }
       }
       nsofar++;
     }
@@ -97,13 +97,13 @@ Ultracam::Fdisk::Fdisk(const std::string& file, int nbuff, int wccd) : nbuff_(nb
   if(!fin) throw Ultracam::Ultracam_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): failed to read first window");
 
   fin.read((char*)&out_type_,sizeof(Windata::Out_type));
-  if(!fin) 
+  if(!fin)
     throw Ultracam::Read_Error("Ultracam::Fdisk::Fdisk(const std::string&, int, int): error reading data type");
   if(swap_bytes) out_type_ = Windata::Out_type(Subs::byte_swap(out_type_));
-  
+
   // Read in some data
   int nread = std::min(nbuff_, window.ntot());
-  
+
   if(out_type_ == Windata::NORMAL){
 
     // Read directly
@@ -125,10 +125,10 @@ Ultracam::Fdisk::Fdisk(const std::string& file, int nbuff, int wccd) : nbuff_(nb
 
     // Convert type
     for(int i=0; i<nread; i++)
-	buff[i] = Ultracam::internal_data(rbuff[i]);
+    buff[i] = Ultracam::internal_data(rbuff[i]);
     delete[] rbuff;
-  } 
-  
+  }
+
   // All done, now just define parameters
   nccd_  =  wccd_ - 1;   // CCD
   nwin_  =  0;           // first window of first CCD
@@ -155,15 +155,15 @@ Ultracam::internal_data Ultracam::Fdisk::get_next() {
       nwin_++;
       nread_ = 0;
       if(nwin_ == num_win){
-	nwin_ = 0;
-	nccd_++;
-	if((wccd_ && nccd_ == wccd_) || nccd_ == num_ccd)
-	  throw Ultracam::Ultracam_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error trying to access beyond end of data");
+    nwin_ = 0;
+    nccd_++;
+    if((wccd_ && nccd_ == wccd_) || nccd_ == num_ccd)
+      throw Ultracam::Ultracam_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error trying to access beyond end of data");
 
-	// Read number of Windows of next CCD
-	if(!fin.read((char*)&num_win,sizeof(int)))
-	  throw Ultracam::Ultracam_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): failed to read number of windows of next ccd");
-	if(swap_bytes) num_win = Subs::byte_swap(num_win);
+    // Read number of Windows of next CCD
+    if(!fin.read((char*)&num_win,sizeof(int)))
+      throw Ultracam::Ultracam_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): failed to read number of windows of next ccd");
+    if(swap_bytes) num_win = Subs::byte_swap(num_win);
 
       }
 
@@ -182,7 +182,7 @@ Ultracam::internal_data Ultracam::Fdisk::get_next() {
 
     if(newwin)
       if(!fin.read((char*)&out_type_,sizeof(Windata::Out_type)))
-	throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data type");
+    throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data type");
     if(swap_bytes) out_type_ = Windata::Out_type(Subs::byte_swap(out_type_));
 
     // Read in some data, taking care not to read too far
@@ -190,27 +190,27 @@ Ultracam::internal_data Ultracam::Fdisk::get_next() {
     nread_ += nread;
 
     if(out_type_ == Windata::NORMAL){
-      
+
       // Read directly
       if(!fin.read((char*)buff,sizeof(Ultracam::internal_data[nread])))
-	throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data");
+    throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data");
       if(swap_bytes) Subs::byte_swap(buff, nread);
-  
+
     }else if(out_type_ == Windata::RAW){
-      
+
       // Read into a buffer
       Ultracam::raw_data *rbuff = new Ultracam::raw_data[nread];
       fin.read((char*)rbuff,sizeof(Ultracam::raw_data[nread]));
       if(!fin){
-	delete[] rbuff;
-	throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data into raw buffer");
+    delete[] rbuff;
+    throw Ultracam::Read_Error("Ultracam::internal_data Ultracam::Fdisk::get_next(): error reading data into raw buffer");
       }
 
       if(swap_bytes) Subs::byte_swap(rbuff, nread);
 
       // Convert type
       for(int i=0; i<nread; i++)
-	buff[i] = Ultracam::internal_data(rbuff[i]);
+    buff[i] = Ultracam::internal_data(rbuff[i]);
       delete[] rbuff;
     }
     ptr = 0;

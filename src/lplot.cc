@@ -114,32 +114,32 @@ int main(int argc, char* argv[]){
 
     size_t nccd = 1;
     if(frame.size() > 1)
-	input.get_value("nccd", nccd, size_t(1), size_t(1), frame.size(), "CCD number to plot");
+    input.get_value("nccd", nccd, size_t(1), size_t(1), frame.size(), "CCD number to plot");
     nccd--;
 
     if(frame[nccd].size() == 0)
-	throw Ultracam::Ultracam_Error("CCD " + Subs::str(nccd+1) + " has no windows.");
+    throw Ultracam::Ultracam_Error("CCD " + Subs::str(nccd+1) + " has no windows.");
 
     // Test the windows
     char cdir = 'D';
     for(size_t nwin=0; nwin<frame[nccd].size(); nwin++){
-	const Ultracam::Windata& win = frame[nccd][nwin];
-	if(win.is_oned()){
-	    if(cdir == 'D'){
-		if(win.nx() > 1)
-		    cdir = 'Y';
-		else if(win.ny() > 1)
-		    cdir = 'X';
-	    }else{
-		if((cdir == 'X' && win.nx() > 1) || (cdir == 'Y' && win.ny() > 1))
-		    throw Ultracam::Ultracam_Error("Different windows seem to have different collapse directions");
-	    }
-	}else if(win.is_not_null()){
-	    throw Ultracam::Ultracam_Error("This is not the result of the program 'collapse'");
-	}
+    const Ultracam::Windata& win = frame[nccd][nwin];
+    if(win.is_oned()){
+        if(cdir == 'D'){
+        if(win.nx() > 1)
+            cdir = 'Y';
+        else if(win.ny() > 1)
+            cdir = 'X';
+        }else{
+        if((cdir == 'X' && win.nx() > 1) || (cdir == 'Y' && win.ny() > 1))
+            throw Ultracam::Ultracam_Error("Different windows seem to have different collapse directions");
+        }
+    }else if(win.is_not_null()){
+        throw Ultracam::Ultracam_Error("This is not the result of the program 'collapse'");
+    }
     }
     if(cdir == 'D')
-	throw Ultracam::Ultracam_Error("Failed to find any non-null 1D windows");
+    throw Ultracam::Ultracam_Error("Failed to find any non-null 1D windows");
 
     float x1;
     input.get_value("x1", x1, 0.5f, -20.5f, float(frame[nccd].nxtot()+20.5), "left X limit of plot");
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]){
     if(reverse){
       cpgscr( 0, 1., 1., 1.);
       cpgscr( 1, 0., 0., 0.);
-    } 
+    }
     cpgsch(cheight);
     cpgslw(lwidth);
     cpgscf(font);
@@ -185,76 +185,76 @@ int main(int argc, char* argv[]){
     Subs::Array1D<int> cols(frame[nccd].size());
     cols = 1;
     for(size_t nwin=0; nwin<frame[nccd].size(); nwin++){
-	const Ultracam::Windata& win = frame[nccd][nwin];
+    const Ultracam::Windata& win = frame[nccd][nwin];
 
-	if(win.is_not_null()){
+    if(win.is_not_null()){
 
-	    // Make sure overlapping windows have different plot colours 
-	    for(size_t nw=0; nw<nwin; nw++){
-		const Ultracam::Windata& pwin = frame[nccd][nw];
-		if(pwin.is_not_null()){
-		    if(cdir == 'X'){
-			if((win.bottom() >= pwin.bottom() && win.bottom() <= pwin.top()) ||
-			   (win.top() >= pwin.bottom() && win.top() <= pwin.top()) ||
-			   (win.bottom() < pwin.bottom() && win.top() > pwin.top()))
-			    cols[nwin] = cols[nw] + 1;
-		    }else{
-			if((win.left() >= pwin.left() && win.left() <= pwin.right()) ||
-			   (win.right() >= pwin.left() && win.right() <= pwin.right()) ||
-			   (win.left() < pwin.left() && win.right() > pwin.right()))
-			    cols[nwin] = cols[nw] + 1;
-		    }
-		}
-	    }
+        // Make sure overlapping windows have different plot colours
+        for(size_t nw=0; nw<nwin; nw++){
+        const Ultracam::Windata& pwin = frame[nccd][nw];
+        if(pwin.is_not_null()){
+            if(cdir == 'X'){
+            if((win.bottom() >= pwin.bottom() && win.bottom() <= pwin.top()) ||
+               (win.top() >= pwin.bottom() && win.top() <= pwin.top()) ||
+               (win.bottom() < pwin.bottom() && win.top() > pwin.top()))
+                cols[nwin] = cols[nw] + 1;
+            }else{
+            if((win.left() >= pwin.left() && win.left() <= pwin.right()) ||
+               (win.right() >= pwin.left() && win.right() <= pwin.right()) ||
+               (win.left() < pwin.left() && win.right() > pwin.right()))
+                cols[nwin] = cols[nw] + 1;
+            }
+        }
+        }
 
-	    if(cdir == 'X'){
-		x.resize(win.ny());
-		y.resize(win.ny());
-		for(int ny=0; ny<win.ny(); ny++){
-		    x[ny] = win.yccd(ny);
-		    y[ny] = win[ny][0];
-		}
-	    }else{
-		x.resize(win.nx());
-		y.resize(win.nx());
-		for(int nx=0; nx<win.nx(); nx++){
-		    x[nx] = win.xccd(nx);
-		    y[nx] = win[0][nx];
-		}
-	    }
+        if(cdir == 'X'){
+        x.resize(win.ny());
+        y.resize(win.ny());
+        for(int ny=0; ny<win.ny(); ny++){
+            x[ny] = win.yccd(ny);
+            y[ny] = win[ny][0];
+        }
+        }else{
+        x.resize(win.nx());
+        y.resize(win.nx());
+        for(int nx=0; nx<win.nx(); nx++){
+            x[nx] = win.xccd(nx);
+            y[nx] = win[0][nx];
+        }
+        }
 
-	    // Wait until now to plot the axes so that they can be fixed from the
-	    // data 
-	    if(no_axes){
-		cpgsci(4);
-		if(x1 == x2){
-		    x1 = x.min();
-		    x2 = x.max();
-		    float range = x2-x1;
-		    x1 -= range/10.;
-		    x2 += range/10.;
-		    input.set_default("x1", x1);
-		    input.set_default("x2", x2);
-		}
-		if(y1 == y2){
-		    y1 = y.min();
-		    y2 = y.max();
-		    float range = y2-y1;
-		    y1 -= range/10.;
-		    y2 += range/10.;
-		    input.set_default("y1", y1);
-		    input.set_default("y2", y2);
-		}
-		cpgenv(x1, x2, y1, y2, 0, 0);
-		cpgsci(2);
-		cpglab(cdir == 'X' ? "Y pixels" : "X pixels", "Counts", " ");
-		no_axes = false;
-	    }
+        // Wait until now to plot the axes so that they can be fixed from the
+        // data
+        if(no_axes){
+        cpgsci(4);
+        if(x1 == x2){
+            x1 = x.min();
+            x2 = x.max();
+            float range = x2-x1;
+            x1 -= range/10.;
+            x2 += range/10.;
+            input.set_default("x1", x1);
+            input.set_default("x2", x2);
+        }
+        if(y1 == y2){
+            y1 = y.min();
+            y2 = y.max();
+            float range = y2-y1;
+            y1 -= range/10.;
+            y2 += range/10.;
+            input.set_default("y1", y1);
+            input.set_default("y2", y2);
+        }
+        cpgenv(x1, x2, y1, y2, 0, 0);
+        cpgsci(2);
+        cpglab(cdir == 'X' ? "Y pixels" : "X pixels", "Counts", " ");
+        no_axes = false;
+        }
 
-	    cpgsci(cols[nwin]);
-	    pgbin(x, y);
-		
-	}
+        cpgsci(cols[nwin]);
+        pgbin(x, y);
+
+    }
     }
   }
 

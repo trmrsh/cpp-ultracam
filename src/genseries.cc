@@ -13,7 +13,7 @@
 !!head1   genseries generates a series of frames
 
 !!emph{genseries} generates a series of frames. It does so by copying
-one frames many times and modifying the times. 
+one frames many times and modifying the times.
 
 !!head2 Invocation
 

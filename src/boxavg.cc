@@ -21,7 +21,7 @@ gaussian smoothing. This routine may be useful in spotting bad pixels.
 
 !!head2 Invocation
 
-boxavg input xhwidth yhwidth output 
+boxavg input xhwidth yhwidth output
 
 !!head2 Arguments
 
@@ -81,20 +81,20 @@ int main(int argc, char* argv[]){
 
     for(size_t ic=0; ic<frame.size(); ic++){
       for(size_t iw=0; iw<frame[ic].size(); iw++){
-	const Ultracam::Windata &dwin = frame[ic][iw];
-	for(int iyn=0; iyn<dwin.ny(); iyn++){
-	  for(int ixn=0; ixn<dwin.nx(); ixn++){
-	    double sum = 0.;
-	    int npix = 0;
-	    for(int iyo=std::max(iyn-yhwidth,0); iyo<std::min(iyn+yhwidth+1,dwin.ny()); iyo++){
-	      for(int ixo=std::max(ixn-xhwidth,0); ixo<std::min(ixn+xhwidth+1,dwin.nx()); ixo++){
-		sum += dwin[iyo][ixo];
-		npix++;
-	      }
-	    }
-	    out[ic][iw][iyn][ixn] = sum / npix;
-	  }
-	}
+    const Ultracam::Windata &dwin = frame[ic][iw];
+    for(int iyn=0; iyn<dwin.ny(); iyn++){
+      for(int ixn=0; ixn<dwin.nx(); ixn++){
+        double sum = 0.;
+        int npix = 0;
+        for(int iyo=std::max(iyn-yhwidth,0); iyo<std::min(iyn+yhwidth+1,dwin.ny()); iyo++){
+          for(int ixo=std::max(ixn-xhwidth,0); ixo<std::min(ixn+xhwidth+1,dwin.nx()); ixo++){
+        sum += dwin[iyo][ixo];
+        npix++;
+          }
+        }
+        out[ic][iw][iyn][ixn] = sum / npix;
+      }
+    }
       }
     }
 

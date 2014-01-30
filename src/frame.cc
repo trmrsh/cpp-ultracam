@@ -53,7 +53,7 @@ void Ultracam::Frame::format(const Ultracam::Frame& frame){
     }
   }
 }
- 
+
 // Read files
 
 /**
@@ -75,7 +75,7 @@ void Ultracam::Frame::read(const std::string& file, int nc){
   fin.read((char*)&magic,sizeof(Subs::INT4));
   if(!fin)
     throw Ultracam_Error("Ultracam::Frame::read(std::string&, int): failed to read ucm magic number");
-  
+
   // Check for non-native data
   bool swap_bytes = (Subs::byte_swap(magic) == Ultracam::MAGIC);
 
@@ -85,7 +85,7 @@ void Ultracam::Frame::read(const std::string& file, int nc){
   // If it is old, and we are on a bigendian machine, then
   // we will have to swap bytes (because all old files were written on little-endian machines)
   if(old && Subs::is_big_endian()) swap_bytes = true;
-  
+
   // If 'old' then no magic number and we should wind back to start
   if(old) fin.seekg(0);
 
@@ -106,7 +106,7 @@ void Ultracam::Frame::read(const std::string& file, int nc){
 /**
  * This function writes an ULTRACAM file to disk. It will over-write any existing files,
  * so be careful.
- * \param file  name of file to write. 
+ * \param file  name of file to write.
  * \param otype data type to store on disk (RAW form can save on disk space but may lose precision)
  */
 
@@ -114,9 +114,9 @@ void Ultracam::Frame::write(const std::string& file,  Windata::Out_type otype) c
   std::ofstream fout(Subs::filnam(file,Ultracam::Frame::extnam()).c_str(), std::ios::binary);
 
   if(!fout)
-    throw File_Open_Error(std::string("Failed to open \"") + 
-			  Subs::filnam(file,extnam()) +
-			  std::string("\" in void Ultracam::Frame::write(const std::string&)"));
+    throw File_Open_Error(std::string("Failed to open \"") +
+              Subs::filnam(file,extnam()) +
+              std::string("\" in void Ultracam::Frame::write(const std::string&)"));
 
   // Write Ultracam magic number to identify this as a ucm file.
   // 29/09/2004
@@ -139,7 +139,7 @@ void Ultracam::Frame::write(const std::string& file,  Windata::Out_type otype) c
 
 /**
  *  This carries out addition of a constant 'in place'. For instance
- * data += 10; would add 10 to all pixels of the Ultracam::Frame 'data'. 
+ * data += 10; would add 10 to all pixels of the Ultracam::Frame 'data'.
  * No other form of addition is supported because of efficiency considerations.
  */
 void Ultracam::Frame::operator+=(const Ultracam::internal_data& constant){
@@ -149,7 +149,7 @@ void Ultracam::Frame::operator+=(const Ultracam::internal_data& constant){
 
 /**
  * This carries out subtraction of a constant 'in place'. For instance
- * data -= 10; would subtract 10 off all pixels of the Ultracam::Frame 'data'. 
+ * data -= 10; would subtract 10 off all pixels of the Ultracam::Frame 'data'.
  * No other form of subtraction is supported because of efficiency considerations.
  */
 void Ultracam::Frame::operator-=(const Ultracam::internal_data& constant){
@@ -186,7 +186,7 @@ void Ultracam::Frame::operator/=(const Ultracam::internal_data& constant){
 void Ultracam::Frame::operator+=(const Ultracam::Frame& obj){
   if(*this == obj){
     for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic] += obj[ic];
+    (*this)[ic] += obj[ic];
   }else{
     throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::operator+=(const Ultracam::Frame&)");
   }
@@ -200,7 +200,7 @@ void Ultracam::Frame::operator+=(const Ultracam::Frame& obj){
 void Ultracam::Frame::operator-=(const Ultracam::Frame& obj){
   if((*this) == obj){
     for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic] -= obj[ic];
+    (*this)[ic] -= obj[ic];
   }else{
     throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::operator-=(const Ultracam::Frame&)");
   }
@@ -214,7 +214,7 @@ void Ultracam::Frame::operator-=(const Ultracam::Frame& obj){
 void Ultracam::Frame::operator*=(const Ultracam::Frame& obj){
   if((*this) == obj){
     for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic] *= obj[ic];
+    (*this)[ic] *= obj[ic];
   }else{
     throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::operator*=(const Ultracam::Frame&)");
   }
@@ -228,7 +228,7 @@ void Ultracam::Frame::operator*=(const Ultracam::Frame& obj){
 void Ultracam::Frame::operator/=(const Ultracam::Frame& obj){
   if((*this) == obj){
     for(size_t ic=0; ic<size(); ic++)
-	(*this)[ic] /= obj[ic];
+    (*this)[ic] /= obj[ic];
   }else{
     throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::operator/=(const Ultracam::Frame&)");
   }
@@ -243,8 +243,8 @@ void Ultracam::Frame::max(const Ultracam::internal_data& low){
   for(size_t ic=0; ic<size(); ic++)
     for(size_t io=0; io<(*this)[ic].size(); io++)
       for(int iy=0; iy<(*this)[ic][io].ny(); iy++)
-	for(int ix=0; ix<(*this)[ic][io].nx(); ix++)
-	  if((*this)[ic][io][iy][ix] < low) (*this)[ic][io][iy][ix] = low; 
+    for(int ix=0; ix<(*this)[ic][io].nx(); ix++)
+      if((*this)[ic][io][iy][ix] < low) (*this)[ic][io][iy][ix] = low;
 }
 
 /**
@@ -258,38 +258,38 @@ void Ultracam::Frame::crop(const Ultracam::Frame& obj){
     for(size_t ic=0; ic<size(); ic++)
       (*this)[ic].crop(obj[ic]);
   }else{
-      throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Frame&): " 
-			   + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
+      throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Frame&): "
+               + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
   }
 }
 
 /**
  * This crops the format of one frame to match a Ultracam::Mwindow multi-window object. It only
- * does so if the Ultracam::Mwindow format is enclosed by the object frame, and if the 
+ * does so if the Ultracam::Mwindow format is enclosed by the object frame, and if the
  * total CCD size and binning match.
  */
 void Ultracam::Frame::crop(const Ultracam::Mwindow& obj){
     if(this->size() == obj.size()){
-	for(size_t ic=0; ic<size(); ic++)
-	    (*this)[ic].crop(obj[ic]);
+    for(size_t ic=0; ic<size(); ic++)
+        (*this)[ic].crop(obj[ic]);
     }else{
-	throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Mwindow&): "
-			     + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
+    throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::crop(const Ultracam::Mwindow&): "
+                 + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
     }
 }
 
-/** This changes a frame to be the overlap between it a Ultracam::Mwindow multi-window object. 
+/** This changes a frame to be the overlap between it a Ultracam::Mwindow multi-window object.
  * Effectively it is the result of looking through the Ultracam::Mwindow at the Ultracam::Frame. It differs
  * from cropping in that the Windows need not be fully enclosed by the data windows.
  * \param obj the Ultracam::Mwindow multi-windows
  */
 void Ultracam::Frame::window(const Ultracam::Mwindow& obj){
     if(this->size() == obj.size()){
-	for(size_t ic=0; ic<size(); ic++)
-	    (*this)[ic].window(obj[ic]);
+    for(size_t ic=0; ic<size(); ic++)
+        (*this)[ic].window(obj[ic]);
     }else{
-	throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::window(const Ultracam::Mwindow&): "
-			     + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
+    throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::window(const Ultracam::Mwindow&): "
+                 + Subs::str(this->size()) + " vs " + Subs::str(obj.size()));
     }
 }
 
@@ -327,16 +327,16 @@ void Ultracam::Frame::operator-=(const FCmul& obj) {
   if((*this) == obj.frame){
     for(size_t ic=0; ic<size(); ic++){
       for(size_t iw=0; iw<(*this)[ic].size(); iw++){
-	for(int iy=0; iy<(*this)[ic][iw].ny(); iy++){
-	  for(int ix=0; ix<(*this)[ic][iw].nx(); ix++){
-	    (*this)[ic][iw][iy][ix] -= obj.con*obj.frame[ic][iw][iy][ix];
-	  }
-	}
+    for(int iy=0; iy<(*this)[ic][iw].ny(); iy++){
+      for(int ix=0; ix<(*this)[ic][iw].nx(); ix++){
+        (*this)[ic][iw][iy][ix] -= obj.con*obj.frame[ic][iw][iy][ix];
+      }
+    }
       }
     }
   }else{
     throw Ultracam_Error("Incompatible objects in void Ultracam::Frame::operator-=(const FCmul&)");
-  }  
+  }
 }
 
 /**

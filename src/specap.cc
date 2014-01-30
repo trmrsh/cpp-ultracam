@@ -11,7 +11,7 @@ bool Ultracam::Specap::near_enough(float x, float y) const {
   return (how_far(x, y) < 5);
 }
 
-/** Shifts an extraction region. 
+/** Shifts an extraction region.
  * \param shift the number of unbinned pixels towards the right to shift by.
  */
 void Ultracam::Specap::add_shift(double shift){
@@ -26,18 +26,18 @@ void Ultracam::Specap::add_shift(double shift){
     if(!sky_regions[i].fixed){
       sky_regions[i].ylow   += shift;
       sky_regions[i].yhigh  += shift;
-    }      
+    }
   }
 
 }
 
-/** Works out whether the Specap overlaps a unique window in a given CCD image. 
+/** Works out whether the Specap overlaps a unique window in a given CCD image.
  * \param winds a CCD's worth of windatas
  * \return the index of the window the Specap overlaps. -1 means it does
  * not overlap anything, windows.size() means it overlaps with more than one
  */
 int Ultracam::Specap::unique_window(const CCD<Windata>& wins) const {
- 
+
   int nover = 0, nwin = -1;
   for(size_t i=0; i<wins.size(); i++){
     if(wins[i].left() < xright && wins[i].right() > xleft && wins[i].bottom() < ylow && wins[i].top() > yhigh){
@@ -51,7 +51,7 @@ int Ultracam::Specap::unique_window(const CCD<Windata>& wins) const {
     return nwin;
   }else{
     return wins.size();
-  }    
+  }
 }
 
 void Ultracam::Specap::set_yslow(double yslow) {
@@ -101,7 +101,7 @@ std::istream& Ultracam::operator>>(std::istream& s, Specap::Skyreg& obj) {
 }
 
 std::ostream& Ultracam::operator<<(std::ostream& s, const Specap& obj) {
-  s << "yslow = " << obj.yslow << ", ylow = " << obj.ylow << ", ypos = " << obj.ypos << ", yhigh = " << obj.yhigh << ", yshigh = " << obj.yshigh 
+  s << "yslow = " << obj.yslow << ", ylow = " << obj.ylow << ", ypos = " << obj.ypos << ", yhigh = " << obj.yhigh << ", yshigh = " << obj.yshigh
     << ", xleft = " << obj.xleft << ", xright = " << obj.xright << ", nsky = " << obj.nsky();
   for(int i=0; i<obj.nsky(); i++) s << " " << obj.sky(i);
   return s;
@@ -114,7 +114,7 @@ std::istream& Ultracam::operator>>(std::istream& s, Specap& obj) {
   double yslow, ylow, ypos, yhigh, yshigh, xleft, xright;
   Specap::Skyreg skyreg;
   std::vector<Specap::Skyreg> skyregs;
-  
+
   while(s.get(ch) && ch != '=');
   if(!s || !(s >> yslow))
     throw Ultracam_Error("Ultracam::::operator>>(std::istream&, Ultracam::Specap&): yslow unreadable");
@@ -169,14 +169,14 @@ std::istream& Ultracam::operator>>(std::istream& s, Specap& obj) {
 
 }
 
-/** Checks two regions do not clash which means that their 
+/** Checks two regions do not clash which means that their
  * object regions must not overlap.
  */
 bool Ultracam::clash(const Specap& obj1, const Specap& obj2) {
   return (
-	  (obj1.ylow >= obj2.ylow && obj1.ylow <= obj2.yhigh) ||
-	  (obj1.ylow <  obj2.ylow && obj1.yhigh   >= obj2.ylow)
-	  );
+      (obj1.ylow >= obj2.ylow && obj1.ylow <= obj2.yhigh) ||
+      (obj1.ylow <  obj2.ylow && obj1.yhigh   >= obj2.ylow)
+      );
 }
 
 void Ultracam::Specap::delete_sky(int i){
@@ -195,7 +195,7 @@ const Ultracam::Specap::Skyreg& Ultracam::Specap::sky(int i) const {
  *  the sky regions, red for the anti-sky regions and red dashed for the bad sky
  *  regions which do not move with the object. Dashed green lines are used to
  * mark the target position and the search region.
- * \param specap the spectrum extraction regions to plot. 
+ * \param specap the spectrum extraction regions to plot.
  * \param profile true if the plot is a plot of a profile, false if it is an image.
  */
 void Ultracam::pgline(const Specap& specap, bool profile) {
@@ -211,45 +211,45 @@ void Ultracam::pgline(const Specap& specap, bool profile) {
     // Draw vertical solid lines at edges of extraction region and a horizontal one
     // half way up joining them
     cpgsls(1);
-    cpgmove(specap.get_ylow(), y1); 
+    cpgmove(specap.get_ylow(), y1);
     cpgdraw(specap.get_ylow(), y2);
-    cpgmove(specap.get_yhigh(), y1); 
+    cpgmove(specap.get_yhigh(), y1);
     cpgdraw(specap.get_yhigh(), y2);
-    cpgmove(specap.get_ylow(), (y1+y2)/2.); 
+    cpgmove(specap.get_ylow(), (y1+y2)/2.);
     cpgdraw(specap.get_yhigh(), (y1+y2)/2.);
 
     // Dashed line at object position and marking search region
     cpgsls(2);
-    cpgmove(specap.get_ypos(), y1); 
+    cpgmove(specap.get_ypos(), y1);
     cpgdraw(specap.get_ypos(), y2);
-    cpgmove(specap.get_yslow(), y1); 
+    cpgmove(specap.get_yslow(), y1);
     cpgdraw(specap.get_yslow(), y2);
-    cpgmove(specap.get_yshigh(), y1); 
+    cpgmove(specap.get_yshigh(), y1);
     cpgdraw(specap.get_yshigh(), y2);
-    cpgmove(specap.get_yslow(), (1.1*y1+y2)/2.1); 
+    cpgmove(specap.get_yslow(), (1.1*y1+y2)/2.1);
     cpgdraw(specap.get_yshigh(), (1.1*y1+y2)/2.1);
 
     // Then the sky regions
     for(int i=0; i<specap.nsky(); i++){
       const Specap::Skyreg& skyreg = specap.sky(i);
       if(skyreg.good){
-	cpgsci(5);
-	cpgsls(1);
+    cpgsci(5);
+    cpgsls(1);
       }else if(skyreg.fixed){
-	cpgsci(2);
-	cpgsls(1);
+    cpgsci(2);
+    cpgsls(1);
       }else{
-	cpgsci(2);
-	cpgsls(2);
+    cpgsci(2);
+    cpgsls(2);
       }
-      cpgmove(skyreg.ylow, y1); 
+      cpgmove(skyreg.ylow, y1);
       cpgdraw(skyreg.ylow, y2);
-      cpgmove(skyreg.yhigh,   y1); 
+      cpgmove(skyreg.yhigh,   y1);
       cpgdraw(skyreg.yhigh,   y2);
-      cpgmove(skyreg.ylow, (2.*y1+y2)/3.); 
+      cpgmove(skyreg.ylow, (2.*y1+y2)/3.);
       cpgdraw(skyreg.yhigh,   (2.*y1+y2)/3.);
-      cpgmove((skyreg.ylow+skyreg.yhigh)/2., (2.*y1+y2)/3.); 
-      cpgdraw(specap.get_ypos(), (y1+y2)/2.); 
+      cpgmove((skyreg.ylow+skyreg.yhigh)/2., (2.*y1+y2)/3.);
+      cpgdraw(specap.get_ypos(), (y1+y2)/2.);
     }
 
   }else{

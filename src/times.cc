@@ -79,7 +79,7 @@ not found.}
 // Main program
 
 int main(int argc, char* argv[]){
-  
+
   using Ultracam::File_Open_Error;
   using Ultracam::Ultracam_Error;
   using Ultracam::Input_Error;
@@ -132,9 +132,9 @@ int main(int argc, char* argv[]){
     if(url.find("http://") == std::string::npos && source == 'S'){
       char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
       if(DEFAULT_URL != NULL){
-	url = DEFAULT_URL + url;
+    url = DEFAULT_URL + url;
       }else{
-	url = Ultracam::ULTRACAM_LOCAL_URL + url;
+    url = Ultracam::ULTRACAM_LOCAL_URL + url;
       }
     }else if(url.find("http://") == 0 && source == 'L'){
       throw Ultracam::Input_Error("Should not specify the local file as a URL");
@@ -144,7 +144,7 @@ int main(int argc, char* argv[]){
     dform.left();
     dform.width(18);
 
-    // Parse the XML file      
+    // Parse the XML file
     Ultracam::Mwindow mwindow;
     Subs::Header header;
     Ultracam::ServerData serverdata;
@@ -218,20 +218,20 @@ int main(int argc, char* argv[]){
       if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax, false, false)) break;
 
       if(nfile == first){
-	if(data["Frame.as_documented"]->get_bool())
-	  std::cout << "# The timestamps were assumed to be standard.\n#" << std::endl;
-	else
-	  std::cout << "# The timestamps were assumed to be non-standard\n#" << std::endl;
+    if(data["Frame.as_documented"]->get_bool())
+      std::cout << "# The timestamps were assumed to be standard.\n#" << std::endl;
+    else
+      std::cout << "# The timestamps were assumed to be non-standard\n#" << std::endl;
 
-	std::cout << "# " << std::endl;
+    std::cout << "# " << std::endl;
       }
 
       // Report information
       double derived = data["UT_date"]->get_double();
 
-      std::cout << std::setw(7) << data["Frame.frame_number"]->get_int() << " | " << dform(data["Frame.GPS_time"]->get_double()) 
-	   << " | " << dform(derived) << " | " << data["Frame.reliable"] << " | " << data["Exposure"]->get_float() 
-	   << " | " << data["Frame.GPS_time"] << "\n";
+      std::cout << std::setw(7) << data["Frame.frame_number"]->get_int() << " | " << dform(data["Frame.GPS_time"]->get_double())
+       << " | " << dform(derived) << " | " << data["Frame.reliable"] << " | " << data["Exposure"]->get_float()
+       << " | " << data["Frame.GPS_time"] << "\n";
       count++;
       if(count % 10 == 0) std::cout << std::flush;
       if(last != 0 && nfile == last) break;

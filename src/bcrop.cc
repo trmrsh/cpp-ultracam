@@ -80,8 +80,8 @@ int main(int argc, char* argv[]){
     Ultracam::Frame indata(sinput);
     for(size_t nccd=0; nccd<indata.size(); nccd++){
       for(size_t nwin=0; nwin<indata[nccd].size(); nccd++){
-	if(indata[nccd][nwin].xbin() != 1 || indata[nccd][nwin].ybin() != 1)
-	  throw Ultracam_Error("Input frame = " + sinput + " is binned.");
+    if(indata[nccd][nwin].xbin() != 1 || indata[nccd][nwin].ybin() != 1)
+      throw Ultracam_Error("Input frame = " + sinput + " is binned.");
       }
     }
 
@@ -99,9 +99,9 @@ int main(int argc, char* argv[]){
     Ultracam::Mwindow mwin(temp.size()), owin(temp.size());
     for(size_t nccd=0; nccd<temp.size(); nccd++){
       for(size_t nwin=0; nwin<temp[nccd].size(); nwin++){
-	const Ultracam::Windata& wind = temp[nccd][nwin];
-	mwin[nccd].push_back(Ultracam::Window(wind.llx(), wind.lly(), wind.xbin()*wind.nx(), wind.ybin()*wind.ny(), 1, 1, wind.nxtot(), wind.nytot()));
-	owin[nccd].push_back(Ultracam::Window(wind.llx(), wind.lly(), wind.nx(), wind.ny(), wind.xbin(), wind.ybin(), wind.nxtot(), wind.nytot()));
+    const Ultracam::Windata& wind = temp[nccd][nwin];
+    mwin[nccd].push_back(Ultracam::Window(wind.llx(), wind.lly(), wind.xbin()*wind.nx(), wind.ybin()*wind.ny(), 1, 1, wind.nxtot(), wind.nytot()));
+    owin[nccd].push_back(Ultracam::Window(wind.llx(), wind.lly(), wind.nx(), wind.ny(), wind.xbin(), wind.ybin(), wind.nxtot(), wind.nytot()));
       }
     }
 
@@ -116,18 +116,18 @@ int main(int argc, char* argv[]){
     // OK, now set pixels closest to the readouts in X to zero
     for(size_t nccd=0; nccd<indata.size(); nccd++){
       for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-	Ultracam::Windata& wind = indata[nccd][nwin];
-	int xbin = owin[nccd][nwin].xbin();
-	for(int ny=0; ny<wind.ny(); ny++){
-	  for(int nx=0; nx<wind.nx(); nx++){
-	    if(nwin % 2 == 0 && nx % xbin < xbin-1){
-	      wind[ny][nx] = 0;
-	    }else if(nwin % 2 == 1 && nx % xbin > 0){
-	      wind[ny][nx] = 0;
-	    }
-	  }
-	}
-      }	
+    Ultracam::Windata& wind = indata[nccd][nwin];
+    int xbin = owin[nccd][nwin].xbin();
+    for(int ny=0; ny<wind.ny(); ny++){
+      for(int nx=0; nx<wind.nx(); nx++){
+        if(nwin % 2 == 0 && nx % xbin < xbin-1){
+          wind[ny][nx] = 0;
+        }else if(nwin % 2 == 1 && nx % xbin > 0){
+          wind[ny][nx] = 0;
+        }
+      }
+    }
+      }
     }
 
     indata.crop(owin);

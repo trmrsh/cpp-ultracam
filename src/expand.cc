@@ -18,7 +18,7 @@
 
 !!emph{expand} approximately reverses the effect of !!ref{collapse.html}{collapse}. i.e.
 it takes an Ultracam frame consisting of null or 1D windows and expands them by repeating the
-data across the frame to make it match a reference image. The resulting frame can then be used to 
+data across the frame to make it match a reference image. The resulting frame can then be used to
 divide into, subtract from etc the reference image. A complication is that one or more of the windows
 that result from !!ref{collapse.html}{collapse} may have zero dimension. They are not eliminated in order
 to keep the number and order of windows the same. However, they will be grown back as well. In this case
@@ -60,110 +60,110 @@ and non-collapsed dimensions.}
 #include "trm/ultracam.h"
 
 int main(int argc, char* argv[]){
-    
+
     using Ultracam::Ultracam_Error;
-    
+
     try{
-	
-	// Construct Input object
-	Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
 
-	// Sign-in input variables
-	input.sign_in("input",    Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("template", Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("value",    Subs::Input::LOCAL, Subs::Input::PROMPT);
-	input.sign_in("output",   Subs::Input::LOCAL, Subs::Input::PROMPT);
+    // Construct Input object
+    Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
 
-	// Get inputs
-	std::string sinput;
-	input.get_value("input", sinput, "input", "file to expand");
-	Ultracam::Frame indata(sinput);
+    // Sign-in input variables
+    input.sign_in("input",    Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("template", Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("value",    Subs::Input::LOCAL, Subs::Input::PROMPT);
+    input.sign_in("output",   Subs::Input::LOCAL, Subs::Input::PROMPT);
 
-	std::string stemp;
-	input.get_value("template", stemp, "template", "template file to define expanded windows");
-	Ultracam::Frame temp(stemp);
+    // Get inputs
+    std::string sinput;
+    input.get_value("input", sinput, "input", "file to expand");
+    Ultracam::Frame indata(sinput);
 
-	float value;
-	input.get_value("value", value, 0.f, -FLT_MAX, FLT_MAX, "value to use for null window expansion");
+    std::string stemp;
+    input.get_value("template", stemp, "template", "template file to define expanded windows");
+    Ultracam::Frame temp(stemp);
 
-	std::string output;
-	input.get_value("output", output, "output", "file to dump result to");
+    float value;
+    input.get_value("value", value, 0.f, -FLT_MAX, FLT_MAX, "value to use for null window expansion");
+
+    std::string output;
+    input.get_value("output", output, "output", "file to dump result to");
 
 
-	Subs::Array1D<float> profile;
-	for(size_t nccd=0; nccd<indata.size(); nccd++){
-	    for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
-		Ultracam::Windata& win = indata[nccd][nwin];
-		const Ultracam::Windata& twin = temp[nccd][nwin];
-		
-		bool dir_is_x;
-		if(win.nx() == twin.nx() && (win.ny() == 0 || win.ny() == 1)){
-		    dir_is_x = false;
-		}else if(win.ny() == twin.ny() && (win.nx() == 0 || win.nx() == 1)){
-		    dir_is_x = true;
-		}else{
-		    throw Ultracam::Ultracam_Error("NCCD = " + Subs::str(nccd+1) + " window " + Subs::str(nwin+1) + 
-						   " has incompatible dimensions in template versus input file.");
-		}
+    Subs::Array1D<float> profile;
+    for(size_t nccd=0; nccd<indata.size(); nccd++){
+        for(size_t nwin=0; nwin<indata[nccd].size(); nwin++){
+        Ultracam::Windata& win = indata[nccd][nwin];
+        const Ultracam::Windata& twin = temp[nccd][nwin];
 
-		if(dir_is_x){
+        bool dir_is_x;
+        if(win.nx() == twin.nx() && (win.ny() == 0 || win.ny() == 1)){
+            dir_is_x = false;
+        }else if(win.ny() == twin.ny() && (win.nx() == 0 || win.nx() == 1)){
+            dir_is_x = true;
+        }else{
+            throw Ultracam::Ultracam_Error("NCCD = " + Subs::str(nccd+1) + " window " + Subs::str(nwin+1) +
+                           " has incompatible dimensions in template versus input file.");
+        }
 
-		    // Save data
-		    profile.resize(win.ny());
-		    if(win.nx()){
-			for(int iy=0; iy<win.ny(); iy++)
-			    profile[iy] = win[iy][0];
-		    }else{
-			profile = value;
-		    }
-		    
-		    // Resize and copy back
-		    win.resize(win.ny(), twin.nx());
-		    
-		    for(int iy=0; iy<win.ny(); iy++)
-			for(int ix=0; ix<win.nx(); ix++)
-			    win[iy][ix] = profile[iy];
+        if(dir_is_x){
 
-		}else{
+            // Save data
+            profile.resize(win.ny());
+            if(win.nx()){
+            for(int iy=0; iy<win.ny(); iy++)
+                profile[iy] = win[iy][0];
+            }else{
+            profile = value;
+            }
 
-		    // Save data
-		    profile.resize(win.nx());
-		    if(win.ny()){
-			for(int ix=0; ix<win.nx(); ix++)
-			    profile[ix] = win[0][ix];
-		    }else{
-			profile = value;
-		    }
-		    
-		    // Resize and copy back
-		    win.resize(twin.ny(), win.nx());
-		    
-		    for(int iy=0; iy<win.ny(); iy++)
-			for(int ix=0; ix<win.nx(); ix++)
-			    win[iy][ix] = profile[ix];
-		}
-	    }
-	}
-    
-	// Write out the result	
-	indata.write(output);
-    
+            // Resize and copy back
+            win.resize(win.ny(), twin.nx());
+
+            for(int iy=0; iy<win.ny(); iy++)
+            for(int ix=0; ix<win.nx(); ix++)
+                win[iy][ix] = profile[iy];
+
+        }else{
+
+            // Save data
+            profile.resize(win.nx());
+            if(win.ny()){
+            for(int ix=0; ix<win.nx(); ix++)
+                profile[ix] = win[0][ix];
+            }else{
+            profile = value;
+            }
+
+            // Resize and copy back
+            win.resize(twin.ny(), win.nx());
+
+            for(int iy=0; iy<win.ny(); iy++)
+            for(int ix=0; ix<win.nx(); ix++)
+                win[iy][ix] = profile[ix];
+        }
+        }
+    }
+
+    // Write out the result
+    indata.write(output);
+
     }
 
     catch(const Ultracam::Input_Error& err){
-	std::cerr << "Ultracam::Input_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Input_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Ultracam::Ultracam_Error& err){
-	std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Subs::Subs_Error& err){
-	std::cerr << "Subs::Subs_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Subs::Subs_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const std::string& err){
-	std::cerr << err << std::endl;
+    std::cerr << err << std::endl;
     }
 }
 

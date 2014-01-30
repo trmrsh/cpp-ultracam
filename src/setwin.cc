@@ -61,11 +61,11 @@ and also to ensure that the windows are compatible. Enter NONE if you don't want
 !!arg{nxtot}{Unbinned chip X dimension, only prompted if not already set}
 !!arg{nytot}{Unbinned chip Y dimension, only prompted if not already set}
 !!arg{device}{If plot, device = plot device.}
-!!arg{xleft xright}{X range for plot} 
-!!arg{ylow yhigh}{Y range for plot} 
+!!arg{xleft xright}{X range for plot}
+!!arg{ylow yhigh}{Y range for plot}
 !!arg{iset}{'A', 'D' or 'P' for automatic, direct or percentile setting of intensity}
-!!arg{ilow ihigh}{Display range if iset='d'} 
-!!arg{plow phigh}{Percentile range if iset='p'} 
+!!arg{ilow ihigh}{Display range if iset='d'}
+!!arg{plow phigh}{Percentile range if iset='p'}
 !!table
 
 See also: !!ref{crop.html}{crop}, !!ref{bcrop.html}{bcrop} and !!ref{window.html}{window}
@@ -133,44 +133,44 @@ int main(int argc, char* argv[]){
 
     Ultracam::Mwindow win;
     if(newfile && plotdata){
-	win = Ultracam::Mwindow(data.size());
+    win = Ultracam::Mwindow(data.size());
 
     }else if(newfile){
-	int numccd;
-	input.get_value("numccd", numccd, int(3), int(1), int(10), "number of CCDs");
-	win = Ultracam::Mwindow(numccd);
+    int numccd;
+    input.get_value("numccd", numccd, int(3), int(1), int(10), "number of CCDs");
+    win = Ultracam::Mwindow(numccd);
 
     }else{
 
-	win.rasc(window);
-	if(plotdata){
-	    if(data.size() != win.size())
-		throw Ultracam::Ultracam_Error("incompatible numbers of CCDs in window and data files");
+    win.rasc(window);
+    if(plotdata){
+        if(data.size() != win.size())
+        throw Ultracam::Ultracam_Error("incompatible numbers of CCDs in window and data files");
 
-	    // Run a few checks
-	    for(size_t nccd=0; nccd<data.size(); nccd++){
-		if(data[nccd].size() && win[nccd].size()){
-		    if(data[nccd][0].xbin() != win[nccd][0].xbin())
-			throw Ultracam::Ultracam_Error("X binning factors of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
-		    if(data[nccd][0].ybin() != win[nccd][0].ybin())
-			throw Ultracam::Ultracam_Error("Y binning factors of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
-		    if(data[nccd][0].nxtot() != win[nccd][0].nxtot())
-			throw Ultracam::Ultracam_Error("Total X pixels of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
-		    if(data[nccd][0].nytot() != win[nccd][0].nytot())
-			throw Ultracam::Ultracam_Error("Total Y pixels of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
-		}
-	    }
-	}
+        // Run a few checks
+        for(size_t nccd=0; nccd<data.size(); nccd++){
+        if(data[nccd].size() && win[nccd].size()){
+            if(data[nccd][0].xbin() != win[nccd][0].xbin())
+            throw Ultracam::Ultracam_Error("X binning factors of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
+            if(data[nccd][0].ybin() != win[nccd][0].ybin())
+            throw Ultracam::Ultracam_Error("Y binning factors of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
+            if(data[nccd][0].nxtot() != win[nccd][0].nxtot())
+            throw Ultracam::Ultracam_Error("Total X pixels of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
+            if(data[nccd][0].nytot() != win[nccd][0].nytot())
+            throw Ultracam::Ultracam_Error("Total Y pixels of CCD " + Subs::str(nccd+1) + " in the data and window files are not equal.");
+        }
+        }
+    }
 
-	std::cout << "Loaded window format:\n\n" << win << std::endl;
+    std::cout << "Loaded window format:\n\n" << win << std::endl;
 
     }
 
     int nccd = 1;
-    input.get_value("ncset", nccd, int(1), int(1), int(win.size()), "number of CCD to set"); 
+    input.get_value("ncset", nccd, int(1), int(1), int(win.size()), "number of CCD to set");
     nccd--;
     if(plotdata && data[nccd].size() == 0)
-	throw Ultracam::Ultracam_Error("CCD " + Subs::str(nccd+1) + " has no data");
+    throw Ultracam::Ultracam_Error("CCD " + Subs::str(nccd+1) + " has no data");
 
     // All windows for a given CCD must have the same binning
     // factors and total dimensions.
@@ -207,18 +207,18 @@ int main(int argc, char* argv[]){
       input.get_value("ylow",   y1, 0.5f, 0.5f, y2, "lower Y limit of plot");
       input.get_value("yhigh",  y2, 0.5f, 0.5f, y2, "upper Y limit of plot");
       char iset;
-      input.get_value("iset", iset, 'a', "aAdDpP", 
-		      "set intensity a(utomatically), d(irectly) or with p(ercentiles)?");
+      input.get_value("iset", iset, 'a', "aAdDpP",
+              "set intensity a(utomatically), d(irectly) or with p(ercentiles)?");
       iset = toupper(iset);
       float ilow, ihigh, plow, phigh;
       if(iset == 'D'){
-	input.get_value("ilow",   ilow,  0.f, -FLT_MAX, FLT_MAX, "lower intensity limit");
-	input.get_value("ihigh",  ihigh, 1000.f, -FLT_MAX, FLT_MAX, "upper intensity limit");
+    input.get_value("ilow",   ilow,  0.f, -FLT_MAX, FLT_MAX, "lower intensity limit");
+    input.get_value("ihigh",  ihigh, 1000.f, -FLT_MAX, FLT_MAX, "upper intensity limit");
       }else if(iset == 'P'){
-	input.get_value("plow",   plow,  1.f, 0.f, 100.f,  "lower intensity limit percentile");
-	input.get_value("phigh",  phigh, 99.f, 0.f, 100.f, "upper intensity limit percentile");
-	plow  /= 100.;
-	phigh /= 100.;
+    input.get_value("plow",   plow,  1.f, 0.f, 100.f,  "lower intensity limit percentile");
+    input.get_value("phigh",  phigh, 99.f, 0.f, 100.f, "upper intensity limit percentile");
+    plow  /= 100.;
+    phigh /= 100.;
       }
 
       Subs::Plot plot(device);
@@ -230,112 +230,112 @@ int main(int argc, char* argv[]){
       int xc1, yc1, xc2, yc2;
       char ret, reply = 'X';
       pgline(win[nccd]);
-      
+
       std::cout << "Position cursor at a window corner (to add a window) or\n"
-	   << "inside a window to delete and hit the appropriate letter.\n" 
-	   << std::endl;
+       << "inside a window to delete and hit the appropriate letter.\n"
+       << std::endl;
 
       while(reply != 'Q'){
-	reply = 'X';
-	std::cout << "A(dd), R(emove), Q(uit)" << std::endl; 
-	if(!cpgcurs(&x,&y,&reply)) throw "Cursor error";
-	reply = toupper(reply);
-	
-	if(reply == 'A'){
+    reply = 'X';
+    std::cout << "A(dd), R(emove), Q(uit)" << std::endl;
+    if(!cpgcurs(&x,&y,&reply)) throw "Cursor error";
+    reply = toupper(reply);
 
-	  xc1 = std::min(nxt,std::max(int(1),int(floor(x+0.5))));
-	  yc1 = std::min(nyt,std::max(int(1),int(floor(y+0.5))));
+    if(reply == 'A'){
 
-	  std::cout << "Set other corner (any key except 'Q' to quit without setting the window)" << std::endl;
-	  x = float(xc1);
-	  y = float(yc1);
+      xc1 = std::min(nxt,std::max(int(1),int(floor(x+0.5))));
+      yc1 = std::min(nyt,std::max(int(1),int(floor(y+0.5))));
 
-	  if(cpgband(2,1,xc1,yc1,&x,&y,&ret) == 0) throw Ultracam_Error("Cursor error");
+      std::cout << "Set other corner (any key except 'Q' to quit without setting the window)" << std::endl;
+      x = float(xc1);
+      y = float(yc1);
 
-	  ret = toupper(ret);
-	  if(ret != 'Q'){
+      if(cpgband(2,1,xc1,yc1,&x,&y,&ret) == 0) throw Ultracam_Error("Cursor error");
 
-	    // Ensure within range
+      ret = toupper(ret);
+      if(ret != 'Q'){
 
-	    xc2 = std::min(nxt,std::max(int(1),int(floor(x+0.5))));
-	    yc2 = std::min(nyt,std::max(int(1),int(floor(y+0.5))));
+        // Ensure within range
 
-	    llx = std::min(xc1, xc2);
-	    lly = std::min(yc1, yc2);
-	    nx  = int(floor(float(std::max(xc1, xc2) - llx + 1)/xbin+0.5));
-	    ny  = int(floor(float(std::max(yc1, yc2) - lly + 1)/ybin+0.5));
-	    
-	    const Ultracam::Window twin = Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt);
-	    
-	    // Check against all current data windows
-	    int nfailx = 0, nfaily = 0;
-	    for(size_t nwin=0; nwin<data[nccd].size(); nwin++){
-		const Ultracam::Window& dwin = data[nccd][nwin]; 
-		if(Ultracam::clash(twin, dwin)){
-		    if((llx - dwin.llx()) % xbin != 0){
-			llx -= (llx-dwin.llx()) % xbin;
-			nfailx++;
-			std::cerr << "Re-jigged X position of window so that it is in step with data window " << nwin+1 << std::endl;
-		    }
-		    if((lly - dwin.lly()) % ybin != 0){
-			lly -= (lly-dwin.lly()) % ybin;
-			nfaily++;
-			std::cerr << "Re-jigged Y position of window so that it is in step with data window " << nwin+1 << std::endl;
-		    }
-		}
-	    }
-	    if(nfailx > 1 || nfaily > 1){
-		std::cerr << "Selected window is out of step with more than one data window in a way that cannot be corrected; choose again" << std::endl;
-	    }else{
-		try{
-		    win[nccd].push_back(Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt));
-		    pgline(win[nccd][win[nccd].size()-1]);
-		}
-		catch(std::string str){
-		    std::cerr << str <<std::endl;
-		}
-	    }
-	  }
-	}else if(reply == 'R'){
-	  try{
-	    Ultracam::Window w;
-	    if(win[nccd].del_obj(x,y,w)){
-	      cpgsci(Subs::RED);
-	      pgline(w);
-	    }
-	  }
-	  catch(std::string str){
-	    std::cerr << str <<std::endl;
-	  }
-	}else if(reply != 'Q'){
-	  std::cout << "Position = " << x << ", " << y << std::endl;
-	}   
+        xc2 = std::min(nxt,std::max(int(1),int(floor(x+0.5))));
+        yc2 = std::min(nyt,std::max(int(1),int(floor(y+0.5))));
+
+        llx = std::min(xc1, xc2);
+        lly = std::min(yc1, yc2);
+        nx  = int(floor(float(std::max(xc1, xc2) - llx + 1)/xbin+0.5));
+        ny  = int(floor(float(std::max(yc1, yc2) - lly + 1)/ybin+0.5));
+
+        const Ultracam::Window twin = Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt);
+
+        // Check against all current data windows
+        int nfailx = 0, nfaily = 0;
+        for(size_t nwin=0; nwin<data[nccd].size(); nwin++){
+        const Ultracam::Window& dwin = data[nccd][nwin];
+        if(Ultracam::clash(twin, dwin)){
+            if((llx - dwin.llx()) % xbin != 0){
+            llx -= (llx-dwin.llx()) % xbin;
+            nfailx++;
+            std::cerr << "Re-jigged X position of window so that it is in step with data window " << nwin+1 << std::endl;
+            }
+            if((lly - dwin.lly()) % ybin != 0){
+            lly -= (lly-dwin.lly()) % ybin;
+            nfaily++;
+            std::cerr << "Re-jigged Y position of window so that it is in step with data window " << nwin+1 << std::endl;
+            }
+        }
+        }
+        if(nfailx > 1 || nfaily > 1){
+        std::cerr << "Selected window is out of step with more than one data window in a way that cannot be corrected; choose again" << std::endl;
+        }else{
+        try{
+            win[nccd].push_back(Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt));
+            pgline(win[nccd][win[nccd].size()-1]);
+        }
+        catch(std::string str){
+            std::cerr << str <<std::endl;
+        }
+        }
+      }
+    }else if(reply == 'R'){
+      try{
+        Ultracam::Window w;
+        if(win[nccd].del_obj(x,y,w)){
+          cpgsci(Subs::RED);
+          pgline(w);
+        }
+      }
+      catch(std::string str){
+        std::cerr << str <<std::endl;
+      }
+    }else if(reply != 'Q'){
+      std::cout << "Position = " << x << ", " << y << std::endl;
+    }
       }
 
     }else{
 
       char reply = 'X';
-    
+
       while(reply != 'Q'){
-	std::cout << "A(dd), R(emove), Q(uit): "; 
-	std::cin  >> reply;
-	reply = toupper(reply);
-	
-	if(reply == 'A'){
-	  std::cout << "Enter lower left corner (x,y, unbinned) and binned window dimensions (separated by spaces, not commas): ";
-	  std::cin >> llx >> lly >> nx >> ny;
-	  if(!std::cin){
-	    std::cerr << "Invalid input" << std::endl;
-	    reply = 'Q';
-	    std::cin.clear();
-	  }
-	  try{
-	    win[nccd].push_back(Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt));
-	  }
-	  catch(const std::string& str){
-	    std::cerr << str <<std::endl;
-	  }
-	}
+    std::cout << "A(dd), R(emove), Q(uit): ";
+    std::cin  >> reply;
+    reply = toupper(reply);
+
+    if(reply == 'A'){
+      std::cout << "Enter lower left corner (x,y, unbinned) and binned window dimensions (separated by spaces, not commas): ";
+      std::cin >> llx >> lly >> nx >> ny;
+      if(!std::cin){
+        std::cerr << "Invalid input" << std::endl;
+        reply = 'Q';
+        std::cin.clear();
+      }
+      try{
+        win[nccd].push_back(Ultracam::Window(llx,lly,nx,ny,xbin,ybin,nxt,nyt));
+      }
+      catch(const std::string& str){
+        std::cerr << str <<std::endl;
+      }
+    }
       }
     }
 

@@ -4,7 +4,7 @@
 #include "trm/constants.h"
 #include "trm/ultracam.h"
 
-void sub_back(float* y, int i1, int i2);    
+void sub_back(float* y, int i1, int i2);
 
 /*! \file
   \brief Defines the findpos function
@@ -26,7 +26,7 @@ void sub_back(float* y, int i1, int i2);
  *
  * If the routine gets stuck it will throw an Ultracam_Error.
  *
- * If you compile with -DPLOT then extra plotting section are enabled which can be useful 
+ * If you compile with -DPLOT then extra plotting section are enabled which can be useful
  * for checking on troublesome cases.
  *
  * \param dat 2D array such that dat[iy][ix] gives the value of (ix,iy).
@@ -38,8 +38,8 @@ void sub_back(float* y, int i1, int i2);
  * \param hwidth_x Half-width to use in X. Collapse is over a region
  * +/- hwidth_x around the pixel nearest to the start position.
  * \param hwidth_y Half-width to use in Y.
- * \param xstart Start position in X. Used to define the initial search region. 
- * \param ystart Start position in Y.Used to define the initial search region. 
+ * \param xstart Start position in X. Used to define the initial search region.
+ * \param ystart Start position in Y.Used to define the initial search region.
  * \param bias if true, the search will be made starting from the initial position defined by
  * xstart & ystart. If false, the initial search will start from the maxima of the 1D correlations.
  * bias=true is less likely to get confused by cosmic rays and other targets, bias=false is better
@@ -50,99 +50,99 @@ void sub_back(float* y, int i1, int i2);
  * \param ey   uncertainty in final Y position. For this to be right, the data must be bias-subtracted.
  */
 
-void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny, float fwhm_x, float fwhm_y, 
-		       int hwidth_x, int hwidth_y, float xstart, float ystart, bool bias,
-		       double& xpos, double &ypos, float& ex, float& ey){
+void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny, float fwhm_x, float fwhm_y,
+               int hwidth_x, int hwidth_y, float xstart, float ystart, bool bias,
+               double& xpos, double &ypos, float& ex, float& ey){
 
   try {
-    
+
     // Check start position
     if(xstart <= -0.5 || xstart >= nx-0.5 || ystart <= -0.5 || ystart >= ny-0.5)
       throw Ultracam_Error("findpos: initial posiion outside array boundary");
-    
+
     // Define region to examine
     int xlo = int(xstart+0.5) - hwidth_x;
     int xhi = int(xstart+0.5) + hwidth_x;
     int ylo = int(ystart+0.5) - hwidth_y;
     int yhi = int(ystart+0.5) + hwidth_y;
-    
+
     // Make sure its in range
     xlo = xlo < 0  ? 0   : xlo;
     xhi = xhi < nx ? xhi : nx-1;
     ylo = ylo < 0  ? 0   : ylo;
     yhi = yhi < ny ? yhi : ny-1;
-    
-    // Collapse in X  
+
+    // Collapse in X
     float xprof[nx], vxprof[nx];
     for(int ix=xlo; ix<=xhi; ix++)
       xprof[ix]  = vxprof[ix] = 0.;
-    
+
     for(int iy=ylo; iy<=yhi; iy++){
       for(int ix=xlo; ix<=xhi; ix++){
-	xprof[ix]  += dat[iy][ix];
-	vxprof[ix] += var[iy][ix];
+    xprof[ix]  += dat[iy][ix];
+    vxprof[ix] += var[iy][ix];
       }
     }
-    
-    // Search for maximum 
+
+    // Search for maximum
     int   xmax = xlo+1;
     float fmax = xprof[xmax];
     if(!bias){
       for(int ix=xlo+1; ix<=xhi-1; ix++){
-	if(xprof[ix] > fmax){
-	  fmax = xprof[ix];
-	  xmax = ix;
-	}
+    if(xprof[ix] > fmax){
+      fmax = xprof[ix];
+      xmax = ix;
+    }
       }
       xstart = float(xmax);
     }
-    
+
     // Measure first X position
     sub_back(xprof, xlo, xhi);
     Subs::centroid(xprof,vxprof,xlo,xhi,fwhm_x,xstart,true,xpos,ex);
-    
+
     // Collapse in Y
     float yprof[ny], vyprof[ny];
-    
+
     for(int iy=ylo; iy<=yhi; iy++)
       vyprof[iy] = yprof[iy]  = 0.;
-    
+
     for(int iy=ylo; iy<=yhi; iy++){
       for(int ix=xlo; ix<=xhi; ix++){
-	yprof[iy]  += dat[iy][ix];
-	vyprof[iy] += var[iy][ix];
+    yprof[iy]  += dat[iy][ix];
+    vyprof[iy] += var[iy][ix];
       }
     }
-    
-    // Search for maximum 
+
+    // Search for maximum
     int   ymax = ylo+1;
     fmax = yprof[ymax];
     if(!bias){
       for(int iy=ylo+1; iy<=yhi-1; iy++){
-	if(yprof[iy] > fmax){
-	  fmax = yprof[iy];
-	  ymax = iy;
-	}
+    if(yprof[iy] > fmax){
+      fmax = yprof[iy];
+      ymax = iy;
+    }
       }
       ystart = float(ymax);
     }
-    
+
     // Measure first Y position
     sub_back(yprof, ylo, yhi);
     Subs::centroid(yprof,vyprof,ylo,yhi,fwhm_y,ystart,true,ypos,ey);
-    
+
     // Redefine region to examine
     xlo = int(xpos+0.5) - hwidth_x;
     xhi = int(xpos+0.5) + hwidth_x;
     ylo = int(ypos+0.5) - hwidth_y;
     yhi = int(ypos+0.5) + hwidth_y;
-    
+
     // Make sure its in range
     xlo = xlo < 0  ? 0   : xlo;
     xhi = xhi < nx ? xhi : nx-1;
     ylo = ylo < 0  ? 0   : ylo;
     yhi = yhi < ny ? yhi : ny-1;
-    
+
     // Weighted collapse in X
     float wgt;
     float norm = 0.;
@@ -154,17 +154,17 @@ void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny,
       wgt = exp(-Subs::sqr((float(iy)-ypos)/(fwhm_y/Constants::EFAC))/2.);
       norm += wgt;
       for(int ix=xlo; ix<=xhi; ix++){
-	xprof[ix]  += wgt*dat[iy][ix];
-	vxprof[ix] += wgt*wgt*var[iy][ix];
+    xprof[ix]  += wgt*dat[iy][ix];
+    vxprof[ix] += wgt*wgt*var[iy][ix];
       }
     }
-    
+
     xstart = xpos;
-    
+
     // Measure weighted X position
     sub_back(xprof, xlo, xhi);
     Subs::centroid(xprof,vxprof,xlo,xhi,fwhm_x,xstart,true,xpos,ex);
-    
+
     // Weighted collapse in Y
     for(int iy=ylo; iy<=yhi; iy++){
       yprof[iy]  = 0.;
@@ -175,11 +175,11 @@ void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny,
       wgt = exp(-Subs::sqr((float(ix)-xpos)/(fwhm_x/Constants::EFAC))/2.);
       norm += wgt;
       for(int iy=ylo; iy<=yhi; iy++){
-	yprof[iy]  += wgt*dat[iy][ix];
-	vyprof[iy] += wgt*wgt*var[iy][ix];
+    yprof[iy]  += wgt*dat[iy][ix];
+    vyprof[iy] += wgt*wgt*var[iy][ix];
       }
     }
-    
+
     // Measure weighted Y position
     ystart = ypos;
     sub_back(yprof, ylo, yhi);
@@ -189,7 +189,7 @@ void Ultracam::findpos(internal_data **dat, internal_data **var, int nx, int ny,
     throw Ultracam_Error("Ultracam::findpos: failed to measure position. Re-thrown this error\n" + err);
   }
 }
-  
+
 // Subtracts median as an estimate of the background
 // y is the array, i1 and i2 are the first and last elements
 // to consider. This is to help the centroiding which may otherwise

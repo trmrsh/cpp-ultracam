@@ -214,7 +214,7 @@ int main(int argc, char* argv[]){
         Ultracam::Frame data(mwindow, header);
 
         Subs::Header::Hnode* hnode = data.find("Instrument.instrument");
-        bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC"); 
+        bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC");
 
         bool bias, thresh = false, flat = false;
         float photon;
@@ -266,7 +266,7 @@ int main(int argc, char* argv[]){
         }
         size_t nfile = first;
 
-        // Data buffer if naccum > 1 
+        // Data buffer if naccum > 1
         Ultracam::Frame dbuffer;
         int nstack = 0;
         double ttime = 0.;

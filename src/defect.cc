@@ -9,16 +9,16 @@
  * \param y        Y position of defect
  * \param severity How bad the defect is
  */
-Ultracam::Defect::Defect(float x, float y, how_bad severity) : 
-    x1_(x), y1_(y), x2_(x), y2_(y), severity_(severity), cps_(-1) {} 
+Ultracam::Defect::Defect(float x, float y, how_bad severity) :
+    x1_(x), y1_(y), x2_(x), y2_(y), severity_(severity), cps_(-1) {}
 
 /** Constructs a hot pixel defect
  * \param x        X position of defect
  * \param y        Y position of defect
  * \param cps      counts per second
  */
-Ultracam::Defect::Defect(float x, float y, int cps) : 
-    x1_(x), y1_(y), x2_(x), y2_(y), severity_(Ultracam::Defect::MODERATE), cps_(cps) {} 
+Ultracam::Defect::Defect(float x, float y, int cps) :
+    x1_(x), y1_(y), x2_(x), y2_(y), severity_(Ultracam::Defect::MODERATE), cps_(cps) {}
 
 /** Constructs a line defect
  * \param x1   X position of one end of line defect
@@ -28,8 +28,8 @@ Ultracam::Defect::Defect(float x, float y, int cps) :
  * \param severity How bad the defect is
  */
 Ultracam::Defect::Defect(float x1, float y1, float x2, float y2, how_bad severity)
-    : x1_(x1), y1_(y1), x2_(x2), y2_(y2), severity_(severity), cps_(-1) {} 
-  
+    : x1_(x1), y1_(y1), x2_(x2), y2_(y2), severity_(severity), cps_(-1) {}
+
 /** This function returns a number that increases with the distance from
  * the coordinates entered as its arguments. This can be used to work out
  * which of several Ultracam::Defects is closest to a particular position and is needed
@@ -44,7 +44,7 @@ float Ultracam::Defect::how_far(float x, float y) const {
     return sqrt(Subs::sqr(x-x1_) + Subs::sqr(y-y1_));
   }else{
     // lambda is a parameter which says where on the line defect is closest to the x,y.
-    // It is 0 at x1_,y1_ and 1 at the other end. 
+    // It is 0 at x1_,y1_ and 1 at the other end.
     float lambda = ((x-x1_)*(x2_-x1_)+(y-y1_)*(y2_-y1_))/(Subs::sqr(x2_-x1_)+Subs::sqr(y2_-y1_));
     if(lambda <= 0.){
       return sqrt(Subs::sqr(x-x1_) + Subs::sqr(y-y1_));
@@ -103,7 +103,7 @@ float Ultracam::Defect::bad_value(int ix, int iy, float low, float high) const {
 void Ultracam::pgline(const Ultracam::Defect& defect) {
   cpgsave();
   int ptype = 17;
-      
+
   if(defect.effect() == Ultracam::Defect::MODERATE){
       cpgslw(2);
       cpgsls(2);
@@ -115,7 +115,7 @@ void Ultracam::pgline(const Ultracam::Defect& defect) {
       cpgsch(1.5);
       ptype = 18;
   }
-  
+
   if(defect.is_a_pixel()){
       cpgpt1(defect.x1(),defect.y1(),ptype);
   }else if(defect.is_a_hot_pixel()){
@@ -124,10 +124,10 @@ void Ultracam::pgline(const Ultracam::Defect& defect) {
       cpgqwin(&x1, &x2, &y1, &y2);
       if(x2 < x1) std::swap(x1,x2);
       if(y2 < y1) std::swap(y1,y2);
-      if(defect.x1() >= x1 && defect.x1() <= x2 && 
-	 defect.y1() >= y1 && defect.y1() <= y2){
-	  cpgpt1(defect.x1(),defect.y1(),1);
-	  cpgptxt(defect.x1(),defect.y1(),0,0,Subs::str(defect.how_hot()).c_str());
+      if(defect.x1() >= x1 && defect.x1() <= x2 &&
+     defect.y1() >= y1 && defect.y1() <= y2){
+      cpgpt1(defect.x1(),defect.y1(),1);
+      cpgptxt(defect.x1(),defect.y1(),0,0,Subs::str(defect.how_hot()).c_str());
       }
   }else{
       cpgmove(defect.x1(),defect.y1());
@@ -145,19 +145,19 @@ void Ultracam::pgptxt(const Ultracam::Defect& defect, const std::string& lab){}
 std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Defect& obj){
     s << "defect type = ";
     if(obj.is_a_pixel()){
-	s << "pixel located at x,y = " << obj.x1() << ", " << obj.y1();
+    s << "pixel located at x,y = " << obj.x1() << ", " << obj.y1();
     }else if(obj.is_a_hot_pixel()){
-	s << "hot pixel located at x,y = " << obj.x1() << ", " << obj.y1();
+    s << "hot pixel located at x,y = " << obj.x1() << ", " << obj.y1();
     }else{
-	s << "line extending from x,y = " << obj.x1() << ", " << obj.y1() 
-	  << " to x,y = " << obj.x2() << ", " << obj.y2();
+    s << "line extending from x,y = " << obj.x1() << ", " << obj.y1()
+      << " to x,y = " << obj.x2() << ", " << obj.y2();
     }
     if(obj.is_a_hot_pixel()){
-	s << ", counts/sec = " << obj.how_hot();
+    s << ", counts/sec = " << obj.how_hot();
     }else if(obj.effect() == Ultracam::Defect::MODERATE){
-	s << ", severity = moderate";
+    s << ", severity = moderate";
     }else if(obj.effect() == Ultracam::Defect::DISASTER){
-	s << ", severity = disaster";
+    s << ", severity = disaster";
     }
     return s;
 }
@@ -171,19 +171,19 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
   while(s.get(ch) && ch != '=');
   if(!s || !(s >> dtype))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (1)");
-  
+
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> x1) || !s.get(ch) || !(s >> y1)) 
+  if(!s || !(s >> x1) || !s.get(ch) || !(s >> y1))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (2)");
-  
+
   if(dtype == "line"){
       while(s.get(ch) && ch != '=');
-      if(!s || !(s >> x2) || !s.get(ch) || !(s >> y2)) 
-	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3)");
+      if(!s || !(s >> x2) || !s.get(ch) || !(s >> y2))
+      throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3)");
   }else if(dtype == "hot"){
       while(s.get(ch) && ch != '=');
-      if(!s || !(s >> cps)) 
-	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3.5)");
+      if(!s || !(s >> cps))
+      throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (3.5)");
   }else if(dtype != "pixel"){
       throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (4)");
   }
@@ -195,17 +195,17 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Defect& obj){
       while(s.get(ch) && ch != '=');
 
       if(!s || !(s >> stype))
-	  throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (5)");
+      throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Defect::operator>> (5)");
       if(stype == "moderate"){
-	  obj.severity_ = Ultracam::Defect::MODERATE;
+      obj.severity_ = Ultracam::Defect::MODERATE;
       }else if(stype == "disaster"){
-	  obj.severity_ = Ultracam::Defect::DISASTER;
+      obj.severity_ = Ultracam::Defect::DISASTER;
       }else{
-	  throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (6)");
+      throw Ultracam::Ultracam_Error("Invalid input into Aperture::operator>> (6)");
       }
       obj.cps_ = -1;
   }
-  
+
   obj.x1_ = x1;
   obj.y1_ = y1;
   if(dtype == "line"){

@@ -13,7 +13,7 @@
 !!class  Information
 !!head1  uinfo - prints information on an Ultracam frame
 
-!!emph{uinfo} prints information on an Ultracam file. 
+!!emph{uinfo} prints information on an Ultracam file.
 
 !!head2 Invocation
 
@@ -43,41 +43,41 @@ level=3: basic info, stats plus full print out of data.}
 int main(int argc, char* argv[]){
 
     try{
-	
-	// Construct Input object
-	Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
-	
-	// Define inputs
-	input.sign_in("data",     Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("level",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
-	
-	std::string sdata;
-	input.get_value("data", sdata, "run001", "data file");
-	
-	Ultracam::Frame data(sdata);
-	int level;
-	input.get_value("level", level, 2, 1, 3, "information level");
-	Ultracam::Windata::set_print_level(level);
-	
-	std::cout << std::endl;
-	std::cout << "Name of file = " << sdata << "\n" << std::endl;
-	std::cout << data;
+
+    // Construct Input object
+    Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
+
+    // Define inputs
+    input.sign_in("data",     Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("level",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
+
+    std::string sdata;
+    input.get_value("data", sdata, "run001", "data file");
+
+    Ultracam::Frame data(sdata);
+    int level;
+    input.get_value("level", level, 2, 1, 3, "information level");
+    Ultracam::Windata::set_print_level(level);
+
+    std::cout << std::endl;
+    std::cout << "Name of file = " << sdata << "\n" << std::endl;
+    std::cout << data;
     }
-    
+
     catch(const Ultracam::Input_Error& err){
-	std::cerr << "Ultracam::Input_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Input_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Ultracam::Ultracam_Error& err){
-	std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Ultracam::Ultracam_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const Subs::Subs_Error& err){
-	std::cerr << "Subs::Subs_Error exception:" << std::endl;
-	std::cerr << err << std::endl;
+    std::cerr << "Subs::Subs_Error exception:" << std::endl;
+    std::cerr << err << std::endl;
     }
     catch(const std::string& err){
-	std::cerr << err << std::endl;
-    }    
+    std::cerr << err << std::endl;
+    }
 }
 

@@ -73,12 +73,12 @@ int main(int argc, char* argv[]){
     std::vector<std::string> slist;
     bool flist = true;
     if(Ultracam::Frame::is_ultracam(sinput)){
-	slist.push_back(sinput);
-	flist = false;
+    slist.push_back(sinput);
+    flist = false;
     }else{
       std::ifstream istr(sinput.c_str());
       while(istr >> sinput){
-	slist.push_back(sinput);
+    slist.push_back(sinput);
       }
       istr.close();
       if(slist.size() == 0) throw Ultracam::Input_Error("No file names loaded");
@@ -98,72 +98,72 @@ int main(int argc, char* argv[]){
     for(size_t nfile=0; nfile<slist.size(); nfile++){
       Ultracam::Frame indata(slist[nfile]);
       Ultracam::Frame outdata(indata.size());
-      
+
       // Copy over headers
       (Subs::Header&)outdata = (Subs::Header&)indata;
-      
+
       // Derive pixel limits of single window.
       int llx, lly, urx, ury, nxtot, nytot;
       int xbin, ybin, nx, ny;
-      
+
       for(size_t nc=0; nc<indata.size(); nc++){
-	
-	// Following are assumed to be the same for each window
-	xbin  = indata[nc][0].xbin();
-	ybin  = indata[nc][0].ybin();
-	nxtot = indata[nc][0].nxtot();
-	nytot = indata[nc][0].nytot();
-	
-	// Next ones must be taken as maximum and minimum, where appropriate
-	llx   = indata[nc][0].llx();
-	lly   = indata[nc][0].lly();
-	urx   = llx + xbin*indata[nc][0].nx();
-	ury   = lly + ybin*indata[nc][0].ny();
-	
-	for(size_t nw=1; nw<indata[nc].size(); nw++){
-	  if(indata[nc][nw].xbin()  != xbin  ||
-	     indata[nc][nw].ybin()  != ybin  ||
-	     indata[nc][nw].nxtot() != nxtot ||
-	     indata[nc][nw].nytot() != nytot)
-	    throw Ultracam::Ultracam_Error("Mis-matching binning factors or CCD size");
-	  
-	  if((llx - indata[nc][nw].llx()) % xbin != 0 ||
-	     (lly - indata[nc][nw].lly()) % ybin != 0)
-	    throw Ultracam::Ultracam_Error("Mis-matching window locations");
-	  
-	  llx = std::min( llx, indata[nc][nw].llx());
-	  lly = std::min( lly, indata[nc][nw].lly());
-	  urx = std::max( urx, indata[nc][nw].llx() + xbin*indata[nc][nw].nx());
-	  ury = std::max( ury, indata[nc][nw].lly() + ybin*indata[nc][nw].ny());
-	}
 
-	nx = (urx - llx)/xbin;
-	ny = (ury - lly)/ybin;
+    // Following are assumed to be the same for each window
+    xbin  = indata[nc][0].xbin();
+    ybin  = indata[nc][0].ybin();
+    nxtot = indata[nc][0].nxtot();
+    nytot = indata[nc][0].nytot();
 
-	// Construct single window
-	outdata[nc].push_back(Ultracam::Windata(llx,lly,nx,ny,xbin,ybin,nxtot,nytot));
+    // Next ones must be taken as maximum and minimum, where appropriate
+    llx   = indata[nc][0].llx();
+    lly   = indata[nc][0].lly();
+    urx   = llx + xbin*indata[nc][0].nx();
+    ury   = lly + ybin*indata[nc][0].ny();
 
-	// Initialise to nvalue
-	outdata[nc][0] = nvalue;
+    for(size_t nw=1; nw<indata[nc].size(); nw++){
+      if(indata[nc][nw].xbin()  != xbin  ||
+         indata[nc][nw].ybin()  != ybin  ||
+         indata[nc][nw].nxtot() != nxtot ||
+         indata[nc][nw].nytot() != nytot)
+        throw Ultracam::Ultracam_Error("Mis-matching binning factors or CCD size");
 
-	// Now set exposed regions
-	for(size_t nw=0; nw<indata[nc].size(); nw++){
-	  int yoff = (indata[nc][nw].lly() - lly)/ybin;
-	  for(int iy=0; iy<indata[nc][nw].ny(); iy++, yoff++){
-	    int xoff = (indata[nc][nw].llx() - llx)/xbin;
-	    for(int ix=0; ix<indata[nc][nw].nx(); ix++, xoff++){
-	      outdata[nc][0][yoff][xoff] = indata[nc][nw][iy][ix];
-	    }
-	  }
-	}
+      if((llx - indata[nc][nw].llx()) % xbin != 0 ||
+         (lly - indata[nc][nw].lly()) % ybin != 0)
+        throw Ultracam::Ultracam_Error("Mis-matching window locations");
+
+      llx = std::min( llx, indata[nc][nw].llx());
+      lly = std::min( lly, indata[nc][nw].lly());
+      urx = std::max( urx, indata[nc][nw].llx() + xbin*indata[nc][nw].nx());
+      ury = std::max( ury, indata[nc][nw].lly() + ybin*indata[nc][nw].ny());
+    }
+
+    nx = (urx - llx)/xbin;
+    ny = (ury - lly)/ybin;
+
+    // Construct single window
+    outdata[nc].push_back(Ultracam::Windata(llx,lly,nx,ny,xbin,ybin,nxtot,nytot));
+
+    // Initialise to nvalue
+    outdata[nc][0] = nvalue;
+
+    // Now set exposed regions
+    for(size_t nw=0; nw<indata[nc].size(); nw++){
+      int yoff = (indata[nc][nw].lly() - lly)/ybin;
+      for(int iy=0; iy<indata[nc][nw].ny(); iy++, yoff++){
+        int xoff = (indata[nc][nw].llx() - llx)/xbin;
+        for(int ix=0; ix<indata[nc][nw].nx(); ix++, xoff++){
+          outdata[nc][0][yoff][xoff] = indata[nc][nw][iy][ix];
+        }
       }
-      
+    }
+      }
+
       // Write out result
       if(flist)
-	outdata.write(slist[nfile]);
+    outdata.write(slist[nfile]);
       else
-	outdata.write(output);
-      
+    outdata.write(output);
+
     }
   }
 

@@ -4,16 +4,16 @@
 !!title   lists pixels of an Ultracam frame
 !!author  T.R. Marsh
 !!created 29 June 2004
-!!descr   Lists pixels with a specified range of values 
+!!descr   Lists pixels with a specified range of values
 !!css   style.css
 !!root    list
 !!index   list
 !!class   Programs
 !!class   Arithematic
-!!head1   list - lists pixels with a specified range of values 
+!!head1   list - lists pixels with a specified range of values
 
 !!emph{list} lists all pixels within a specific range of values of a given CCD from
-an ULTRACAM frame. This is meant to be an aid in finding bad pixels. Output from this can be 
+an ULTRACAM frame. This is meant to be an aid in finding bad pixels. Output from this can be
 edited into defect files. The pixel values are listed along with their position on the CCD
 and their position within the window.
 
@@ -78,12 +78,12 @@ int main(int argc, char* argv[]){
     for(size_t iw=0; iw<frame[nccd].size(); iw++){
       const Ultracam::Windata &dwin = frame[nccd][iw];
       for(int iy=0; iy<dwin.ny(); iy++){
-	for(int ix=0; ix<dwin.nx(); ix++){
-	  if(dwin[iy][ix] >= vmin && dwin[iy][ix] <= vmax)
-	    std::cout << "Window " << iw+1 << ", pixel (" << ix << "," << iy 
-		 << "), value = " << dwin[iy][ix] << ", position on CCD = " 
-		 << dwin.xccd(ix) << ", " << dwin.yccd(iy) << std::endl;
-	}
+    for(int ix=0; ix<dwin.nx(); ix++){
+      if(dwin[iy][ix] >= vmin && dwin[iy][ix] <= vmax)
+        std::cout << "Window " << iw+1 << ", pixel (" << ix << "," << iy
+         << "), value = " << dwin[iy][ix] << ", position on CCD = "
+         << dwin.xccd(ix) << ", " << dwin.yccd(iy) << std::endl;
+    }
       }
     }
   }

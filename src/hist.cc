@@ -97,10 +97,10 @@ int main(int argc, char* argv[]){
     std::vector<std::string> flist;
     if(Ultracam::Frame::is_ultracam(name)){
       flist.push_back(name);
-    }else{      
+    }else{
       std::ifstream istr(name.c_str());
       while(istr >> name){
-	flist.push_back(name);
+    flist.push_back(name);
       }
       istr.close();
       if(flist.size() == 0) throw Ultracam::Ultracam_Error("No file names loaded");
@@ -113,14 +113,14 @@ int main(int argc, char* argv[]){
     input.get_value("window", swindow, "window", "window over which histogram will be computed");
     Ultracam::Mwindow mwindow;
     if(swindow == "ALL"){
-	mwindow.resize(data.size());
-	for(size_t nccd=0; nccd<data.size(); nccd++)
-	    for(size_t nwin=0; nwin<data[nccd].size(); nwin++)
-		mwindow[nccd].push_back(data[nccd][nwin]);
+    mwindow.resize(data.size());
+    for(size_t nccd=0; nccd<data.size(); nccd++)
+        for(size_t nwin=0; nwin<data[nccd].size(); nwin++)
+        mwindow[nccd].push_back(data[nccd][nwin]);
     }else{
-	mwindow.rasc(swindow);
-	if(data.size() != mwindow.size())
-	    throw Ultracam::Input_Error("Data frame and window files have differing numbers of CCDs");
+    mwindow.rasc(swindow);
+    if(data.size() != mwindow.size())
+        throw Ultracam::Input_Error("Data frame and window files have differing numbers of CCDs");
     }
 
     int nccd;
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]){
     bool first = true;
     int ind;
     for(size_t ifile=0; ifile<flist.size(); ifile++){
-	
+
       // Read data
       Ultracam::Frame frame(flist[ifile]);
       std::cout << "Read file = " <<  flist[ifile] << std::endl;
@@ -164,21 +164,21 @@ int main(int argc, char* argv[]){
       if(!buff.size()) throw Ultracam::Input_Error("No data in overlap region, file = " + flist[ifile]);
 
       if(first){
-	if(x1 == x2){
-	  x1 = buff.min();
-	  x2 = buff.max();
-	  input.set_default("x1", x1);
-	  input.set_default("x2", x2);
-	}
-	for(size_t i=0; i<nhist; i++)
-	  xval[i] = x1 + (x2-x1)*(i+0.5)/nhist;
-	first = false;
+    if(x1 == x2){
+      x1 = buff.min();
+      x2 = buff.max();
+      input.set_default("x1", x1);
+      input.set_default("x2", x2);
+    }
+    for(size_t i=0; i<nhist; i++)
+      xval[i] = x1 + (x2-x1)*(i+0.5)/nhist;
+    first = false;
       }
 
       // Add into histogram
       for(int i=0; i<buff.size(); i++){
-	ind = int(nhist*(buff[i] - x1)/(x2-x1));
-	if(ind >= 0 && ind < int(nhist)) hist[ind]++;
+    ind = int(nhist*(buff[i] - x1)/(x2-x1));
+    if(ind >= 0 && ind < int(nhist)) hist[ind]++;
       }
     }
 
@@ -187,9 +187,9 @@ int main(int argc, char* argv[]){
     if(y1 == y2){
       y1 = 0;
       if(normalise)
-	  y2 = 1.3*hist.max();
+      y2 = 1.3*hist.max();
       else
-	  y2 = 1.3*hist.max()/nfac;
+      y2 = 1.3*hist.max()/nfac;
       input.set_default("y1", y1);
       input.set_default("y2", y2);
     }
@@ -198,20 +198,20 @@ int main(int argc, char* argv[]){
       std::ofstream ofstr(dfile.c_str());
       Subs::Format form(10);
       for(size_t i=0; i<nhist; i++){
-	  if(normalise)
-	      ofstr << form(xval[i]) << " " << form(hist[i]/nfac) << " " << sqrt(float(std::max(1,hist[i])))/nfac << std::endl;
-	  else
-	      ofstr << form(xval[i]) << " " << hist[i] << " " << sqrt(float(std::max(1,hist[i]))) << std::endl;
+      if(normalise)
+          ofstr << form(xval[i]) << " " << form(hist[i]/nfac) << " " << sqrt(float(std::max(1,hist[i])))/nfac << std::endl;
+      else
+          ofstr << form(xval[i]) << " " << hist[i] << " " << sqrt(float(std::max(1,hist[i]))) << std::endl;
       }
-	
+
     }else{
 
       if(x1 == x2) throw Ultracam::Input_Error("Null x range specified");
       if(y1 == y2) throw Ultracam::Input_Error("Null y range specified");
 
       Subs::Array1D<float> phist(nhist);
-      for(size_t i=0; i<nhist; i++) 
-	  phist[i] = hist[i];
+      for(size_t i=0; i<nhist; i++)
+      phist[i] = hist[i];
 
       if(normalise) phist /= nfac;
 
@@ -221,9 +221,9 @@ int main(int argc, char* argv[]){
       cpgenv(x1,x2,y1,y2,0,0);
       cpgsci(Subs::RED);
       if(normalise)
-	  cpglab("Data value", "Number of pixels", "Histogram");
+      cpglab("Data value", "Number of pixels", "Histogram");
       else
-	  cpglab("Data value", "Probability", "PDF");
+      cpglab("Data value", "Probability", "PDF");
       cpgsci(Subs::WHITE);
       cpgbin(nhist, xval, phist, 1);
     }

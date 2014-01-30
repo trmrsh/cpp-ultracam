@@ -60,7 +60,7 @@ not found.}
 // Main program
 
 int main(int argc, char* argv[]){
-  
+
   using Ultracam::File_Open_Error;
   using Ultracam::Ultracam_Error;
   using Ultracam::Input_Error;
@@ -100,16 +100,16 @@ int main(int argc, char* argv[]){
     if(url.find("http://") == std::string::npos && source == 'S'){
       char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
       if(DEFAULT_URL != NULL){
-	url = DEFAULT_URL + url;
+    url = DEFAULT_URL + url;
       }else{
-	url = Ultracam::ULTRACAM_LOCAL_URL + url;
+    url = Ultracam::ULTRACAM_LOCAL_URL + url;
       }
     }else if(url.find("http://") == 0 && source == 'L'){
       throw Ultracam::Input_Error("Should not specify the local file as a URL");
     }
 
     // Parse the XML file
-      
+
     Ultracam::Mwindow mwindow;
     Subs::Header header;
     Ultracam::ServerData serverdata;
@@ -126,13 +126,13 @@ int main(int argc, char* argv[]){
 
     // Determine total number of frames so far
     size_t nfile = 0;
-    
+
     if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax) && nfile > 0)
       throw Ultracam_Error("failed to determine the number of frames.");
 
     if(nfile == 0)
       throw Ultracam_Error("no complete frames were found.");
-    
+
     size_t numfiles = nfile;
 
     Subs::Time first_time, last_time;
@@ -144,19 +144,19 @@ int main(int argc, char* argv[]){
       // Read enough frames to get a good time at start
       size_t nwins = int((1033./serverdata.window[0].ny/serverdata.ybin+1.)/2.);
       if(nwins >= numfiles)
-	throw Ultracam_Error(name + std::string(": drift mode with no good data!"));
-			     
+    throw Ultracam_Error(name + std::string(": drift mode with no good data!"));
+
       for(size_t nf=1; nf<=nwins; nf++)
-	if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
-	  throw Ultracam_Error(name + std::string(": failed to read first good frame of drift mode."));
+    if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
+      throw Ultracam_Error(name + std::string(": failed to read first good frame of drift mode."));
 
       first_time  = data["UT_date"]->get_time();
       exposure    = data["Exposure"]->get_float();
-      
+
       // Read enough frames to get a good time at end
       for(size_t nf=nfile-nwins; nf<=numfiles; nf++)
-	if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
-	  throw Ultracam_Error(name + std::string(": failed to read last file (1)."));
+    if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
+      throw Ultracam_Error(name + std::string(": failed to read last file (1)."));
 
       last_time  = data["UT_date"]->get_time();
       numfiles -= nwins;
@@ -166,51 +166,51 @@ int main(int argc, char* argv[]){
 
       // Read first frame time
       if(nfile > 1){
-	nfile = 1;
-	if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax))
-	  throw Ultracam_Error(name + std::string(": no OK data found (1)"));
+    nfile = 1;
+    if(!Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax))
+      throw Ultracam_Error(name + std::string(": no OK data found (1)"));
       }
 
       first_time  = data["UT_date"]->get_time();
-      
+
       if(numfiles > 2){
-	
-	// Read frames 2 and 3 to get a good exposure
-	for(size_t nf=2; nf<=3; nf++)
-	  if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
-	    throw Ultracam_Error(name + std::string(": no OK data found (2)"));
-	
-	exposure    = data["Exposure"]->get_float();
-	
-	// Read last two frames to get a good time at end
-	for(size_t nf=numfiles-1; nf<=numfiles; nf++)
-	  if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
-	    throw Ultracam_Error(name + std::string(": failed to read last file (2)."));
-	
-	last_time  = data["UT_date"]->get_time();
-	
-	single = false;
-	
+
+    // Read frames 2 and 3 to get a good exposure
+    for(size_t nf=2; nf<=3; nf++)
+      if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
+        throw Ultracam_Error(name + std::string(": no OK data found (2)"));
+
+    exposure    = data["Exposure"]->get_float();
+
+    // Read last two frames to get a good time at end
+    for(size_t nf=numfiles-1; nf<=numfiles; nf++)
+      if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
+        throw Ultracam_Error(name + std::string(": failed to read last file (2)."));
+
+    last_time  = data["UT_date"]->get_time();
+
+    single = false;
+
       }else if(numfiles == 2){
-	
-	exposure    = data["Exposure"]->get_float();
-	
-	// Read last two frames to get a good time at end
-	for(size_t nf=numfiles-1; nf<=numfiles; nf++)
-	  if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
-	    throw Ultracam_Error(name + std::string(": failed to read last file (3)."));
-	
-	last_time  = data["UT_date"]->get_time();
-	
-	single = false;
-	
+
+    exposure    = data["Exposure"]->get_float();
+
+    // Read last two frames to get a good time at end
+    for(size_t nf=numfiles-1; nf<=numfiles; nf++)
+      if(!Ultracam::get_server_frame(source, url, data, serverdata, nf, twait, tmax))
+        throw Ultracam_Error(name + std::string(": failed to read last file (3)."));
+
+    last_time  = data["UT_date"]->get_time();
+
+    single = false;
+
       }else{
-	
-	exposure    = data["Exposure"]->get_float();
-	
+
+    exposure    = data["Exposure"]->get_float();
+
       }
     }
-    
+
     std::cout << std::setw(6) << numfiles;
     std::cout.setf(std::ios::fixed, std::ios::floatfield);
     if(single){
@@ -221,9 +221,9 @@ int main(int argc, char* argv[]){
     std::cout << "  " << data[0][0].xbin() << " " << data[0][0].ybin();
     std::cout << "  " << data[0].size() << " ";
     for(size_t io=0; io<data[0].size(); io++)
-      std::cout << " [" 
-	   << data[0][io].llx() << "," << data[0][io].lly() << ","
-	   << data[0][io].nx() << "," << data[0][io].ny() << "]";
+      std::cout << " ["
+       << data[0][io].llx() << "," << data[0][io].lly() << ","
+       << data[0][io].nx() << "," << data[0][io].ny() << "]";
     std::cout << std::endl;
   }
 

@@ -22,7 +22,7 @@ server file name + "_001" etc. The server must be running for this program
 to get data from the server of course. You may experience problems defining the directory path.
 It is helpful to look at the messages the server produces to see where it
 is trying to find the files in this case.  Note that !!emph{grab} will skip
-over junk data in the case of drift mode, so your first file might be number 
+over junk data in the case of drift mode, so your first file might be number
 5 say even though you asked for number 1.
 
 Very often one ctrl-C's !!emph{grab} to exit it. This may well lead to the last file being
@@ -30,13 +30,13 @@ corrupted. This is especially the case if it is not listed as having been writte
 to disk and yet exists. You need to make sure that such files do not creep into file lists
 for using !!ref{combin.html}{combine} or whatever.
 
-Note that you should use !!emph{grab} for bias subtraction when making darks because it stores the 
+Note that you should use !!emph{grab} for bias subtraction when making darks because it stores the
 exposure time of the bias frame in the result which is needed for bias subtraction.
 
 !!head2 Invocation
 
 grab [source] (url)/(file) ndigit first (last) trim [(ncol nrow) twait tmax] skip
-bias (biasframe) bregion (biasregion brsigma) (threshold (photon) naccum) 
+bias (biasframe) bregion (biasregion brsigma) (threshold (photon) naccum)
 
 !!head2 Arguments
 
@@ -50,8 +50,8 @@ or just the file part in which case the program will try to find a default part 
 add from the environment variable ULTRACAM_DEFAULT_URL. Failing this it will add
 http://127.0.0.1:8007/, i.e. the local host. If source='L', this should just be a plain file name.}
 
-!!arg{ndigit}{The minimum number of digits to use on output to tack on the frame number. If ndigit=0, then 
-just enough will be used for each frame, however specifying a number > 0 has the advantage that it is 
+!!arg{ndigit}{The minimum number of digits to use on output to tack on the frame number. If ndigit=0, then
+just enough will be used for each frame, however specifying a number > 0 has the advantage that it is
 then much easier to get a listing of the files in temporal order since this is also alphabetical.
 e.g. you will end up with files of the form run0012_001, run0012_002, etc if you set ndigit=3.}
 
@@ -66,7 +66,7 @@ should be >= first}
 !!arg{ncol}{If trim, then this specifies the number of columns nearest the readouts of each window to be snipped
 off as these can be corrupted.}
 
-!!arg{nrow}{If trim, then this specifies the number of rows to snip off the bottom of each window as these 
+!!arg{nrow}{If trim, then this specifies the number of rows to snip off the bottom of each window as these
 can be corrupted.}
 
 !!arg{twait}{Time to wait between attempts to find a new exposure (seconds).}
@@ -76,14 +76,14 @@ not found.}
 
 !!arg{skip}{true to skip junk data at start of drift mode runs}
 
-!!arg{bias}{true/false according to whether you want to subtract a bias frame. You can specify a full-frame 
+!!arg{bias}{true/false according to whether you want to subtract a bias frame. You can specify a full-frame
 bias because it will be cropped to match whatever your format is. This is useful for ultracam because of
 the different bias levels of the 6 readouts. The exposure time of the bias will be inserted into the headers
 of the output frames as it is needed for later dark subtraction.}
 
 !!arg{biasframe}{If bias, then you need to specify the name of the bias frame.}
 
-!!arg{bregion}{true/false depending on whether you want to subtract a 
+!!arg{bregion}{true/false depending on whether you want to subtract a
 constant determined from a pre-defined region of the frame (e.g.
 under- or over-scan) to account for drifting bias levels.}
 
@@ -91,7 +91,7 @@ under- or over-scan) to account for drifting bias levels.}
 
 !!arg{brsigma}{the rejection threshold in terms of RMS for kicking out cosmic rays.}
 
-!!arg{threshold}{If you are applying a bias to ULTRASPEC L3CCD data, you have the option of 
+!!arg{threshold}{If you are applying a bias to ULTRASPEC L3CCD data, you have the option of
 converting to photon counts (0 or 1 whether above or below a certain threshold).}
 
 !!arg{photon}{The threshold level if threshold = true}
@@ -121,287 +121,287 @@ accumulating at the end, they will be written out even if they have not reach 'n
 // Main program
 
 int main(int argc, char* argv[]){
-  
+
     using Ultracam::File_Open_Error;
     using Ultracam::Ultracam_Error;
     using Ultracam::Input_Error;
 
     try{
 
-	// Construct Input object
-	Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
+    // Construct Input object
+    Subs::Input input(argc, argv, Ultracam::ULTRACAM_ENV, Ultracam::ULTRACAM_DIR);
 
-	// Sign-in input variables
-	input.sign_in("source",    Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
-	input.sign_in("url",       Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("file",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("ndigit",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
-	input.sign_in("first",     Subs::Input::LOCAL,  Subs::Input::PROMPT);
-	input.sign_in("last",      Subs::Input::LOCAL,  Subs::Input::PROMPT);
-	input.sign_in("trim",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("ncol",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
-	input.sign_in("nrow",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
-	input.sign_in("twait",     Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
-	input.sign_in("tmax",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
-	input.sign_in("skip",      Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
-	input.sign_in("bias",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("biasframe", Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("bregion",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("biasregion",Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("brsigma",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("threshold", Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("photon",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
-	input.sign_in("naccum",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    // Sign-in input variables
+    input.sign_in("source",    Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
+    input.sign_in("url",       Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("file",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("ndigit",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
+    input.sign_in("first",     Subs::Input::LOCAL,  Subs::Input::PROMPT);
+    input.sign_in("last",      Subs::Input::LOCAL,  Subs::Input::PROMPT);
+    input.sign_in("trim",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("ncol",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
+    input.sign_in("nrow",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
+    input.sign_in("twait",     Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
+    input.sign_in("tmax",      Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
+    input.sign_in("skip",      Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
+    input.sign_in("bias",      Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("biasframe", Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("bregion",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("biasregion",Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("brsigma",   Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("threshold", Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("photon",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
+    input.sign_in("naccum",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
 
-	// Get inputs
-	char source;
-	input.get_value("source", source, 'S', "sSlL", "data source: L(ocal) or S(erver)?");
-	source = toupper(source);
-	std::string url;
-	if(source == 'S'){
-	    input.get_value("url", url, "url", "url of file");
-	}else{
-	    input.get_value("file", url, "file", "name of local file");
-	}
-	int ndigit;
-	input.get_value("ndigit", ndigit, 0, 0, 20, "number of digits in file numbers");
-	int first;
-	input.get_value("first", first, 1, INT_MIN, INT_MAX, "first file to access");
-	int last;
-	if(first > 0){
-	    input.get_value("last", last, 0, 0, INT_MAX, "last file to access (0 for all)");
-	    if(last != 0 && last < first)
-		throw Ultracam_Error("Last file must either be 0 or >= first");
-	}
-	bool trim;
-	input.get_value("trim", trim, true, "trim junk lower rows from windows?");
-	int ncol, nrow;
-	if(trim){
-	    input.get_value("ncol", ncol, 0, 0, 100, "number of columns to trim from each window");
-	    input.get_value("nrow", nrow, 0, 0, 100, "number of rows to trim from each window");
-	}
-	double twait;
-	input.get_value("twait", twait, 1., 0., 1000., "time to wait between attempts to find a frame (seconds)");
-	double tmax;
-	input.get_value("tmax", tmax, 2., 0., 100000., "maximum time to wait before giving up trying to find a frame (seconds)");
-	bool skip;
-	input.get_value("skip", skip, true, "skip junk data at start of drift mode runs?");
+    // Get inputs
+    char source;
+    input.get_value("source", source, 'S', "sSlL", "data source: L(ocal) or S(erver)?");
+    source = toupper(source);
+    std::string url;
+    if(source == 'S'){
+        input.get_value("url", url, "url", "url of file");
+    }else{
+        input.get_value("file", url, "file", "name of local file");
+    }
+    int ndigit;
+    input.get_value("ndigit", ndigit, 0, 0, 20, "number of digits in file numbers");
+    int first;
+    input.get_value("first", first, 1, INT_MIN, INT_MAX, "first file to access");
+    int last;
+    if(first > 0){
+        input.get_value("last", last, 0, 0, INT_MAX, "last file to access (0 for all)");
+        if(last != 0 && last < first)
+        throw Ultracam_Error("Last file must either be 0 or >= first");
+    }
+    bool trim;
+    input.get_value("trim", trim, true, "trim junk lower rows from windows?");
+    int ncol, nrow;
+    if(trim){
+        input.get_value("ncol", ncol, 0, 0, 100, "number of columns to trim from each window");
+        input.get_value("nrow", nrow, 0, 0, 100, "number of rows to trim from each window");
+    }
+    double twait;
+    input.get_value("twait", twait, 1., 0., 1000., "time to wait between attempts to find a frame (seconds)");
+    double tmax;
+    input.get_value("tmax", tmax, 2., 0., 100000., "maximum time to wait before giving up trying to find a frame (seconds)");
+    bool skip;
+    input.get_value("skip", skip, true, "skip junk data at start of drift mode runs?");
 
-	std::cout << "Attempting to access " << url << "\n" << std::endl;
+    std::cout << "Attempting to access " << url << "\n" << std::endl;
 
-	// Add extra stuff to URL if need be.
+    // Add extra stuff to URL if need be.
 
-	if(url.find("http://") == std::string::npos && source == 'S'){
-	    char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
-	    if(DEFAULT_URL != NULL){
-		url = DEFAULT_URL + url;
-	    }else{
-		url = Ultracam::ULTRACAM_LOCAL_URL + url;
-	    }
-	}else if(url.find("http://") == 0 && source == 'L'){
-	    throw Ultracam::Input_Error("Should not specify the local file as a URL");
-	}
+    if(url.find("http://") == std::string::npos && source == 'S'){
+        char *DEFAULT_URL = getenv(Ultracam::ULTRACAM_DEFAULT_URL);
+        if(DEFAULT_URL != NULL){
+        url = DEFAULT_URL + url;
+        }else{
+        url = Ultracam::ULTRACAM_LOCAL_URL + url;
+        }
+    }else if(url.find("http://") == 0 && source == 'L'){
+        throw Ultracam::Input_Error("Should not specify the local file as a URL");
+    }
 
-	// Parse the XML file      
-	Ultracam::Mwindow mwindow;
-	Subs::Header header;
-	Ultracam::ServerData serverdata;
-	parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
+    // Parse the XML file
+    Ultracam::Mwindow mwindow;
+    Subs::Header header;
+    Ultracam::ServerData serverdata;
+    parseXML(source, url, mwindow, header, serverdata, trim, ncol, nrow, twait, tmax);
 
-	Ultracam::Frame data(mwindow, header);
+    Ultracam::Frame data(mwindow, header);
 
-	Subs::Header::Hnode *hnode = data.find("Instrument.instrument");
-	bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC"); 
+    Subs::Header::Hnode *hnode = data.find("Instrument.instrument");
+    bool ultraspec = (hnode->has_data() && hnode->value->get_string() == "ULTRASPEC");
 
-	bool bias, thresh = false, bregion = false;
-	float photon, sigmareject;
-	std::string sbiasregion;
-	Ultracam::Frame bias_frame;
-	Ultracam::Mwindow biasregion;
+    bool bias, thresh = false, bregion = false;
+    float photon, sigmareject;
+    std::string sbiasregion;
+    Ultracam::Frame bias_frame;
+    Ultracam::Mwindow biasregion;
 
-	// bias region ?
-	input.get_value("bregion", bregion, true, "do you want to use a bias region?");
-	if(bregion){
-	    input.get_value("biasregion", sbiasregion, "region", "name of bias region window file");
-	    // read in ultracam compatible window file for bias region (use setwin to generate)
-	    biasregion.rasc(sbiasregion);
+    // bias region ?
+    input.get_value("bregion", bregion, true, "do you want to use a bias region?");
+    if(bregion){
+        input.get_value("biasregion", sbiasregion, "region", "name of bias region window file");
+        // read in ultracam compatible window file for bias region (use setwin to generate)
+        biasregion.rasc(sbiasregion);
 
-	    // check number of ccds match
-	    if(data.size() != biasregion.size())
-		throw Ultracam::Input_Error("Data frame and bias region window files have differing numbers of CCDs");
+        // check number of ccds match
+        if(data.size() != biasregion.size())
+        throw Ultracam::Input_Error("Data frame and bias region window files have differing numbers of CCDs");
 
-	    input.get_value("brsigma", sigmareject, 3.f, FLT_MIN, FLT_MAX, "sigma threshold for rejection in bias region");
-	}
-	input.get_value("bias", bias, true, "do you want to subtract a bias frame from the grabbed data?");
-	if(bias){
-	    std::string sbias;
-	    input.get_value("biasframe", sbias, "bias", "name of bias frame");
-	    bias_frame.read(sbias);
-	    bias_frame.crop(mwindow);
-	
-	    // We need to record this in the frame for potential dark subtraction
-	    float bias_expose = bias_frame["Exposure"]->get_float();
-	    data.set("Bias_exposure", new Subs::Hfloat(bias_expose, "Exposure time of bias subtracted from this frame"));
+        input.get_value("brsigma", sigmareject, 3.f, FLT_MIN, FLT_MAX, "sigma threshold for rejection in bias region");
+    }
+    input.get_value("bias", bias, true, "do you want to subtract a bias frame from the grabbed data?");
+    if(bias){
+        std::string sbias;
+        input.get_value("biasframe", sbias, "bias", "name of bias frame");
+        bias_frame.read(sbias);
+        bias_frame.crop(mwindow);
 
-	    if(ultraspec){ 
-		input.get_value("threshold", thresh, true, "do you want to threshold to get 0 or 1 photons/pix?");
-		if(thresh)
-		    input.get_value("photon", photon, 50.f, FLT_MIN, FLT_MAX, "threshold level to count as 1 photon");
-	    }
-	}
-    
-	int naccum = 1;
-	if(ultraspec) 
-	    input.get_value("naccum", naccum, 1, 1, 10000, "number of frames to accumulate before writing");
+        // We need to record this in the frame for potential dark subtraction
+        float bias_expose = bias_frame["Exposure"]->get_float();
+        data.set("Bias_exposure", new Subs::Hfloat(bias_expose, "Exposure time of bias subtracted from this frame"));
 
-	input.save();
+        if(ultraspec){
+        input.get_value("threshold", thresh, true, "do you want to threshold to get 0 or 1 photons/pix?");
+        if(thresh)
+            input.get_value("photon", photon, 50.f, FLT_MIN, FLT_MAX, "threshold level to count as 1 photon");
+        }
+    }
 
-	std::string::size_type n = url.find_last_of('/');
-	std::string server_file, out_file;
-	if(n != std::string::npos){
-	    server_file = url.substr(n+1);
-	}else{
-	    server_file = url;
-	}
-	size_t nfile = first < 0 ? -first : first;
-	Subs::Format form(6);
+    int naccum = 1;
+    if(ultraspec)
+        input.get_value("naccum", naccum, 1, 1, 10000, "number of frames to accumulate before writing");
 
-	// Data buffer if naccum > 1 
-	Ultracam::Frame dbuffer;
-	int nstack = 0;
-	double ttime = 0.;
+    input.save();
 
-	for(;;){
+    std::string::size_type n = url.find_last_of('/');
+    std::string server_file, out_file;
+    if(n != std::string::npos){
+        server_file = url.substr(n+1);
+    }else{
+        server_file = url;
+    }
+    size_t nfile = first < 0 ? -first : first;
+    Subs::Format form(6);
 
-	    // Carry on reading until data are OK
-	    bool get_ok;
-	    for(;;){
-		if(!(get_ok = Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax))) break;
-		if(serverdata.is_junk(nfile)){
-		    if(skip){
-			std::cerr << "Skipping file " << nfile << " which has junk data" << std::endl;
-			nfile++;
-		    }else{
-			std::cerr << "File " << nfile << " has junk data but will still be written to disk" << std::endl;
-			break;
-		    }
-		}else{
-		    break;
-		}
-	    }
-	    if(!get_ok) break;
+    // Data buffer if naccum > 1
+    Ultracam::Frame dbuffer;
+    int nstack = 0;
+    double ttime = 0.;
 
-	    // Subtract a bias frame
-	    if(bias) data -= bias_frame;
+    for(;;){
 
-	    // apply bias region here
-	    if (bregion){
-		for(size_t nccd=0; nccd<data.size(); nccd++){
-		    Ultracam::Image::Stats stats = data[nccd].statistics(biasregion[nccd],sigmareject,false,true);
-		    std::cout << "Bias region clipped mean +/- rms = " << stats.clipped_mean << "+/-" << stats.clipped_rms << std::endl;
-		    // subtract clipped mean from each ccd
-		    data[nccd] -= stats.clipped_mean;
-		}
-	    }
+        // Carry on reading until data are OK
+        bool get_ok;
+        for(;;){
+        if(!(get_ok = Ultracam::get_server_frame(source, url, data, serverdata, nfile, twait, tmax))) break;
+        if(serverdata.is_junk(nfile)){
+            if(skip){
+            std::cerr << "Skipping file " << nfile << " which has junk data" << std::endl;
+            nfile++;
+            }else{
+            std::cerr << "File " << nfile << " has junk data but will still be written to disk" << std::endl;
+            break;
+            }
+        }else{
+            break;
+        }
+        }
+        if(!get_ok) break;
 
-	    // Apply threshold
-	    if(thresh) data.step(photon);
+        // Subtract a bias frame
+        if(bias) data -= bias_frame;
 
-	    nstack++;
-	    if(nstack < naccum){
-		if(nstack == 1){
-		    dbuffer = data;
-		    ttime   = 0.;
-		    std::cout << std::endl;
-		}else{
-		    dbuffer += data;
-		}
-		ttime   += data["UT_date"]->get_double();
-		std::cout << " Frame " << nstack << " of " << naccum << ", time = " << data["UT_date"]->get_time()  
-			  << " added into data buffer." << std::endl;
+        // apply bias region here
+        if (bregion){
+        for(size_t nccd=0; nccd<data.size(); nccd++){
+            Ultracam::Image::Stats stats = data[nccd].statistics(biasregion[nccd],sigmareject,false,true);
+            std::cout << "Bias region clipped mean +/- rms = " << stats.clipped_mean << "+/-" << stats.clipped_rms << std::endl;
+            // subtract clipped mean from each ccd
+            data[nccd] -= stats.clipped_mean;
+        }
+        }
 
-	    }else{
+        // Apply threshold
+        if(thresh) data.step(photon);
 
-		// Retrieve from the data buffer if necessary
-		if(naccum > 1) {
-		    ttime  += data["UT_date"]->get_double();
-		    data   += dbuffer;
-		    std::cout << " Frame " << nstack << " of " << naccum << ", time = " << data["UT_date"]->get_time()  
-			      << " added into data buffer." << std::endl;
-		    ttime  /= nstack;
-		    data.set("UT_date", new Subs::Htime(Subs::Time(ttime), "mean UT date and time at the centre of accumulated exposure"));
-		    nstack  = 0;
-		    std::cout << std::endl;
-		}
+        nstack++;
+        if(nstack < naccum){
+        if(nstack == 1){
+            dbuffer = data;
+            ttime   = 0.;
+            std::cout << std::endl;
+        }else{
+            dbuffer += data;
+        }
+        ttime   += data["UT_date"]->get_double();
+        std::cout << " Frame " << nstack << " of " << naccum << ", time = " << data["UT_date"]->get_time()
+              << " added into data buffer." << std::endl;
 
-		if(bias || bregion || naccum > 1){
-		    data.write(server_file + "_" + Subs::str(int(nfile), ndigit));
-		}else{
-		    // Write it out in RAW format to save space.
-		    data.write(server_file + "_" + Subs::str(int(nfile), ndigit), Ultracam::Windata::RAW);
-		}
-	  
-		if(naccum > 1){
-		    std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", mean time = " 
-			      << data["UT_date"]->get_time() << ", exposure time = "  << form(data["Exposure"]->get_float()) 
-			      << " secs to disk." << std::endl;
-		}else{
-		    std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", time = " 
-			      << data["UT_date"]->get_time() << ", exposure time = "  << form(data["Exposure"]->get_float()) 
-			      << " secs to disk." << std::endl;
-		}
+        }else{
 
-	    }
+        // Retrieve from the data buffer if necessary
+        if(naccum > 1) {
+            ttime  += data["UT_date"]->get_double();
+            data   += dbuffer;
+            std::cout << " Frame " << nstack << " of " << naccum << ", time = " << data["UT_date"]->get_time()
+                  << " added into data buffer." << std::endl;
+            ttime  /= nstack;
+            data.set("UT_date", new Subs::Htime(Subs::Time(ttime), "mean UT date and time at the centre of accumulated exposure"));
+            nstack  = 0;
+            std::cout << std::endl;
+        }
 
-	    if(first < 0 || (last > 0 && int(nfile) >= last)) break;
-	    nfile++;
-	}
+        if(bias || bregion || naccum > 1){
+            data.write(server_file + "_" + Subs::str(int(nfile), ndigit));
+        }else{
+            // Write it out in RAW format to save space.
+            data.write(server_file + "_" + Subs::str(int(nfile), ndigit), Ultracam::Windata::RAW);
+        }
 
-	// Write last one out    
-	if(naccum > 1 && nstack > 0) {
-	    std::cout << "Writing sum of final " << nstack << " frames" << std::endl;
-	    ttime  /= nstack;
-	    dbuffer.set("UT_date", new Subs::Htime(Subs::Time(ttime), "mean UT date and time at the centre of accumulated exposure"));
-	    dbuffer.write(server_file + "_" + Subs::str(int(nfile), ndigit));
-	  
-	    if(naccum > 1){
-		std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", mean time = " 
-			  << dbuffer["UT_date"]->get_time() << ", exposure time = "  << form(dbuffer["Exposure"]->get_float()) 
-			  << " secs to disk." << std::endl;
-	    }else{
-		std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", time = " 
-			  << dbuffer["UT_date"]->get_time() << ", exposure time = "  << form(dbuffer["Exposure"]->get_float()) 
-			  << " secs to disk." << std::endl;
-	    }
-	}
+        if(naccum > 1){
+            std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", mean time = "
+                  << data["UT_date"]->get_time() << ", exposure time = "  << form(data["Exposure"]->get_float())
+                  << " secs to disk." << std::endl;
+        }else{
+            std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", time = "
+                  << data["UT_date"]->get_time() << ", exposure time = "  << form(data["Exposure"]->get_float())
+                  << " secs to disk." << std::endl;
+        }
+
+        }
+
+        if(first < 0 || (last > 0 && int(nfile) >= last)) break;
+        nfile++;
+    }
+
+    // Write last one out
+    if(naccum > 1 && nstack > 0) {
+        std::cout << "Writing sum of final " << nstack << " frames" << std::endl;
+        ttime  /= nstack;
+        dbuffer.set("UT_date", new Subs::Htime(Subs::Time(ttime), "mean UT date and time at the centre of accumulated exposure"));
+        dbuffer.write(server_file + "_" + Subs::str(int(nfile), ndigit));
+
+        if(naccum > 1){
+        std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", mean time = "
+              << dbuffer["UT_date"]->get_time() << ", exposure time = "  << form(dbuffer["Exposure"]->get_float())
+              << " secs to disk." << std::endl;
+        }else{
+        std::cout << "Written " << server_file + "_" + Subs::str(int(nfile), ndigit) << ", time = "
+              << dbuffer["UT_date"]->get_time() << ", exposure time = "  << form(dbuffer["Exposure"]->get_float())
+              << " secs to disk." << std::endl;
+        }
+    }
 
     }
 
     // Handle errors
 
     catch(const Input_Error& err){
-	std::cerr << "\nUltracam::Input_Error:" << std::endl;
-	std::cerr << err << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "\nUltracam::Input_Error:" << std::endl;
+    std::cerr << err << std::endl;
+    exit(EXIT_FAILURE);
     }
     catch(const File_Open_Error& err){
-	std::cerr << "\nUltracam::File_Open_error:" << std::endl;
-	std::cerr << err << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "\nUltracam::File_Open_error:" << std::endl;
+    std::cerr << err << std::endl;
+    exit(EXIT_FAILURE);
     }
     catch(const Ultracam_Error& err){
-	std::cerr << "\nUltracam::Ultracam_Error:" << std::endl;
-	std::cerr << err << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "\nUltracam::Ultracam_Error:" << std::endl;
+    std::cerr << err << std::endl;
+    exit(EXIT_FAILURE);
     }
     catch(const Subs::Subs_Error& err){
-	std::cerr << "\nSubs::Subs_Error:" << std::endl;
-	std::cerr << err << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "\nSubs::Subs_Error:" << std::endl;
+    std::cerr << err << std::endl;
+    exit(EXIT_FAILURE);
     }
     catch(const std::string& err){
-	std::cerr << "\n" << err << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "\n" << err << std::endl;
+    exit(EXIT_FAILURE);
     }
 
 }

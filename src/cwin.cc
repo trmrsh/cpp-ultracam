@@ -28,7 +28,7 @@ cwin input window output!!break
 
 !!table
 !!arg{input}{Input frame}
-!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin} 
+!!arg{window}{Multi-window file (as produced by !!ref{setwin.html}{setwin}
 for example).}
 !!arg{output}{Output, cropped frame}
 !!table
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
     input.get_value("output", output, "output", "file to dump result to");
 
     // Window
-    indata.window(window);    
+    indata.window(window);
 
     // dump to disk
     indata.write(output);

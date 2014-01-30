@@ -28,9 +28,9 @@
 !!head1   gettime - gets the start and end times of an ULTRACAM file
 
 !!emph{gettime} is a simple program to extract the start and end times from an ULTRACAM file.
-It is a simple program that makes no use of the standard ULTRACAM libraries so that it can be linked 
+It is a simple program that makes no use of the standard ULTRACAM libraries so that it can be linked
 standalone (e.g. g++ -o gettime gettime.cc) so that it can be used without requiring the full pipeline
-to be installed so that it can be used for generation of log files. This means it does not use the standard pipeline 
+to be installed so that it can be used for generation of log files. This means it does not use the standard pipeline
 input and default saving. This program can handle >2GB files but this will need g++ 3.4 series or higher.
 
 !!head2 Invocation
@@ -72,33 +72,33 @@ gettime run
 #define PCPS_UCAP_OVERRUN      0x2000  /* events interval too short */
 #define PCPS_UCAP_BUFFER_FULL  0x4000  /* events read too slow */
 
-bool timing(char* buffer, bool may2002, int format, 
-	    unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year, 
-	    int& hour, int& minute, int& second, int& millisec, int& nsatellite);
+bool timing(char* buffer, bool may2002, int format,
+        unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year,
+        int& hour, int& minute, int& second, int& millisec, int& nsatellite);
 
 int main(int argc, char* argv[]){
 
     if(argc != 2){
-	std::cerr << "usage: gettime run" << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "usage: gettime run" << std::endl;
+    exit(EXIT_FAILURE);
     }
-    
+
     // Read the XML
     std::string xml(argv[1]);
     xml += ".xml";
-    
+
     std::ifstream xin(xml.c_str(), std::ios::binary);
     if(!xin){
-	std::cerr << "Could not open open " << xml << " for reading" << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "Could not open open " << xml << " for reading" << std::endl;
+    exit(EXIT_FAILURE);
     }
-    
+
     int n = 1;
     enum Mode {
-	FULLFRAME_CLEAR,
-	FULLFRAME_NOCLEAR,
-	WINDOWS_CLEAR,
-	WINDOWS,
+    FULLFRAME_CLEAR,
+    FULLFRAME_NOCLEAR,
+    WINDOWS_CLEAR,
+    WINDOWS,
     } mode;
     std::string line;
     off_t framesize, hwords, edelay;
@@ -107,96 +107,96 @@ int main(int argc, char* argv[]){
     int format = 1;
     float time_units = 0.001;
     while(getline(xin, line)){
-	ipos = line.find("framesize");
-	if(ipos != std::string::npos){
-	    std::string sframesize = line.substr(ipos+11);
-	    ipos = sframesize.find("\"");
-	    sframesize = sframesize.substr(0,ipos);
-	    std::istringstream istr(sframesize);
-	    istr >> framesize;
-	    if(!istr){
-		std::cerr << "Failed to read the framesize so cannot find last timestamp" << std::endl;
-		exit(EXIT_FAILURE);
-	    }
-	}
-	ipos = line.find("headerwords");
-	if(ipos != std::string::npos){
-	    std::string shwords = line.substr(ipos+13);
-	    ipos = shwords.find("\"");
-	    shwords = shwords.substr(0,ipos);
+    ipos = line.find("framesize");
+    if(ipos != std::string::npos){
+        std::string sframesize = line.substr(ipos+11);
+        ipos = sframesize.find("\"");
+        sframesize = sframesize.substr(0,ipos);
+        std::istringstream istr(sframesize);
+        istr >> framesize;
+        if(!istr){
+        std::cerr << "Failed to read the framesize so cannot find last timestamp" << std::endl;
+        exit(EXIT_FAILURE);
+        }
+    }
+    ipos = line.find("headerwords");
+    if(ipos != std::string::npos){
+        std::string shwords = line.substr(ipos+13);
+        ipos = shwords.find("\"");
+        shwords = shwords.substr(0,ipos);
 
-	    std::istringstream istr(shwords);
-	    istr >> hwords;
-	    if(!istr){
-		std::cerr << "Failed to read headerwords" << std::endl;
-		exit(EXIT_FAILURE);
-	    }
-	    if(hwords == 16) {
-		may2002 = false;
-		format = 2;
-	    }
-	}
+        std::istringstream istr(shwords);
+        istr >> hwords;
+        if(!istr){
+        std::cerr << "Failed to read headerwords" << std::endl;
+        exit(EXIT_FAILURE);
+        }
+        if(hwords == 16) {
+        may2002 = false;
+        format = 2;
+        }
+    }
 
-	ipos = line.find("EXPOSE_TIME");
-	if(ipos != std::string::npos){
-	    ipos = line.find("value=");
-	    if(ipos != std::string::npos){
-		std::string val = line.substr(ipos+7);
-		ipos = val.find("\"");
-		val = val.substr(0,ipos);
+    ipos = line.find("EXPOSE_TIME");
+    if(ipos != std::string::npos){
+        ipos = line.find("value=");
+        if(ipos != std::string::npos){
+        std::string val = line.substr(ipos+7);
+        ipos = val.find("\"");
+        val = val.substr(0,ipos);
 
-		std::istringstream istr(val);
-		istr >> edelay;
-		if(!istr){
-		    std::cerr << "Failed to read exposure delay" << std::endl;
-		    exit(EXIT_FAILURE);
-		}
-	    }
-	}
+        std::istringstream istr(val);
+        istr >> edelay;
+        if(!istr){
+            std::cerr << "Failed to read exposure delay" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        }
+    }
 
-	ipos = line.find("SDSU Exec");
-	if(ipos != std::string::npos){
-	    ipos = line.find("name=");
-	    if(ipos != std::string::npos){
-		std::string val = line.substr(ipos+6);
-		ipos = val.find("\"");
-		val = val.substr(0,ipos);
-		if(val == "ap3_fullframe" || val == "ap3_250_fullframe" ||
-		   val == "appl3_fullframe_cfg"){ 
-		    mode = FULLFRAME_CLEAR;
-		}else if(val == "ap9_fullframe_mindead" || val == "ap9_250_fullframe_mindead" || 
-			 val == "appl9_fullframe_mindead_cfg"){
-		    mode = FULLFRAME_NOCLEAR;
-		}else if(val ==  "ap5b_250_window1pair" || val == "appl5_window1pair_app"){
-		    mode = WINDOWS_CLEAR;
-		}else if(val == "ap5_250_window1pair" || val == "ap6_250_window2pair" ||
-			 val == "ap7_250_window3pair" || val == "ap_win4_bin1" ||
-			 val == "ap_win4_bin8" || val == "ap_win2_bin2" ||
-			 val == "appl5_window1pair_cfg" || val == "appl5b_window1pair_cfg" ||
-			 val == "appl6_window2pair_cfg" || val == "appl7_window3pair_cfg"){
-		    mode = WINDOWS;
-		}
-	    }
-	}
+    ipos = line.find("SDSU Exec");
+    if(ipos != std::string::npos){
+        ipos = line.find("name=");
+        if(ipos != std::string::npos){
+        std::string val = line.substr(ipos+6);
+        ipos = val.find("\"");
+        val = val.substr(0,ipos);
+        if(val == "ap3_fullframe" || val == "ap3_250_fullframe" ||
+           val == "appl3_fullframe_cfg"){
+            mode = FULLFRAME_CLEAR;
+        }else if(val == "ap9_fullframe_mindead" || val == "ap9_250_fullframe_mindead" ||
+             val == "appl9_fullframe_mindead_cfg"){
+            mode = FULLFRAME_NOCLEAR;
+        }else if(val ==  "ap5b_250_window1pair" || val == "appl5_window1pair_app"){
+            mode = WINDOWS_CLEAR;
+        }else if(val == "ap5_250_window1pair" || val == "ap6_250_window2pair" ||
+             val == "ap7_250_window3pair" || val == "ap_win4_bin1" ||
+             val == "ap_win4_bin8" || val == "ap_win2_bin2" ||
+             val == "appl5_window1pair_cfg" || val == "appl5b_window1pair_cfg" ||
+             val == "appl6_window2pair_cfg" || val == "appl7_window3pair_cfg"){
+            mode = WINDOWS;
+        }
+        }
+    }
 
-	ipos = line.find("<user>");
-	if(ipos != std::string::npos) time_units = 0.0001;
-	ipos = line.find("VERSION");
-	if(ipos != std::string::npos) may2002 = false;
-	ipos = line.find("V_FT_CLK");
-	if(ipos != std::string::npos) may2002 = false;
-    } 
+    ipos = line.find("<user>");
+    if(ipos != std::string::npos) time_units = 0.0001;
+    ipos = line.find("VERSION");
+    if(ipos != std::string::npos) may2002 = false;
+    ipos = line.find("V_FT_CLK");
+    if(ipos != std::string::npos) may2002 = false;
+    }
     xin.close();
 
     if(may2002)
-	std::cout << "These data are from May 2002" << std::endl;
+    std::cout << "These data are from May 2002" << std::endl;
     else
-	std::cout << "These data are not from May 2002" << std::endl;
+    std::cout << "These data are not from May 2002" << std::endl;
 
     if(format == 2)
-	std::cout << "These data are post-March 2010" << std::endl;
+    std::cout << "These data are post-March 2010" << std::endl;
     else
-	std::cout << "These data are pre-March 2010" << std::endl;
+    std::cout << "These data are pre-March 2010" << std::endl;
 
     std::cout << "Exposure delay = " << time_units*edelay << " seconds." << std::endl;
 
@@ -206,16 +206,16 @@ int main(int argc, char* argv[]){
 
     std::ifstream fin(data.c_str(), std::ios::binary);
     if(!fin){
-	std::cerr << "Could not open open " << data << " for reading" << std::endl;
-	exit(EXIT_FAILURE);
+    std::cerr << "Could not open open " << data << " for reading" << std::endl;
+    exit(EXIT_FAILURE);
     }
 
     int nread = format == 1 ? 24 : 32;
     char buffer[32];
     if (!fin.read(buffer, nread)){
-	std::cerr << "Error while trying to read first " << nread << " timing bytes from " << data << std::endl;
-	fin.close();
-	exit(EXIT_FAILURE);
+    std::cerr << "Error while trying to read first " << nread << " timing bytes from " << data << std::endl;
+    fin.close();
+    exit(EXIT_FAILURE);
     }
 
     unsigned char day_of_month1, month_of_year1;
@@ -226,9 +226,9 @@ int main(int argc, char* argv[]){
     // Now find the end of the file and work out the number of frames
     fin.seekg(0, std::ios::end);
     if(!fin){
-	std::cerr << "Failed to find the end of the data file" << std::endl;
-	fin.close();
-	exit(EXIT_FAILURE);
+    std::cerr << "Failed to find the end of the data file" << std::endl;
+    fin.close();
+    exit(EXIT_FAILURE);
     }
     off_t  nfile = fin.tellg() / framesize;
     off_t  ngood = nfile;
@@ -237,32 +237,32 @@ int main(int argc, char* argv[]){
     int ntime = 1;
     double save;
     while(!first_time_ok && ntime < nfile){
-	ntime++;
-	fin.seekg(framesize*(ntime-1));
+    ntime++;
+    fin.seekg(framesize*(ntime-1));
 
-	if (!fin.read(buffer, 24)){
-	    std::cerr << "Error while trying to read first 24 timing bytes from frame " << ntime << " of " << data << std::endl;
-	    fin.close();
-	    exit(EXIT_FAILURE);
-	}
-
-	if(!(first_time_ok = timing(buffer, may2002, format, day_of_month1, month_of_year1, year1, hour1, minute1, second1, millisec1, nsatellite)) && ntime == 2)
-	    save = 3600.*hour1 + 60.*minute1 + second1 + millisec1/1000.; 
+    if (!fin.read(buffer, 24)){
+        std::cerr << "Error while trying to read first 24 timing bytes from frame " << ntime << " of " << data << std::endl;
+        fin.close();
+        exit(EXIT_FAILURE);
     }
 
-	
+    if(!(first_time_ok = timing(buffer, may2002, format, day_of_month1, month_of_year1, year1, hour1, minute1, second1, millisec1, nsatellite)) && ntime == 2)
+        save = 3600.*hour1 + 60.*minute1 + second1 + millisec1/1000.;
+    }
+
+
     if(!first_time_ok){
-	std::cerr << "Could not get a valid start time for " << data << std::endl;
-	if(nfile > 1){
-	    double rtime = (3600.*hour1 + 60.*minute1 + second1 + millisec1/1000. - save);
-	    std::cout << "Run length = " << rtime << " seconds, sample time = " << rtime/(nfile-1) << " seconds/frame" << std::endl;
-	    std::cout << "Reliability of this estimate unknown" << std::endl;
-	}else{
-	    std::cerr << "Only 1 frame; cannot estimate cycle time or a meaningful run length" << std::endl;
-	} 
-	
-	fin.close();
-	exit(EXIT_FAILURE);
+    std::cerr << "Could not get a valid start time for " << data << std::endl;
+    if(nfile > 1){
+        double rtime = (3600.*hour1 + 60.*minute1 + second1 + millisec1/1000. - save);
+        std::cout << "Run length = " << rtime << " seconds, sample time = " << rtime/(nfile-1) << " seconds/frame" << std::endl;
+        std::cout << "Reliability of this estimate unknown" << std::endl;
+    }else{
+        std::cerr << "Only 1 frame; cannot estimate cycle time or a meaningful run length" << std::endl;
+    }
+
+    fin.close();
+    exit(EXIT_FAILURE);
     }
     double dhour1 = hour1 + minute1/60. + second1/3600 + millisec1/3600000;
 
@@ -272,79 +272,79 @@ int main(int argc, char* argv[]){
     std::cout << output;
 
     if(nfile < 1){
-	std::cerr << "No valid data in " << data << std::endl;
-	fin.close();
-	exit(EXIT_FAILURE);
+    std::cerr << "No valid data in " << data << std::endl;
+    fin.close();
+    exit(EXIT_FAILURE);
     }
 
     off_t last;
     unsigned char day_of_month2, month_of_year2;
     unsigned short int year2;
     int hour2, minute2, second2, millisec2;
- 
+
     // Look for last time
     fin.seekg(framesize*(ngood-1));
     if (!fin.read(buffer, 24)){
-	std::cerr << "Error while trying to read 24 timing bytes of frame " << ngood << " from " << data << std::endl;
-	fin.close();
-	exit(EXIT_FAILURE);
+    std::cerr << "Error while trying to read 24 timing bytes of frame " << ngood << " from " << data << std::endl;
+    fin.close();
+    exit(EXIT_FAILURE);
     }
 
-    // check it    
+    // check it
     bool good = false;
     if((good = timing(buffer, may2002, format, day_of_month2, month_of_year2, year2, hour2, minute2, second2, millisec2, nsatellite))){
-      
-	double dhour2 = hour2 + minute2/60. + second2/3600 + millisec2/3600000;
-	
-	good = !(
-	    (year2 < year1) || 
-	    (year2 == year1 && month_of_year2 < month_of_year1) ||
-	    (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 < day_of_month1) ||
-	    (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 == day_of_month1 && dhour2 < dhour1)
-	    );
-	
+
+    double dhour2 = hour2 + minute2/60. + second2/3600 + millisec2/3600000;
+
+    good = !(
+        (year2 < year1) ||
+        (year2 == year1 && month_of_year2 < month_of_year1) ||
+        (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 < day_of_month1) ||
+        (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 == day_of_month1 && dhour2 < dhour1)
+        );
+
     }
 
     // some runs, especially fast ones, have failures in the timestamps towards
-    // the end. This part checks for this and then attempts to track down a good 
+    // the end. This part checks for this and then attempts to track down a good
     // timestamp by binary chopping as a linear search can be very slow.
 
     if(!good){
-	off_t  n1 = ntime;
-	off_t  n2 = ngood;
-	off_t  n  = (n1+n2)/2;
+    off_t  n1 = ntime;
+    off_t  n2 = ngood;
+    off_t  n  = (n1+n2)/2;
 
-	while(n > n1 && !good){
+    while(n > n1 && !good){
 
-	    fin.seekg(framesize*(n-1));
-	    if (!fin.read(buffer, 24)){
-		std::cerr << "Error while trying to read 24 timing bytes of frame " << n << " from " << data << std::endl;
-		fin.close();
-		exit(EXIT_FAILURE);
-	    }
-    
-	    if((good = timing(buffer, may2002, format, day_of_month2, month_of_year2, year2, hour2, minute2, second2, millisec2, nsatellite))){
-      
-		double dhour2 = hour2 + minute2/60. + second2/3600 + millisec2/3600000;
-		
-		good = !(
-		    (year2 < year1) || 
-		    (year2 == year1 && month_of_year2 < month_of_year1) ||
-		    (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 < day_of_month1) ||
-		    (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 == day_of_month1 && dhour2 < dhour1)
-		    );
-		
-	    }
+        fin.seekg(framesize*(n-1));
+        if (!fin.read(buffer, 24)){
+        std::cerr << "Error while trying to read 24 timing bytes of frame " << n << " from " << data << std::endl;
+        fin.close();
+        exit(EXIT_FAILURE);
+        }
 
-	    if(good)
-		n1 = n;
-	    else
-		n2 = n;
-	    n = (n1+n2)/2;
-	}
-	ngood = n - (ntime - 1);
+        if((good = timing(buffer, may2002, format, day_of_month2, month_of_year2, year2, hour2, minute2, second2, millisec2, nsatellite))){
+
+        double dhour2 = hour2 + minute2/60. + second2/3600 + millisec2/3600000;
+
+        good = !(
+            (year2 < year1) ||
+            (year2 == year1 && month_of_year2 < month_of_year1) ||
+            (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 < day_of_month1) ||
+            (year2 == year1 && month_of_year2 == month_of_year1 && day_of_month2 == day_of_month1 && dhour2 < dhour1)
+            );
+
+        }
+
+        if(good)
+        n1 = n;
+        else
+        n2 = n;
+        n = (n1+n2)/2;
+    }
+    ngood = n - (ntime - 1);
     }else{
-	ngood -= (ntime - 1);
+    ngood -= (ntime - 1);
     }
 
     sprintf(output, "UT at end   = %02d/%02d/%d, %02d:%02d:%02d.%03d\n", day_of_month2, month_of_year2, year2, hour2, minute2, second2, millisec2);
@@ -352,11 +352,11 @@ int main(int argc, char* argv[]){
 
     double length = 3600.*(hour2-hour1) + 60.*(minute2-minute1) + (second2-second1) + 1.e-3*(millisec2-millisec1);
     if(day_of_month1 != day_of_month2)
-	length += 86400;
-  
+    length += 86400;
+
     std::cout << "Number of good frames = " << ngood << std::endl;
     if(ngood > 1)
-	std::cout << "OK run length = " << length << " seconds, sample time = " << length/(ngood-1) << " seconds/frame " << std::endl;
+    std::cout << "OK run length = " << length << " seconds, sample time = " << length/(ngood-1) << " seconds/frame " << std::endl;
     std::cout << "Number of bad frames  = " << nfile - ngood << std::endl;
 
     fin.close();
@@ -364,148 +364,148 @@ int main(int argc, char* argv[]){
     exit(EXIT_SUCCESS);
 }
 
-bool timing(char* buffer, bool may2002, int format, unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year, 
-	    int& hour, int& minute, int& second, int& millisec, int& nsatellite){
+bool timing(char* buffer, bool may2002, int format, unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year,
+        int& hour, int& minute, int& second, int& millisec, int& nsatellite){
 
     const int SECONDS_IN_A_DAY = 86400;
 
     union IntRead{
-	char c[4];
-	int32_t  i;
-	uint16_t usi;
-	int16_t si;
+    char c[4];
+    int32_t  i;
+    uint16_t usi;
+    int16_t si;
     } intread;
 
     // Number of seconds
     int nsec = 0, nnanosec = 0;
     bool reliable = false;
     if(format == 1){
-	intread.c[0] = buffer[9];
-	intread.c[1] = buffer[10];
-	intread.c[2] = buffer[11];
-	intread.c[3] = buffer[12];
-	nsec = intread.i;
+    intread.c[0] = buffer[9];
+    intread.c[1] = buffer[10];
+    intread.c[2] = buffer[11];
+    intread.c[3] = buffer[12];
+    nsec = intread.i;
 
-	intread.c[0] = buffer[13];
-	intread.c[1] = buffer[14];
-	intread.c[2] = buffer[15];
-	intread.c[3] = buffer[16];
-	nnanosec = intread.i;
+    intread.c[0] = buffer[13];
+    intread.c[1] = buffer[14];
+    intread.c[2] = buffer[15];
+    intread.c[3] = buffer[16];
+    nnanosec = intread.i;
 
-	// number of satellites. -1 indicates no GPS
-	intread.c[0] = buffer[21];
-	intread.c[1] = buffer[22];
-	nsatellite = int(intread.si);
-	reliable = nsatellite > 2;
+    // number of satellites. -1 indicates no GPS
+    intread.c[0] = buffer[21];
+    intread.c[1] = buffer[22];
+    nsatellite = int(intread.si);
+    reliable = nsatellite > 2;
 
-	if(may2002){
-	    day_of_month    = 12;
-	    month_of_year   = 5;
-	    year            = 2002;
-	    int nday        = nsec / 86400;
-	    if(nday < 4)
-		day_of_month += nday+7;
-	    else
-		day_of_month += nday;
-	    nsec -= 86400*nday;
-	    
-	}else{    
-	    day_of_month  = buffer[17];
-	    month_of_year = buffer[18];
-	    intread.c[0]  = buffer[19];
-	    intread.c[1]  = buffer[20];
-	    year = intread.usi;
-	}
-
-	// Fixes for timing problems
-	if(month_of_year == 9 && year == 263) year = 2002;
-	
-	if(year < 2002){
-	    
-	    day_of_month  = 8 + nsec / SECONDS_IN_A_DAY;
-	    month_of_year = 9;
-	    year          = 2002;
-	    
-	}else{
-	    
-	    if(month_of_year == 9 && year == 2002){
-		int nweek = (day_of_month - 8)/7;
-		int days  = day_of_month - 8 - 7*nweek;
-		if(days > 3 && nsec < 2*SECONDS_IN_A_DAY){
-		    nweek++;
-		}else if(days < 4 && nsec > 5*SECONDS_IN_A_DAY){
-		    nweek--;
-		}
-		day_of_month = 8 + 7*nweek + nsec / SECONDS_IN_A_DAY;
-	    }
-	}
-
-	second   = nsec % 86400;
-	hour     = second / 3600;
-	second  -= 3600*hour;
-	minute   = second / 60;
-	second  -= 60*minute;
-	millisec = int(nnanosec / 1.e6 + 0.5);
+    if(may2002){
+        day_of_month    = 12;
+        month_of_year   = 5;
+        year            = 2002;
+        int nday        = nsec / 86400;
+        if(nday < 4)
+        day_of_month += nday+7;
+        else
+        day_of_month += nday;
+        nsec -= 86400*nday;
 
     }else{
-	intread.c[0] = buffer[12];
-	intread.c[1] = buffer[13];
-	intread.c[2] = buffer[14];
-	intread.c[3] = buffer[15];
-	nsec = intread.i;
-
-	intread.c[0] = buffer[16];
-	intread.c[1] = buffer[17];
-	intread.c[2] = buffer[18];
-	intread.c[3] = buffer[19];
-	nnanosec = 100*intread.i;
-
-	nsatellite = 0;
-
-	time_t epoch = nsec;
-	tm *time = gmtime(&epoch);
-	second = time->tm_sec;
-	minute = time->tm_min;
-	hour   = time->tm_hour;
-	day_of_month  = time->tm_mday;
-	month_of_year  = time->tm_mon + 1;
-	year = 1900 + time->tm_year;
-	millisec = int(nnanosec / 1.e6 + 0.5);
-
-	intread.c[0] = buffer[24];
-	intread.c[1] = buffer[25];
-
-	uint32_t tstamp = intread.usi;
-	std::cerr << "tstamp           = " << tstamp << std::endl;
-
-	// Report timing information
-	// Report timing information. Report a single problem.
-	reliable = true;
-	std::string reason = "";
-	if(reliable && (tstamp & PCPS_ANT_FAIL)){
-	    reason = "GPS antenna failure";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
-	    reliable = false;
-	}
-	if(reliable && (tstamp & PCPS_INVT)){
-	    reason = "GPS battery disconnected";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;	
-	    reliable = false;
-	}
-	if(reliable && !(tstamp & PCPS_SYNCD)){
-	    reason = "GPS clock not yet synced since power up";
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
-	    reliable = false;
-	}
-	if(reliable && (tstamp & PCPS_FREER)){
-	    reason = "GPS receiver has not verified its position"; 
-	    std::cerr << "WARNING, time unreliable: " << reason << std::endl;
-	    reliable = false;
-	}	
+        day_of_month  = buffer[17];
+        month_of_year = buffer[18];
+        intread.c[0]  = buffer[19];
+        intread.c[1]  = buffer[20];
+        year = intread.usi;
     }
-    
+
+    // Fixes for timing problems
+    if(month_of_year == 9 && year == 263) year = 2002;
+
+    if(year < 2002){
+
+        day_of_month  = 8 + nsec / SECONDS_IN_A_DAY;
+        month_of_year = 9;
+        year          = 2002;
+
+    }else{
+
+        if(month_of_year == 9 && year == 2002){
+        int nweek = (day_of_month - 8)/7;
+        int days  = day_of_month - 8 - 7*nweek;
+        if(days > 3 && nsec < 2*SECONDS_IN_A_DAY){
+            nweek++;
+        }else if(days < 4 && nsec > 5*SECONDS_IN_A_DAY){
+            nweek--;
+        }
+        day_of_month = 8 + 7*nweek + nsec / SECONDS_IN_A_DAY;
+        }
+    }
+
+    second   = nsec % 86400;
+    hour     = second / 3600;
+    second  -= 3600*hour;
+    minute   = second / 60;
+    second  -= 60*minute;
+    millisec = int(nnanosec / 1.e6 + 0.5);
+
+    }else{
+    intread.c[0] = buffer[12];
+    intread.c[1] = buffer[13];
+    intread.c[2] = buffer[14];
+    intread.c[3] = buffer[15];
+    nsec = intread.i;
+
+    intread.c[0] = buffer[16];
+    intread.c[1] = buffer[17];
+    intread.c[2] = buffer[18];
+    intread.c[3] = buffer[19];
+    nnanosec = 100*intread.i;
+
+    nsatellite = 0;
+
+    time_t epoch = nsec;
+    tm *time = gmtime(&epoch);
+    second = time->tm_sec;
+    minute = time->tm_min;
+    hour   = time->tm_hour;
+    day_of_month  = time->tm_mday;
+    month_of_year  = time->tm_mon + 1;
+    year = 1900 + time->tm_year;
+    millisec = int(nnanosec / 1.e6 + 0.5);
+
+    intread.c[0] = buffer[24];
+    intread.c[1] = buffer[25];
+
+    uint32_t tstamp = intread.usi;
+    std::cerr << "tstamp           = " << tstamp << std::endl;
+
+    // Report timing information
+    // Report timing information. Report a single problem.
+    reliable = true;
+    std::string reason = "";
+    if(reliable && (tstamp & PCPS_ANT_FAIL)){
+        reason = "GPS antenna failure";
+        std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+        reliable = false;
+    }
+    if(reliable && (tstamp & PCPS_INVT)){
+        reason = "GPS battery disconnected";
+        std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+        reliable = false;
+    }
+    if(reliable && !(tstamp & PCPS_SYNCD)){
+        reason = "GPS clock not yet synced since power up";
+        std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+        reliable = false;
+    }
+    if(reliable && (tstamp & PCPS_FREER)){
+        reason = "GPS receiver has not verified its position";
+        std::cerr << "WARNING, time unreliable: " << reason << std::endl;
+        reliable = false;
+    }
+    }
+
     return (reliable && year > 2001 && year < 2040 && month_of_year > 0 && month_of_year < 13 &&
-	    day_of_month > 0 && day_of_month < 32 && hour >= 0 && hour < 24 &&
-	    minute >= 0 && minute < 60 && second >= 0 && second < 60);
+        day_of_month > 0 && day_of_month < 32 && hour >= 0 && hour < 24 &&
+        minute >= 0 && minute < 60 && second >= 0 && second < 60);
 }
 

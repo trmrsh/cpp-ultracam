@@ -5,8 +5,8 @@
 #include <string>
 
 
-void timing(char* buffer, unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year, int& hour, int& minute, 
-	    int& second, int& millisec);
+void timing(char* buffer, unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year, int& hour, int& minute,
+        int& second, int& millisec);
 
 int main(int argc, char* argv[]){
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
   char output[1024];
   sprintf(output, "%s, UT at start = %02d/%02d/%d, %02d:%02d:%02d.%03d\n", argv[1], day_of_month, month_of_year, year, hour, minute, second, millisec);
   std::cout << output;
-    
+
 }
 
 void timing(char* buffer, unsigned char& day_of_month, unsigned char& month_of_year, unsigned short int& year, int& hour, int& minute, int& second, int& millisec){
@@ -57,7 +57,7 @@ void timing(char* buffer, unsigned char& day_of_month, unsigned char& month_of_y
   intread.c[1] = buffer[10];
   intread.c[2] = buffer[11];
   intread.c[3] = buffer[12];
-  
+
   int nsec = intread.i;
 
   // number of nanoseconds
@@ -65,7 +65,7 @@ void timing(char* buffer, unsigned char& day_of_month, unsigned char& month_of_y
   intread.c[1] = buffer[14];
   intread.c[2] = buffer[15];
   intread.c[3] = buffer[16];
-  
+
   int nnanosec = intread.i;
 
   day_of_month  = buffer[17];

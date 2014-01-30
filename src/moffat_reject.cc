@@ -15,8 +15,8 @@
  * a little.
  */
 
-void Ultracam::moffat_reject(const Windata& data, Windata& sigwin, int xlo, int xhi, 
-			    int ylo, int yhi, const Ultracam::Ppars& params, float thresh, int& nrej){
+void Ultracam::moffat_reject(const Windata& data, Windata& sigwin, int xlo, int xhi,
+                int ylo, int yhi, const Ultracam::Ppars& params, float thresh, int& nrej){
 
   double xoff, yoff, model, yfac;
   nrej = 0;
@@ -29,16 +29,16 @@ void Ultracam::moffat_reject(const Windata& data, Windata& sigwin, int xlo, int 
     }
     for(int ix=xlo; ix<=xhi; ix++){
       if(sigwin[iy][ix] > 0.){
-	xoff  = data.xccd(ix)-params.x;
-	if(params.symm){
-	  model = params.sky + params.height/pow(1. + xoff*(params.a*xoff+2.*params.b*yoff) + yfac, params.beta);
-	}else{
-	  model = params.sky + params.height/pow(1. + params.a*xoff*xoff + yfac, params.beta);
-	}
-	if(fabs(data[iy][ix]-model) > thresh*sigwin[iy][ix]){
-	  sigwin[iy][ix] = - sigwin[iy][ix];
-	  nrej++;
-	}
+    xoff  = data.xccd(ix)-params.x;
+    if(params.symm){
+      model = params.sky + params.height/pow(1. + xoff*(params.a*xoff+2.*params.b*yoff) + yfac, params.beta);
+    }else{
+      model = params.sky + params.height/pow(1. + params.a*xoff*xoff + yfac, params.beta);
+    }
+    if(fabs(data[iy][ix]-model) > thresh*sigwin[iy][ix]){
+      sigwin[iy][ix] = - sigwin[iy][ix];
+      nrej++;
+    }
       }
     }
   }

@@ -11,7 +11,7 @@ float Ultracam::Target::height() const {
   return get_counts()*(get_beta()-1)*sqrt(det())/Constants::PI;
 }
 
-/** This routine modifies the axx, axy, ayy coefficients to simulate the effect 
+/** This routine modifies the axx, axy, ayy coefficients to simulate the effect
  * of blurring by a particular seeing value.
  * \param seeing the FWHM of the seeing.
  */
@@ -23,7 +23,7 @@ void Ultracam::Target::blurr(float seeing) {
   fac2    = sqrt(Subs::sqr(get_axx()-get_ayy())+4.*Subs::sqr(get_axy()))/2.;
   lambda1 = fac1-fac2;
   lambda2 = fac1+fac2;
-  
+
   // Now the (normliased) eigen-vectors
   float x1, y1, x2, y2;
   if(lambda1 == lambda2){
@@ -59,16 +59,16 @@ void Ultracam::Target::blurr(float seeing) {
   }
 
   // Now modify the eigen-values essentially by adding the seeing in quadrature
-  // while accounting for the scale factor as a result of the Moffat profile 
+  // while accounting for the scale factor as a result of the Moffat profile
   float scale = seeing*seeing/(pow(2.,1./get_beta())-1.);
   lambda1 = 1./(1./lambda1 + scale);
   lambda2 = 1./(1./lambda2 + scale);
 
   // Now re-compute the a coefficients
-  axx = lambda1*x1*x1 + lambda2*x2*x2; 
-  axy = lambda1*x1*y1 + lambda2*x2*y2; 
-  ayy = lambda1*y1*y1 + lambda2*y2*y2; 
-  
+  axx = lambda1*x1*x1 + lambda2*x2*x2;
+  axy = lambda1*x1*y1 + lambda2*x2*y2;
+  ayy = lambda1*y1*y1 + lambda2*y2*y2;
+
 }
 
 
@@ -85,16 +85,16 @@ void Ultracam::Target::blurr(float seeing) {
  * Ultracam::Ultracam_Error will be thrown.
  */
 Ultracam::Target::Target(float xc, float yc, float counts,
-	       float axx, float axy, 
-	       float ayy, double beta) :
+           float axx, float axy,
+           float ayy, double beta) :
   xc(xc), yc(yc), counts(counts), axx(axx), axy(axy), ayy(ayy), mbeta(beta) {
 
   if(bad_targ(axx,axy,ayy) || mbeta <= 1.)
-    throw 
+    throw
       Ultracam::Ultracam_Error("Invalid width parameters in Ultracam::Target(float, float, float, float, float, float, double)");
 }
 
-/** 
+/**
  * The \c a coefficients must describe a profile that tends to zero at large
  * distances from the centre. They therefore must form a positive definite matrix.
  * bad_targ checks that this is the case and returns \c true if the coefficients
@@ -116,7 +116,7 @@ bool Ultracam::bad_targ(float axx, float axy, float ayy){
  * \exception Ultracam::Ultracam_Error if coefficients are not valid.
  */
 void Ultracam::Target::set_axx(float axx){
-  if(bad_targ(axx,axy,ayy)) 
+  if(bad_targ(axx,axy,ayy))
     throw Ultracam::Ultracam_Error("Invalid xx width in Ultracam::Target::set_axx(float)");
   this->axx = axx;
 }
@@ -128,7 +128,7 @@ void Ultracam::Target::set_axx(float axx){
  * \exception Ultracam::Ultracam_Error if coefficients are not valid.
  */
 void Ultracam::Target::set_axy(float axy){
-  if(bad_targ(axx,axy,ayy)) 
+  if(bad_targ(axx,axy,ayy))
     throw Ultracam::Ultracam_Error("Invalid xy width in Ultracam::Target::set_axy(float)");
   this->axy = axy;
 }
@@ -140,12 +140,12 @@ void Ultracam::Target::set_axy(float axy){
  * \exception Ultracam::Ultracam_Error if coefficients are not valid.
  */
 void Ultracam::Target::set_ayy(float ayy){
-  if(bad_targ(axx,axy,ayy)) 
+  if(bad_targ(axx,axy,ayy))
     throw Ultracam::Ultracam_Error("Invalid yy width in Ultracam::Target::set_ayy(float)");
   this->ayy = ayy;
 }
 
-/** Set the Moffat \f$\beta\f$ exponent. It must be greater than 1 to ensure 
+/** Set the Moffat \f$\beta\f$ exponent. It must be greater than 1 to ensure
  * convergence of flux.
  * \param beta
  * \exception Ultracam::Ultracam_Error if beta <= 1
@@ -165,7 +165,7 @@ void Ultracam::Target::set_beta(double beta){
  * \exception Ultracam::Ultracam_Error if coefficients are not valid.
  */
 void Ultracam::Target::set(float axx, float axy, float ayy){
-  if(bad_targ(axx,axy,ayy)) 
+  if(bad_targ(axx,axy,ayy))
     throw Ultracam::Ultracam_Error("Invalid widths in Ultracam::Target::set(float,float,float)");
   this->axx = axx;
   this->axy = axy;
@@ -217,7 +217,7 @@ void Ultracam::Target::dist(float level, float& dx, float& dy) const {
  */
 void Ultracam::pgline(const Ultracam::Target& target, float level) {
   using Subs::sqr;
-  if(level > 0. && target.height() > level){    
+  if(level > 0. && target.height() > level){
     float efac = sqrt(1./pow(double(level/target.height()), 1./target.get_beta())-1.);
     float lambda1, lambda2, fac1, fac2, x1, y1, x2, y2, scale;
     fac1    = (target.get_axx()+target.get_ayy())/2.;
@@ -233,22 +233,22 @@ void Ultracam::pgline(const Ultracam::Target& target, float level) {
     }else{
 
       if(lambda1 != target.get_axx() || target.get_axy() != 0.){
-	x1    = target.get_axy();
-	y1    = lambda1-target.get_axx();
+    x1    = target.get_axy();
+    y1    = lambda1-target.get_axx();
       }else{
-	x1    = lambda1-target.get_ayy();
-	y1    = target.get_axy();
+    x1    = lambda1-target.get_ayy();
+    y1    = target.get_axy();
       }
       scale = efac/sqrt(lambda1*(sqr(x1)+sqr(y1)));
       x1   *= scale;
       y1   *= scale;
-      
+
       if(lambda2 != target.get_axx() || target.get_axy() != 0.){
-	x2    = target.get_axy();
-	y2    = lambda2-target.get_axx();
+    x2    = target.get_axy();
+    y2    = lambda2-target.get_axx();
       }else{
-	x2    = lambda2-target.get_ayy();
-	y2    = target.get_axy();
+    x2    = lambda2-target.get_ayy();
+    y2    = target.get_axy();
       }
       scale = efac/sqrt(lambda2*(sqr(x2)+sqr(y2)));
       x2   *= scale;
@@ -298,9 +298,9 @@ void Ultracam::pgptxt(const Ultracam::Target& target, const std::string& label, 
  * that function for Ultracam::Target. In fact, it is a dummy function since no
  * restrictions are placed upon Ultracam::Target objects, so you should never be
  * using this outside of CCD<Obj>
- * \param target1 first Target 
+ * \param target1 first Target
  * \param target2 second Target
- * \return \c true if they clash (they never do). 
+ * \return \c true if they clash (they never do).
  */
 bool Ultracam::clash(const Ultracam::Target& target1, const Ultracam::Target& target2){
   return false;
@@ -310,7 +310,7 @@ bool Ultracam::clash(const Ultracam::Target& target1, const Ultracam::Target& ta
 std::ostream& Ultracam::operator<<(std::ostream& s, const Ultracam::Target& target){
   s << "x,y = " << target.get_xc() << ", " << target.get_yc()
     << "; counts = " << target.get_counts()
-    << "; xx,xy,yy = " << target.get_axx() << ", " << target.get_axy() << ", " << target.get_ayy() 
+    << "; xx,xy,yy = " << target.get_axx() << ", " << target.get_axy() << ", " << target.get_ayy()
     << "; beta = " << target.get_beta();
   return s;
 }
@@ -325,29 +325,29 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Target& target){
   double mbeta;
 
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> xc) || !s.get(ch) || !(s >> yc)) 
+  if(!s || !(s >> xc) || !s.get(ch) || !(s >> yc))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::Target::operator>> (1)");
 
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> counts)) 
+  if(!s || !(s >> counts))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::operator>> (2)");
 
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> axx) || !s.get(ch) || 
-     !(s >> axy) || !s.get(ch) ||!(s >> ayy)) 
+  if(!s || !(s >> axx) || !s.get(ch) ||
+     !(s >> axy) || !s.get(ch) ||!(s >> ayy))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::operator>> (3)");
-  
+
   if(bad_targ(axx, axy, ayy))
     throw Ultracam::Ultracam_Error("Invalid Ultracam::Target in std::istream& "
-		 "operator>>(std::istream& s, Ultracam::Target& window): not positive definite");
+         "operator>>(std::istream& s, Ultracam::Target& window): not positive definite");
 
   while(s.get(ch) && ch != '=');
-  if(!s || !(s >> mbeta)) 
+  if(!s || !(s >> mbeta))
     throw Ultracam::Ultracam_Error("Invalid input into Ultracam::operator>> (4)");
-  
+
   if(mbeta <= 1.)
     throw Ultracam::Ultracam_Error("Invalid Ultracam::Target in std::istream& "
-		 "operator>>(std::istream& s, Ultracam::Target& window): beta <= 1.");
+         "operator>>(std::istream& s, Ultracam::Target& window): beta <= 1.");
 
   target.xc     = xc;
   target.yc     = yc;
@@ -356,7 +356,7 @@ std::istream& Ultracam::operator>>(std::istream& s, Ultracam::Target& target){
   target.axy    = axy;
   target.ayy    = ayy;
   target.mbeta  = mbeta;
-    
+
   return s;
 }
 

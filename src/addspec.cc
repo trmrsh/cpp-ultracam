@@ -40,7 +40,7 @@ brightness, telescope size etc. 1 implies no change.}
 !!arg{seed}{Random number seed. This and succedding arguments is only prompted for
 if there is more than 1 image.}
 
-!!arg{xdrift, ydrift}{Drift per image in x and y. Note that X is the dispersion direction and therefore represents flexure while 
+!!arg{xdrift, ydrift}{Drift per image in x and y. Note that X is the dispersion direction and therefore represents flexure while
 Y includes guiding as well.}
 
 !!arg{yrms}{RMS scatter in Y}
@@ -60,29 +60,29 @@ correction at the telescope.}
 The best way to make a spectrum definition file is to generate one using !!ref{gentemp.html}{gentemp}
 and then to edit it directly. This will contain lines to define the position of the spectra such as
 <pre>
-Position  = 1 500.5 499.5 2 450 2 
+Position  = 1 500.5 499.5 2 450 2
 </pre>
 The parameters define a polynomial as a function of x giving the y position of the spectrum concerned.
 The initial '1' indicates a 'normal' polynomial; the other option is not relevant. Then come the middle
-and half range of the polynomial, the number of coefficients (2) and their values. So in this case the 
+and half range of the polynomial, the number of coefficients (2) and their values. So in this case the
 Y position is 450 with a tilt of 2 pixels.
 
 The FWHM of the profile is similarly defined:
 <pre>
-FWHM      = 1 500.5 499.5 3 3 0 0.5 
+FWHM      = 1 500.5 499.5 3 3 0 0.5
 </pre>
 giving the width of the profile as a function of x position. Similarly the continuum flux:
 <pre>
-Continuum = 1 500.5 499.5 2 100 20 
+Continuum = 1 500.5 499.5 2 100 20
 </pre>
 Finally there are lines that can be added to the continuum of the form
 <pre>
-Lines     = 2 300 1000 20 50000 0.05 0 550 300 15 50000 0.05 0 
+Lines     = 2 300 1000 20 50000 0.05 0 550 300 15 50000 0.05 0
 </pre>
 This means add 2 gaussian lines each of which is defined by 6 parameters which are the
 central X position (pixels), the peak height in counts, the FWHM in pixels, a zero
 point for sinusoidal motion ephemeris (MJD), a period in days, and a semi-amplitude in
-pixels. 
+pixels.
 
 !!end
 
@@ -138,10 +138,10 @@ int main(int argc, char* argv[]){
     std::vector<std::string> flist;
     if(Ultracam::Frame::is_ultracam(name)){
       flist.push_back(name);
-    }else{      
+    }else{
       std::ifstream istr(name.c_str());
       while(istr >> name){
-	flist.push_back(name);
+    flist.push_back(name);
       }
       istr.close();
       if(flist.size() == 0) throw Input_Error("No file names loaded");
@@ -192,11 +192,11 @@ int main(int argc, char* argv[]){
 
       if(flist.size() > 1){
 
-	// Add jitter
-	yoff  += yrms*Subs::gauss2(seed);
+    // Add jitter
+    yoff  += yrms*Subs::gauss2(seed);
 
-	// Compute seeing
-	seeing = seeing1 + (seeing2-seeing1)*im/(flist.size()-1);
+    // Compute seeing
+    seeing = seeing1 + (seeing2-seeing1)*im/(flist.size()-1);
 
       }
 
@@ -204,54 +204,54 @@ int main(int argc, char* argv[]){
 
       for(size_t nccd=0; nccd<data.size(); nccd++){ // CCDs
 
-	for(size_t nwin=0; nwin<data[nccd].size(); nwin++){ // windows
+    for(size_t nwin=0; nwin<data[nccd].size(); nwin++){ // windows
 
-	  Ultracam::Windata& win = data[nccd][nwin];
-	  nxs = win.xbin()*xover;
-	  nys = win.ybin()*yover;
+      Ultracam::Windata& win = data[nccd][nwin];
+      nxs = win.xbin()*xover;
+      nys = win.ybin()*yover;
 
-	  for(size_t nspec=0; nspec<mspectrum[nccd].size(); nspec++){ // targets
+      for(size_t nspec=0; nspec<mspectrum[nccd].size(); nspec++){ // targets
 
-	    Ultracam::Spectrum& spec = mspectrum[nccd][nspec];
+        Ultracam::Spectrum& spec = mspectrum[nccd][nspec];
 
-	    // Now add in the star to every pixel
-	    for(int ix=0; ix<win.nx(); ix++){
+        // Now add in the star to every pixel
+        for(int ix=0; ix<win.nx(); ix++){
 
-	      // X, Y position of the centre of the pixel relative to the spectrum
-	      double x  = win.xccd(ix) + xoff;
-	      double y  = spec.get_position(x) + yoff;
+          // X, Y position of the centre of the pixel relative to the spectrum
+          double x  = win.xccd(ix) + xoff;
+          double y  = spec.get_position(x) + yoff;
 
-	      // Compute total counts for this column and width
-	      double total = spec.get_continuum(x);
-	      double width = sqrt(Subs::sqr(seeing) + Subs::sqr(spec.get_fwhm(x))); 
-	      double sline = 0.;
+          // Compute total counts for this column and width
+          double total = spec.get_continuum(x);
+          double width = sqrt(Subs::sqr(seeing) + Subs::sqr(spec.get_fwhm(x)));
+          double sline = 0.;
 
-	      for(int ixs=0; ixs<nxs; ixs++){
+          for(int ixs=0; ixs<nxs; ixs++){
 
-		double sx = x + (ixs+0.5)/nxs - 0.5;
-		if(flist.size() > 1)
-		  sline += spec.get_line(sx, time.mjd());
-		else 
-		  sline += spec.get_line(sx);
-	      }
-	      total += sline/nxs;
-	      total /= yover;
-	      total /= sqrt(Constants::TWOPI*width/Constants::EFAC);
-	      total *= scale;
+        double sx = x + (ixs+0.5)/nxs - 0.5;
+        if(flist.size() > 1)
+          sline += spec.get_line(sx, time.mjd());
+        else
+          sline += spec.get_line(sx);
+          }
+          total += sline/nxs;
+          total /= yover;
+          total /= sqrt(Constants::TWOPI*width/Constants::EFAC);
+          total *= scale;
 
-	      for(int iy=0; iy<win.ny(); iy++){
-		double dy  = win.yccd(iy) - y;
-		double sum = 0.;
-		for(int iys=0; iys<nys; iys++){
-		  double diff = Subs::sqr((dy + (iys+0.5)/nys - 0.5)/(width/Constants::EFAC))/2;
-		  if(diff < 80.)
-		    sum += total*exp(-diff);
-		}
-		win[iy][ix] += sum;
-	      }
-	    }
-	  }
-	}
+          for(int iy=0; iy<win.ny(); iy++){
+        double dy  = win.yccd(iy) - y;
+        double sum = 0.;
+        for(int iys=0; iys<nys; iys++){
+          double diff = Subs::sqr((dy + (iys+0.5)/nys - 0.5)/(width/Constants::EFAC))/2;
+          if(diff < 80.)
+            sum += total*exp(-diff);
+        }
+        win[iy][ix] += sum;
+          }
+        }
+      }
+    }
       }
 
       data.write(flist[im]);

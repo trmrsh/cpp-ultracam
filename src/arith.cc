@@ -30,15 +30,15 @@ of the first frame. }
 !!arg{coerce}{Coerce the second input file to match the first's format or not. Not always possible: needs
 binning factors to be correctly related and window start positions to match up correctly.}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be added, except that 0 
-means all but then allows a particular window of each CCD to be 
+!!arg{nccd}{CCD number if only one to be added, except that 0
+means all but then allows a particular window of each CCD to be
 handled.}
 !!arg{nwin}{Window number if only one to be added.}
 !!table
 
 See also !!ref{sub.html}{sub}, !!ref{mul.html}{mul},
 !!ref{div.html}{div}, !!ref{uset.html}{uset},
-!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub}, 
+!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 !!ref{cmul.html}{cmul}, !!ref{cdiv.html}{cdiv}.
 
 !!end
@@ -72,15 +72,15 @@ of the first frame. }
 !!arg{coerce}{Coerce the second input file to match the first's format or not. Not always possible: needs
 binning factors to be correctly related and window start positions to match up correctly.}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be subtracted, 
-except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be subtracted,
+except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to be subtracted.}
 !!table
 
 See also !!ref{add.html}{add}, !!ref{mul.html}{mul},
 !!ref{div.html}{div}, !!ref{uset.html}{uset},
-!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub}, 
+!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 !!ref{cmul.html}{cmul}, !!ref{cdiv.html}{cdiv}.
 
 !!end
@@ -104,7 +104,7 @@ See also !!ref{add.html}{add}, !!ref{mul.html}{mul},
 mul input1 input2 [coerce] output [nccd nwin]!!break
 
 output = input1 * input2
- 
+
 !!head2 Arguments
 
 !!table
@@ -114,15 +114,15 @@ of the first frame. }
 !!arg{coerce}{Coerce the second input file to match the first's format or not. Not always possible: needs
 binning factors to be correctly related and window start positions to match up correctly.}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be multiplied, 
-except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be multiplied,
+except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to multiplied.}
 !!table
 
 See also !!ref{add.html}{add}, !!ref{uset.html}{uset},
-!!ref{sub.html}{sub}, !!ref{div.html}{div}, 
-!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub}, 
+!!ref{sub.html}{sub}, !!ref{div.html}{div},
+!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 !!ref{cmul.html}{cmul}, !!ref{cdiv.html}{cdiv}.
 
 !!end
@@ -156,15 +156,15 @@ of the first frame. }
 !!arg{coerce}{Coerce the second input file to match the first's format or not. Not always possible: needs
 binning factors to be correctly related and window start positions to match up correctly.}
 !!arg{output}{Output frame}
-!!arg{nccd}{CCD number if only one to be divided, 
-except that 0 means all but 
+!!arg{nccd}{CCD number if only one to be divided,
+except that 0 means all but
 then allows a particular window of each CCD to be handled.}
 !!arg{nwin}{Window number if only one to divided.}
 !!table
 
 See also !!ref{add.html}{add}, !!ref{sub.html}{sub},
 !!ref{mul.html}{mul}, !!ref{uset.html}{uset},
-!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub}, 
+!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 !!ref{cmul.html}{cmul}, !!ref{cdiv.html}{cdiv}.
 
 !!end
@@ -184,7 +184,7 @@ See also !!ref{add.html}{add}, !!ref{sub.html}{sub},
 !!emph{uset} sets a CCD or a single window of a CCD of
 one Ultracam frame to its value in another. This can be used to splice together
 frames. For instance to make a single flat field frame from
-ones that are well exposed in each CCD separately. 
+ones that are well exposed in each CCD separately.
 
 !!head2 Invocation
 
@@ -200,14 +200,14 @@ of the first frame. }
 binning factors to be correctly related and window start positions to match up correctly.}
 !!arg{output}{Output frame. This will be the same as the first input, but with
 some parts replaced by data from the second input frame.}
-!!arg{nccd}{CCD number. 0 means all, but allows a particular window of 
+!!arg{nccd}{CCD number. 0 means all, but allows a particular window of
 each CCD to be set}
 !!arg{nwin}{Window number if only one to be set, 0 for all.}
 !!table
 
 See also !!ref{add.html}{add}, !!ref{sub.html}{sub},
 !!ref{mul.html}{mul}, !!ref{div.html}{div},
-!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub}, 
+!!ref{cadd.html}{cadd}, !!ref{csub.html}{csub},
 !!ref{cmul.html}{cmul}, !!ref{cdiv.html}{cdiv}.
 
 !!end
@@ -231,7 +231,7 @@ int main(int argc, char* argv[]){
     size_t slash = comm.find_last_of('/');
     if(slash != std::string::npos) comm.erase(0,slash+1);
 
-    const int NCOM = 5; 
+    const int NCOM = 5;
     std::string command[NCOM] = {"add", "sub", "mul", "div", "uset"};
 
     bool recog = false;
@@ -268,7 +268,7 @@ int main(int argc, char* argv[]){
 
     bool coerce;
     input.get_value("coerce", coerce, true, "coerce second input file to match the first?");
-    
+
     if(coerce){
       frame2.crop(frame1);
     }else{
@@ -294,97 +294,97 @@ int main(int argc, char* argv[]){
 
     if(comm == "add"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame1[nccd][nwin] += frame2[nccd][nwin];
-	}else{
-	  for(size_t iw=0; iw<frame1[nccd].size(); iw++)
-	    frame1[nccd][iw] += frame2[nccd][iw];
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame1[nccd][nwin] += frame2[nccd][nwin];
+    }else{
+      for(size_t iw=0; iw<frame1[nccd].size(); iw++)
+        frame1[nccd][iw] += frame2[nccd][iw];
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame1.size(); ic++)
-	  if(frame1[ic].size() > nwin)
-	    frame1[ic][nwin] += frame2[ic][nwin];
+    nwin--;
+    for(size_t ic=0; ic<frame1.size(); ic++)
+      if(frame1[ic].size() > nwin)
+        frame1[ic][nwin] += frame2[ic][nwin];
       }else{
-	frame1 += frame2;
+    frame1 += frame2;
       }
 
     }else if(comm == "sub"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame1[nccd][nwin] -= frame2[nccd][nwin];
-	}else{
-	  for(size_t iw=0; iw<frame1[nccd].size(); iw++)
-	    frame1[nccd][iw] -= frame2[nccd][iw];
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame1[nccd][nwin] -= frame2[nccd][nwin];
+    }else{
+      for(size_t iw=0; iw<frame1[nccd].size(); iw++)
+        frame1[nccd][iw] -= frame2[nccd][iw];
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame1.size(); ic++)
-	  if(frame1[ic].size() > nwin)
-	    frame1[ic][nwin] -= frame2[ic][nwin];
+    nwin--;
+    for(size_t ic=0; ic<frame1.size(); ic++)
+      if(frame1[ic].size() > nwin)
+        frame1[ic][nwin] -= frame2[ic][nwin];
       }else{
-	frame1 -= frame2;
+    frame1 -= frame2;
       }
 
     }else if(comm == "mul"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame1[nccd][nwin] *= frame2[nccd][nwin];
-	}else{
-	  for(size_t iw=0; iw<frame1[nccd].size(); iw++)
-	    frame1[nccd][iw] *= frame2[nccd][iw];
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame1[nccd][nwin] *= frame2[nccd][nwin];
+    }else{
+      for(size_t iw=0; iw<frame1[nccd].size(); iw++)
+        frame1[nccd][iw] *= frame2[nccd][iw];
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame1.size(); ic++)
-	  if(frame1[ic].size() > nwin)
-	    frame1[ic][nwin] *= frame2[ic][nwin];
+    nwin--;
+    for(size_t ic=0; ic<frame1.size(); ic++)
+      if(frame1[ic].size() > nwin)
+        frame1[ic][nwin] *= frame2[ic][nwin];
       }else{
-	frame1 *= frame2;
+    frame1 *= frame2;
       }
 
     }else if(comm == "div"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame1[nccd][nwin] /= frame2[nccd][nwin];
-	}else{
-	  for(size_t iw=0; iw<frame1[nccd].size(); iw++)
-	    frame1[nccd][iw] /= frame2[nccd][iw];
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame1[nccd][nwin] /= frame2[nccd][nwin];
+    }else{
+      for(size_t iw=0; iw<frame1[nccd].size(); iw++)
+        frame1[nccd][iw] /= frame2[nccd][iw];
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame1.size(); ic++)
-	  if(frame1[ic].size() > nwin)
-	    frame1[ic][nwin] /= frame2[ic][nwin];
+    nwin--;
+    for(size_t ic=0; ic<frame1.size(); ic++)
+      if(frame1[ic].size() > nwin)
+        frame1[ic][nwin] /= frame2[ic][nwin];
       }else{
-	frame1 /= frame2;
+    frame1 /= frame2;
       }
 
     }else if(comm == "uset"){
       if(nccd){
-	nccd--;
-	if(nwin){
-	  nwin--;
-	  frame1[nccd][nwin] = frame2[nccd][nwin];
-	}else{
-	  for(size_t iw=0; iw<frame1[nccd].size(); iw++)
-	    frame1[nccd][iw] = frame2[nccd][iw];
-	}
+    nccd--;
+    if(nwin){
+      nwin--;
+      frame1[nccd][nwin] = frame2[nccd][nwin];
+    }else{
+      for(size_t iw=0; iw<frame1[nccd].size(); iw++)
+        frame1[nccd][iw] = frame2[nccd][iw];
+    }
       }else if(nwin){
-	nwin--;
-	for(size_t ic=0; ic<frame1.size(); ic++)
-	  if(frame1[ic].size() > nwin)
-	    frame1[ic][nwin] = frame2[ic][nwin];
+    nwin--;
+    for(size_t ic=0; ic<frame1.size(); ic++)
+      if(frame1[ic].size() > nwin)
+        frame1[ic][nwin] = frame2[ic][nwin];
       }else{
-	frame1 = frame2;
+    frame1 = frame2;
       }
 
     }else{

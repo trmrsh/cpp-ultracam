@@ -26,12 +26,12 @@ least one object must have been defined. If you define more than one then you mu
 object you wish to attach a sky region to when adding sky regions.  During extraction, to determine whether a pixel
 is in the sky, the sky regions are gone through in turn, so whichever one is defined last has precedence. Thus if
 a pixel is include in the sky in the first region defined but excluded in the third, it will be excluded unless there
-is a later region which includes it once more. This allows you to define a sloppy all inclusive sky and then to exclude 
+is a later region which includes it once more. This allows you to define a sloppy all inclusive sky and then to exclude
 parts of it that are no good.
 
 !!head2 Invocation
 
-setreg [device] data newfile region nccd xleft xright ylow yhigh iset (ilow ihigh)/(plow phigh) 
+setreg [device] data newfile region nccd xleft xright ylow yhigh iset (ilow ihigh)/(plow phigh)
 hwidth fwhm readout gain]!!break
 
 !!head2 Command line arguments
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]){
   void plot_profile(float y1, float y2, float ilow, float ihigh, const std::vector<Subs::Array1D<float> >& ypos, const std::vector<Subs::Array1D<float> >& profile);
   void plot_regions(const Ultracam::CCD<Ultracam::Specap>& region, bool profile);
   int which_win(float x1, float x2, float y1, float y2, const Ultracam::CCD<Ultracam::Windata>& data, int& nwpick);
-  
+
   using Subs::sqr;
   using Ultracam::Ultracam_Error;
   using Ultracam::Input_Error;
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]){
       region.rasc(regname);
 
       if(region.size() != data.size())
-	throw Ultracam_Error("Data frame and region file have conflicting CCD numbers");    
+    throw Ultracam_Error("Data frame and region file have conflicting CCD numbers");
     }
 
     int nccd;
@@ -233,25 +233,25 @@ int main(int argc, char* argv[]){
     Subs::Array1D<float> all;
 
     for(size_t nwin=0; nwin<data[nccd].size(); nwin++){
-      
+
       const Ultracam::Windata &win = data[nccd][nwin];
       const Ultracam::Windata &var = dvar[nccd][nwin];
 
       if(make_profile(win, var, x1, x2, y1, y2, hwidth, profile[nwin], pvar[nwin], npix[nwin])){
-	
-	// Add in value into a single array for percentile calculation
-	ypos[nwin].resize(profile[nwin].size());
-	for(int iy=0; iy<profile[nwin].size(); iy++){
-	  if(npix[nwin][iy]){
-	    ypos[nwin][iy] = win.yccd(iy);
-	    all.push_back(profile[nwin][iy]);
-	  }
-	}
-      }else{
-	profile[nwin].clear();
+
+    // Add in value into a single array for percentile calculation
+    ypos[nwin].resize(profile[nwin].size());
+    for(int iy=0; iy<profile[nwin].size(); iy++){
+      if(npix[nwin][iy]){
+        ypos[nwin][iy] = win.yccd(iy);
+        all.push_back(profile[nwin][iy]);
       }
     }
-    
+      }else{
+    profile[nwin].clear();
+      }
+    }
+
     if(all.size() == 0)
       throw Ultracam::Ultracam_Error("No valid pixels found");
 
@@ -259,8 +259,8 @@ int main(int argc, char* argv[]){
       ilow  = all[0];
       ihigh = ilow;
       for(int i=1; i<all.size(); i++){
-	ilow  = ilow  > all[i] ? all[i] : ilow;
-	ihigh = ihigh < all[i] ? all[i] : ihigh;
+    ilow  = ilow  > all[i] ? all[i] : ilow;
+    ihigh = ihigh < all[i] ? all[i] : ihigh;
       }
     }else if(iset == 'P'){
       ilow  = all.select(int(all.size()*plow+0.5));
@@ -271,7 +271,7 @@ int main(int argc, char* argv[]){
     plot.focus();
 
     // Plot the profiles
-    plot_profile(y1, y2, ilow, ihigh, ypos, profile); 
+    plot_profile(y1, y2, ilow, ihigh, ypos, profile);
 
     // Plot the regions
     plot_regions(region[nccd], true);
@@ -289,213 +289,213 @@ int main(int argc, char* argv[]){
 
       // Next lines define the prompt:
       if(region[nccd].size() == 0){
-	std::cout << "Choices: O(bject) or Q(uit)" << std::endl;
+    std::cout << "Choices: O(bject) or Q(uit)" << std::endl;
       }else{
-	std::cout << "Choices: O(bject), S(ky), A(nti-sky), B(ad) or Q(uit)" << std::endl;
+    std::cout << "Choices: O(bject), S(ky), A(nti-sky), B(ad) or Q(uit)" << std::endl;
       }
 
       // Now get cursor input.
       if(!cpgcurs(&x,&y,&ret)) throw Ultracam_Error("Cursor error");
       ret = toupper(ret);
-      
+
       if(ret == 'O'){
 
-	cpgsci(3);
-	std::cout << "\nMark the edges of the object extraction region using the cursor, Q to quit" << std::endl;
-	std::cout << "\nThe first edge ..." << std::endl;
+    cpgsci(3);
+    std::cout << "\nMark the edges of the object extraction region using the cursor, Q to quit" << std::endl;
+    std::cout << "\nThe first edge ..." << std::endl;
 
-	float xs=x, ys=y;
-	if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
-	if(std::toupper(reply) == 'Q'){
-	  std::cerr << "Object selection aborted" << std::endl;
-	  continue;
-	}
-	
-	std::cout << "... now the second" << std::endl;
-	float xe=xs, ye=ys;
-	if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
+    float xs=x, ys=y;
+    if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
+    if(std::toupper(reply) == 'Q'){
+      std::cerr << "Object selection aborted" << std::endl;
+      continue;
+    }
 
-	  if(std::toupper(reply) == 'Q'){
-	    std::cerr << "Object definition aborted" << std::endl;
-	    continue;
-	  }
+    std::cout << "... now the second" << std::endl;
+    float xe=xs, ye=ys;
+    if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
 
-	  int nwpick;
-	  if(which_win(x1, x2, xs, xe, data[nccd], nwpick) != 1){ 
-	    std::cerr << "Object definition aborted" << std::endl;
-	    continue;
-	  }
-	    
-	  double ylow  = xe > xs ? xs : xe;
-	  double yhigh = xe > xs ? xe : xs;
+      if(std::toupper(reply) == 'Q'){
+        std::cerr << "Object definition aborted" << std::endl;
+        continue;
+      }
 
-	  // draw for reference when marking search region
-	  cpgmove(ylow, ilow);
-	  cpgdraw(ylow, ihigh);
-	  cpgmove(yhigh, ilow);
-	  cpgdraw(yhigh, ihigh);
-	  cpgmove(ylow, (ilow+ihigh)/2.);
-	  cpgmove(yhigh, (ilow+ihigh)/2.);
+      int nwpick;
+      if(which_win(x1, x2, xs, xe, data[nccd], nwpick) != 1){
+        std::cerr << "Object definition aborted" << std::endl;
+        continue;
+      }
 
-	  std::cout << "\nMark the limits of the region over which to search for the object when re-positioning during extraction, Q to quit" << std::endl;
-	  std::cout << "These limits must enclose the extraction region." << std::endl;
-	  std::cout << "\nThe first limit ..." << std::endl;
+      double ylow  = xe > xs ? xs : xe;
+      double yhigh = xe > xs ? xe : xs;
 
-	  xs=x; ys=y;
-	  if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
-	  if(std::toupper(reply) == 'Q'){
-	    std::cerr << "Object definition aborted" << std::endl;
-	    continue;
-	  }
-	
-	  std::cout << "... now the second" << std::endl;
-	  xe=xs; ye=ys;
-	  if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
+      // draw for reference when marking search region
+      cpgmove(ylow, ilow);
+      cpgdraw(ylow, ihigh);
+      cpgmove(yhigh, ilow);
+      cpgdraw(yhigh, ihigh);
+      cpgmove(ylow, (ilow+ihigh)/2.);
+      cpgmove(yhigh, (ilow+ihigh)/2.);
 
-	    if(std::toupper(reply) == 'Q'){
-	      std::cerr << "Object definition aborted" << std::endl;
-	      continue;
-	    }
+      std::cout << "\nMark the limits of the region over which to search for the object when re-positioning during extraction, Q to quit" << std::endl;
+      std::cout << "These limits must enclose the extraction region." << std::endl;
+      std::cout << "\nThe first limit ..." << std::endl;
 
-	    int nwpick2;
-	    if(which_win(x1, x2, xs, xe, data[nccd], nwpick2) != 1){ 
-	      std::cerr << "Object definition aborted" << std::endl;
-	      continue;
-	    }
-	    if(nwpick != nwpick2){
-	      std::cerr << "\nThe search limits and object extraction limits are in two different windows" << std::endl;
-	      std::cerr << "Object definition aborted" << std::endl;
-	      continue;
-	    }
+      xs=x; ys=y;
+      if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
+      if(std::toupper(reply) == 'Q'){
+        std::cerr << "Object definition aborted" << std::endl;
+        continue;
+      }
 
-	    double yslow  = xe > xs ? xs : xe;
-	    double yshigh = xe > xs ? xe : xs;
+      std::cout << "... now the second" << std::endl;
+      xe=xs; ye=ys;
+      if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
 
-	    double yp;
-	    float epos;
-	    bool pos_is_accurate = false;
-	    
-	    // Try to measure position
-	    try{
-	      bool again = true;
-	      while(again){
-		  std::cout << "Measure centroid of object, 'y' or 'n'?" << std::endl;
-		  if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
-		  if(reply == ' ' || reply == 'y' || reply == 'Y'){
-		      float start = data[nccd][nwpick].ycomp((ylow+yhigh)/2.);
-		      Subs::centroid(profile[nwpick].ptr(), pvar[nwpick].ptr(), 0, profile[nwpick].size()-1, fwhm, start, true, yp, epos);
-		      yp = data[nccd][nwpick].yccd(yp);
-		      if(yp < ylow || yp > yhigh) 
-			  throw Ultracam::Ultracam_Error("Measured position = " + Subs::str(yp) + " is outside extraction region " + Subs::str(ylow) + " to " + Subs::str(yhigh));
-		      again = false;
-		      pos_is_accurate = true;
-		      
-		  }else if(reply == 'n' || reply == 'N'){
-		      again = false;
-		      std::cout << "Will use mid-point of extraction region for target position" << std::endl;
-		      std::cout << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
-		      yp = (ylow+yhigh)/2.;
-		  }else{
-		      std::cout << "Reply = '" << reply << "' is not valid. Valid responses are 'y', 'Y', 'n' and 'N' only" << std::endl;
-		  }
-	      }		  
-	    }
-	    catch(const Subs::Subs_Error& err){
-	      std::cerr << "Failed to measure accurate position of the target; will use mid-point of extraction region instead" << std::endl;
-	      std::cerr << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
-	      yp = (ylow+yhigh)/2.;
-	    }
-	    catch(const Ultracam::Ultracam_Error& err){
-	      std::cerr << err << "; will use mid-point of extraction region instead" << std::endl;
-	      std::cerr << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
-	      yp = (ylow+yhigh)/2.;
-	    }
+        if(std::toupper(reply) == 'Q'){
+          std::cerr << "Object definition aborted" << std::endl;
+          continue;
+        }
 
-	    try {
-	      Ultracam::Specap new_specap(yslow, ylow, yp, yhigh, yshigh, pos_is_accurate, x1, x2);
+        int nwpick2;
+        if(which_win(x1, x2, xs, xe, data[nccd], nwpick2) != 1){
+          std::cerr << "Object definition aborted" << std::endl;
+          continue;
+        }
+        if(nwpick != nwpick2){
+          std::cerr << "\nThe search limits and object extraction limits are in two different windows" << std::endl;
+          std::cerr << "Object definition aborted" << std::endl;
+          continue;
+        }
 
-	      // Finally add it in the new Specap
-	      region[nccd].push_back(new_specap);
-	      
-	      std::cout << "New object added " << std::endl;
-	      
-	      // Re-plot
-	      plot_profile(y1, y2, ilow, ihigh, ypos, profile); 
-	      plot_regions(region[nccd], true);
-	      
-	    }
-	    catch(const Ultracam_Error& err){
-	      std::cerr << err << std::endl;
-	      std::cerr << "Object definition aborted" << std::endl;
-	      continue;
-	    }
+        double yslow  = xe > xs ? xs : xe;
+        double yshigh = xe > xs ? xe : xs;
 
-	  }else{
-	    std::cerr << "Cursor error" << std::endl;
-	  }
-	}else{
-	  std::cerr << "Cursor error" << std::endl;
-	}
+        double yp;
+        float epos;
+        bool pos_is_accurate = false;
+
+        // Try to measure position
+        try{
+          bool again = true;
+          while(again){
+          std::cout << "Measure centroid of object, 'y' or 'n'?" << std::endl;
+          if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
+          if(reply == ' ' || reply == 'y' || reply == 'Y'){
+              float start = data[nccd][nwpick].ycomp((ylow+yhigh)/2.);
+              Subs::centroid(profile[nwpick].ptr(), pvar[nwpick].ptr(), 0, profile[nwpick].size()-1, fwhm, start, true, yp, epos);
+              yp = data[nccd][nwpick].yccd(yp);
+              if(yp < ylow || yp > yhigh)
+              throw Ultracam::Ultracam_Error("Measured position = " + Subs::str(yp) + " is outside extraction region " + Subs::str(ylow) + " to " + Subs::str(yhigh));
+              again = false;
+              pos_is_accurate = true;
+
+          }else if(reply == 'n' || reply == 'N'){
+              again = false;
+              std::cout << "Will use mid-point of extraction region for target position" << std::endl;
+              std::cout << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
+              yp = (ylow+yhigh)/2.;
+          }else{
+              std::cout << "Reply = '" << reply << "' is not valid. Valid responses are 'y', 'Y', 'n' and 'N' only" << std::endl;
+          }
+          }
+        }
+        catch(const Subs::Subs_Error& err){
+          std::cerr << "Failed to measure accurate position of the target; will use mid-point of extraction region instead" << std::endl;
+          std::cerr << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
+          yp = (ylow+yhigh)/2.;
+        }
+        catch(const Ultracam::Ultracam_Error& err){
+          std::cerr << err << "; will use mid-point of extraction region instead" << std::endl;
+          std::cerr << "This is likely to make extraction region repositioning during extraction unreliable." << std::endl;
+          yp = (ylow+yhigh)/2.;
+        }
+
+        try {
+          Ultracam::Specap new_specap(yslow, ylow, yp, yhigh, yshigh, pos_is_accurate, x1, x2);
+
+          // Finally add it in the new Specap
+          region[nccd].push_back(new_specap);
+
+          std::cout << "New object added " << std::endl;
+
+          // Re-plot
+          plot_profile(y1, y2, ilow, ihigh, ypos, profile);
+          plot_regions(region[nccd], true);
+
+        }
+        catch(const Ultracam_Error& err){
+          std::cerr << err << std::endl;
+          std::cerr << "Object definition aborted" << std::endl;
+          continue;
+        }
+
+      }else{
+        std::cerr << "Cursor error" << std::endl;
+      }
+    }else{
+      std::cerr << "Cursor error" << std::endl;
+    }
 
       }else if(region[nccd].size() && (ret == 'S' || ret == 'A' || ret == 'B')){
 
-	std::string sky;
-	if(ret == 'S'){
-	  sky = "sky";
-	  cpgsci(5);
-	}else if(ret == 'A'){
-	  sky = "anti-sky";
-	  cpgsci(7);
-	}else if(ret == 'B'){
-	  sky = "bad sky";
-	  cpgsci(2);
-	}
- 
-	// First work out which object to associate the new sky region with.
-	Ultracam::CCD<Ultracam::Specap>::optr object;
+    std::string sky;
+    if(ret == 'S'){
+      sky = "sky";
+      cpgsci(5);
+    }else if(ret == 'A'){
+      sky = "anti-sky";
+      cpgsci(7);
+    }else if(ret == 'B'){
+      sky = "bad sky";
+      cpgsci(2);
+    }
 
-	// reversal of x and y in the next line is deliberate
-	if(!region[nccd].selected(y,x,object)){
-	    std::cerr << "Sorry, no object selected" << std::endl;
-	    std::cerr << "When using 'S', 'A' or 'B' you must position the cursor on an object." << std::endl;
-	    continue;
-	}
+    // First work out which object to associate the new sky region with.
+    Ultracam::CCD<Ultracam::Specap>::optr object;
 
-	std::cout << "Use the cursor to mark the extent of the " << sky << " region, hit any key to register the positions, Q to quit" << std::endl;
-	std::cout << "\nMark the first boundary" << std::endl;
+    // reversal of x and y in the next line is deliberate
+    if(!region[nccd].selected(y,x,object)){
+        std::cerr << "Sorry, no object selected" << std::endl;
+        std::cerr << "When using 'S', 'A' or 'B' you must position the cursor on an object." << std::endl;
+        continue;
+    }
 
-	float xs=x, ys=y;
-	if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
-	if(std::toupper(reply) == 'Q') continue;
-	
-	std::cout << "Now the second" << std::endl;
-	float xe=xs, ye=ys;
-	if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
+    std::cout << "Use the cursor to mark the extent of the " << sky << " region, hit any key to register the positions, Q to quit" << std::endl;
+    std::cout << "\nMark the first boundary" << std::endl;
 
-	  if(std::toupper(reply) == 'Q') continue;
+    float xs=x, ys=y;
+    if(!cpgcurs(&xs,&ys,&reply)) throw Ultracam_Error("Cursor error");
+    if(std::toupper(reply) == 'Q') continue;
 
-	  double ylow  = xe > xs ? xs : xe;
-	  double yhigh = xe > xs ? xe : xs;
+    std::cout << "Now the second" << std::endl;
+    float xe=xs, ye=ys;
+    if(cpgband(1,1,xe,ye,&xs,&ys,&reply)){
 
-	  object->push_back(Ultracam::Specap::Skyreg(ylow, yhigh, ret == 'S', ret == 'B'));
+      if(std::toupper(reply) == 'Q') continue;
 
-	  // Re-plot
-	  plot_profile(y1, y2, ilow, ihigh, ypos, profile); 
-	  plot_regions(region[nccd], true);
+      double ylow  = xe > xs ? xs : xe;
+      double yhigh = xe > xs ? xe : xs;
 
-	}else{
-	  std::cerr << "Cursor error" << std::endl;
-	}
+      object->push_back(Ultracam::Specap::Skyreg(ylow, yhigh, ret == 'S', ret == 'B'));
+
+      // Re-plot
+      plot_profile(y1, y2, ilow, ihigh, ypos, profile);
+      plot_regions(region[nccd], true);
+
+    }else{
+      std::cerr << "Cursor error" << std::endl;
+    }
 
       }else if(ret != 'Q'){
-	std::cerr << "Input = " << ret << " not recognised." << std::endl;
+    std::cerr << "Input = " << ret << " not recognised." << std::endl;
       }
 
     }
-    
+
     // Dump the result
     region.wasc(regname);
-    
+
   }
 
   catch(const Ultracam::Input_Error& err){
@@ -530,7 +530,7 @@ void plot_profile(float y1, float y2, float ilow, float ihigh, const std::vector
   cpgsci(2);
   cpglab("Y position", "Counts/pixel", " ");
   cpgsci(1);
-  
+
   for(size_t nwin=0; nwin<profile.size(); nwin++)
     pgbin(ypos[nwin], profile[nwin]);
 
@@ -538,7 +538,7 @@ void plot_profile(float y1, float y2, float ilow, float ihigh, const std::vector
 
 // selects which window, if any, is uniquely defined by the range y1, y2
 int which_win(float x1, float x2, float y1, float y2, const Ultracam::CCD<Ultracam::Windata>& data, int& nwpick){
-  
+
   // Check that only one window is implied
   int ninside = 0;
   nwpick = 0;
@@ -551,7 +551,7 @@ int which_win(float x1, float x2, float y1, float y2, const Ultracam::CCD<Ultrac
   }
   if(ninside == 0)
     std::cerr << "Range specified in not associated with the Y span of any window" << std::endl;
-  
+
   if(ninside > 1)
     std::cerr << "Range specified is associated with more than one window" << std::endl;
 

@@ -15,11 +15,11 @@
 
 !!emph{boxmed} generates a frame where each new pixel is the median of the box
 of pixels centred on the old. Each window is treated independently. Edge pixels
-just use whichever pixels in the box actually exist. 
+just use whichever pixels in the box actually exist.
 
 !!head2 Invocation
 
-boxmed input xhwidth yhwidth output 
+boxmed input xhwidth yhwidth output
 
 !!head2 Arguments
 
@@ -83,20 +83,20 @@ int main(int argc, char* argv[]){
 
     for(size_t ic=0; ic<frame.size(); ic++){
       for(size_t iw=0; iw<frame[ic].size(); iw++){
-	const Ultracam::Windata &dwin = frame[ic][iw];
-	for(int iyn=0; iyn<dwin.ny(); iyn++){
-	  for(int ixn=0; ixn<dwin.nx(); ixn++){
+    const Ultracam::Windata &dwin = frame[ic][iw];
+    for(int iyn=0; iyn<dwin.ny(); iyn++){
+      for(int ixn=0; ixn<dwin.nx(); ixn++){
 
-	    // Load up buffer
-	    buffer.clear();
-	    for(int iyo=std::max(iyn-yhwidth,0); iyo<std::min(iyn+yhwidth+1,dwin.ny()); iyo++){
-	      for(int ixo=std::max(ixn-xhwidth,0); ixo<std::min(ixn+xhwidth+1,dwin.nx()); ixo++){
-		buffer.push_back(dwin[iyo][ixo]);
-	      }
-	    }
-	    out[ic][iw][iyn][ixn] = buffer.median();
-	  }
-	}
+        // Load up buffer
+        buffer.clear();
+        for(int iyo=std::max(iyn-yhwidth,0); iyo<std::min(iyn+yhwidth+1,dwin.ny()); iyo++){
+          for(int ixo=std::max(ixn-xhwidth,0); ixo<std::min(ixn+xhwidth+1,dwin.nx()); ixo++){
+        buffer.push_back(dwin[iyo][ixo]);
+          }
+        }
+        out[ic][iw][iyn][ixn] = buffer.median();
+      }
+    }
       }
     }
 
