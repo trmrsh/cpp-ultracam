@@ -1000,6 +1000,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                 double texp = gps_times[0] - gps_times[1] - USPEC_FT_TIME;
                 ut_date.add_second(-texp/2.);
                 exposure_time = texp;
+                if(reliable && gps_times[0] == gps_times[1]){
+                    reason = "GPS time identical to previous frame";
+                    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
+                    reliable = false;
+                }
 
             }else{
 
@@ -1043,6 +1048,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                 ut_date = gps_times[1];
                 ut_date.add_second(serverdata.expose_time-texp/2.);
                 exposure_time = texp;
+                if(reliable && gps_times[1] == gps_times[2]){
+                    reason = "GPS time identical to previous frame";
+                    std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
+                    reliable = false;
+                }
 
             }else if(gps_times.size() == 2){
                 // Can only back up one, so estimate of exposure time is actually based on the exposure following
@@ -1091,6 +1101,11 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
             ut_date = gps_times[nwins];
             ut_date.add_second(serverdata.expose_time-texp/2.);
             exposure_time = texp;
+            if(reliable && gps_times[nwins] == gps_times[nwins+1]){
+                reason = "GPS time identical to previous frame";
+                std::cerr << "Ultracam::read_header WARNING: time unreliable: " << reason << std::endl;
+                reliable = false;
+            }
 
         }else if(int(gps_times.size()) == nwins+1){
 
