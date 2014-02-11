@@ -1,0 +1,22 @@
+#!/bin/csh -fv
+
+# copies log stuff over
+
+# copy standard files over, bar a few special cases. This one deletes files at
+# the destination
+rsync -avu --delete --exclude="index*.html" --exclude="help*.html" \
+--include="*/" --include="20*[0-9]" --include "*.html" \
+--exclude "*" logs $WEB_PATH/ultracam/.
+
+# copy some links over. Can't do this for all because of extensive use of
+# directory symlinks which we want to leave untouched
+rsync -avuL --exclude "*/*/" --include "*/" --include "*.css" \
+--include "index*.html" --include="help*.html" \
+--exclude "*" logs $WEB_PATH/ultracam/.
+
+# make the permissions right
+
+cd $WEB_PATH/ultracam
+find logs -type d -exec \chmod 755 \{} \; 
+find logs -type f -exec \chmod 644 \{} \;
+find logs -name "*.py" -exec \chmod 755 \{} \;
