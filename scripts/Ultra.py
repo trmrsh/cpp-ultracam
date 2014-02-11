@@ -263,23 +263,22 @@ minimum run length.
         f.close()
 
 class Run(object):
-    """
-    This is the main class for reading and storing data on a per run basis,
+    """This is the main class for reading and storing data on a per run basis,
     including collating data from times and night log files. The aim is that
     it contains ALL the information for a given run.
 
     Static data Run.FUSSY controls the meaning of the equality operator '=='.
-    If FUSSY = True then absolutely every format parameter must match. FUSSY = False
-    then it will ignore differences in the avalanche gain of ULTRASPEC.
+    If FUSSY = True then absolutely every format parameter must match. FUSSY =
+    False then it will ignore differences in the avalanche gain of ULTRASPEC.
     """
 
     FUSSY = True
     RESPC = re.compile('\s+')
 
-    def __init__(self, xml, log=None, times=None, targets=None, telescope=None, night=None, \
-                     run=None, sskip=[], warn=False, noid=False):
-        """
-        xml       -- xml file name with format run###.xml
+    def __init__(self, xml, log=None, times=None, targets=None, \
+                 telescope=None, night=None, run=None, sskip=[], \
+                 warn=False, noid=False):
+        """xml       -- xml file name with format run###.xml
 
         log       -- previously read night log
 
@@ -293,13 +292,15 @@ class Run(object):
 
         run       -- date of run YYYY-MM.
 
-        sskip     -- list of targets to avoid Simbad searches for. Added to as a given 
-                     target fails to avoid stressing the Simbad server.
+        sskip     -- list of targets to avoid Simbad searches for. Added to
+                     as a given target fails to avoid stressing the Simbad
+                     server.
 
-        warn      -- If True, and the data is thought to be science (not bias, dark, 
-                     flat, etc) to get message of targets with no match in the
-                     'targets' (all of them if targets=None, so only sensible
-                     to set this if you have a targets object defined)
+        warn      -- If True, and the data is thought to be science (not
+                     bias, dark, flat, etc) to get message of targets with
+                     no match in the 'targets' (all of them if targets=None,
+                     so only sensible to set this if you have a targets object
+                     defined)
 
         noid      -- make no effort to ID a target
 
@@ -353,6 +354,7 @@ class Run(object):
         comment    -- log file comment
         simbad     -- flag: True if target data came from Simbad.
         nblue      -- Number of u-band co-adds.
+
         """
 
         self.fname     = xml
@@ -419,12 +421,12 @@ class Run(object):
         self.en_clr    = None
         self.hv_gain   = None
         self.output    = None
-        self.xleft     = 3*[None]
-        self.xright    = 3*[None]
-        self.xstart    = 2*[None]
-        self.ystart    = 3*[None]
-        self.nx        = 3*[None]
-        self.ny        = 3*[None]
+        self.xleft     = 4*[None]
+        self.xright    = 4*[None]
+        self.xstart    = 4*[None]
+        self.ystart    = 4*[None]
+        self.nx        = 4*[None]
+        self.ny        = 4*[None]
         self.observers = ''
         self.pid       = ''
         self.pi        = ''
@@ -819,94 +821,94 @@ class Run(object):
             user = None
         return user
 
-    def html_start(self, full, previous, next):
+    def html_start(self, previous, next):
         """
-        Returns string for initial part of html file. This interacts with a css file
-        defined early on. Various extra parameters are needed to write in links to the
-        file.
+        Returns string for initial part of html file. This interacts with a
+        css file defined early on. Various extra parameters are needed to
+        write in links to the file.
 
-        full     -- True for full output
         previous -- date of previous night of run (None for first night)
         next     -- date of next night of run (None for last night)
         """
 
-        inst = 'ULTRACAM' if self.instrument == 'UCM' else 'ULTRASPEC' if self.instrument == 'USP' else None
+        inst = 'ULTRACAM' if self.instrument == 'UCM' else \
+               'ULTRASPEC' if self.instrument == 'USP' else None
 
-        # build up start with small table indicating the telescope and instrument
+        # build up start with small table indicating the telescope and
+        # instrument
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="../ultra' + \
-            ('spec' if inst == 'ULTRASPEC' else 'cam') + '_logs.css" />\n' + \
-            '</head>\n<body>' + \
-            '<h1>' + 'Night of ' + self.night + '</h1>\n' + '<p>\n<table>\n' + \
-            '<tr><td class="left">Telescope:</td>' + td(self.telescope,'left') + '</tr>\n' + \
-            '<tr><td class="left">Instrument:</td>' + td(inst,'left') + '</tr>\n' + \
-            '<tr><td class="left">Run ID:</td>' + td(self.run,'left') + '</tr>\n</table><br>\n'
+            '<link rel="stylesheet" type="text/css" href="ultra' + \
+            ('spec' if inst == 'ULTRASPEC' else 'cam') + '.css" />\n' + \
+            '</head>\n<body>' + '<h1>' + 'Night of ' + self.night + \
+            '</h1>\n' + '<p>\n<table>\n' + \
+            '<tr><td class="left">Telescope:</td>' + \
+            td(self.telescope,'left') + '</tr>\n' + \
+            '<tr><td class="left">Instrument:</td>' + td(inst,'left') + \
+            '</tr>\n' + '<tr><td class="left">Run ID:</td>' + \
+            td(self.run,'left') + '</tr>\n</table><br>\n'
 
-        # link to the opposite version of the log, i.e. to the full one if this is short, and vice versa
-        st += '<a href="' + self.night
-        if full:
-            st += '_short.html">Short log</a>, '
-        else:
-            st += '_full.html">Full log</a>, '
-
-        # now pointers to the previous and next nights. The words are always there to make for convenient
-        # clicking through runs, but they won't be high-lighted if there is no 'previous' or 'next'
+        # now pointers to the previous and next nights. The words are always
+        # there to make for convenient clicking through runs, but they won't
+        # be high-lighted if there is no 'previous' or 'next'
         if previous is not None:
-            st += '<a href="../' + previous + '/' + previous
-            if full:
-                st += '_full.html">previous night</a>, '
-            else:
-                st += '_short.html">previous night</a>, '
+            st += '<a class="fnight" id="_' + previous + \
+                  '" href="#">previous night</a>, '
         else:
             st  += 'previous night, '
 
         if next is not None:
-            st += '<a href="../' + next + '/' + next
-            if full:
-                st += '_full.html">next night</a>.<br>'
-            else:
-                st += '_short.html">next night</a>.<br>'
+            st += '<a class="fnight" id="_' + next + \
+                  '" href="#">next night</a>.<br>'
         else:
             st += 'next night.<br>'
 
         # Finally the main table
 
         # First header line
-        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + th('Target','left')
-        if full: st += th('Auto ID','left')
+        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + \
+              th('Target','left')
+        st += th('Auto ID','left full')
         st += th('RA') + th('Dec')
+        st += th('Date','cen full')
 
-        if full: st += th('Date')
-
-        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + th('Frame') + th('Airmass',colspan=2)
+        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + \
+              th('Frame') + th('Airmass',colspan=2)
 
         if self.instrument == 'UCM':
             st += th('Filts')
 
         st += th('Mode') + th('Speed') + th('Bin') + th('Nb')
 
-        if self.instrument == 'UCM' and full:
-            st += th('Size1') + th('XLl') + th('XR1') + th('YS1')
-            st += th('Size2') + th('XL2') + th('XR2') + th('YS2')
-            st += th('Size3') + th('XL2') + th('XR3') + th('YS3')
+        if self.instrument == 'UCM':
+            st += th('Size1','cen full') + th('XLl', 'cen full') + \
+                  th('XR1', 'cen full') + th('YS1', 'cen full')
+            st += th('Size2', 'cen full') + th('XL2', 'cen full') + \
+                  th('XR2', 'cen full') + th('YS2', 'cen full')
+            st += th('Size3', 'cen full') + th('XL2', 'cen full') + \
+                  th('XR3', 'cen full') + th('YS3', 'cen full')
+
         elif self.instrument == 'USP':
             st += th('Clear')
             st += th("O'put")
             st += th('Gain')
-            st += th('X1') + th('Y1') + th('NX1') + th('NY1')
-            st += th('X2') + th('Y2') + th('NX2') + th('NY2')
+            st += th('X1','cen full') + th('Y1','cen full') + \
+                  th('NX1','cen full') + th('NY1','cen full')
+            st += th('X2','cen full') + th('Y2','cen full') + \
+                  th('NX2','cen full') + th('NY2', 'cen full')
+            st += th('X3','cen full') + th('Y3','cen full') + \
+                  th('NX3','cen full') + th('NY3', 'cen full')
+            st += th('X4','cen full') + th('Y4','cen full') + \
+                  th('NX4','cen full') + th('NY4', 'cen full')
 
         st += th('ID') + th('PI')
-        if full: st += th('Observers')
+        st += th('Observers', 'cen full')
         st += th('Run') + th('Comment','left') + '</tr>\n'
 
         # Second header line
         st += '<tr>\n' + th('no.') + th('')
-        if full: st += th('')
+        st += th('','cen full')
         st += th('') + th('')
-
-        if full: st+= th('Start of run')
-
+        st += th('Start of run', 'cen full')
         st += th('start') + th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
 
         if self.instrument == 'UCM':
@@ -914,50 +916,36 @@ class Run(object):
 
         st += th('') + th('') + th('') + th('')
 
-        if self.instrument == 'UCM' and full:
-            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
+        if self.instrument == 'UCM':
+            st += 12*th('','cen full')
         elif self.instrument == 'USP':
-            st += th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('') + th('')
+            st += 16*th('','cen full')
 
         st += th('') + th('')
-        if full: st += th('')
+        st += th('','cen full')
         st += th('no.') + th('') + '</tr>\n'
 
         return st
 
-    def html_table_row(self, full):
+    def html_table_row(self):
         """
-        Returns a row of table data. Must be kept consistent with previous header routine
-
-        full -- True for full output of windows sizes.
+        Returns a row of table data. Must be kept consistent with
+        previous header routine
         """
 
         st  = '<tr>'
-        if full:
-            st += td('<a href="../ucomment.php?wtype=full&date=%s&run=%s">%03d</a>' % (self.night,self.number,self.number))
-        else:
-            st += td('<a href="../ucomment.php?wtype=short&date=%s&run=%s">%03d</a>' % (self.night,self.number,self.number))
+        st += td('{0:03d}'.format(self.number))
         st += td(self.target,'left')
-        if full: st += td(self.id,'left')
-        if full:
-            st += td(self.ra)
-            st += td(self.dec)
-        else:
-            st += td(None if self.ra is None else self.ra[:10])
-            st += td(None if self.dec is None else self.dec[:9])
-
-        if full:
-            st += td(self.date)
-            st += td(self.utstart)
-            st += td(self.utend)
-            st += td('%6.1f' % float(self.expose) if self.expose is not None else None, 'right')
-            st += td('%7.3f' % float(self.sample) if self.sample is not None else None, 'right')
-        else:
-            st += td(None if self.utstart is None else self.utstart[:-3])
-            st += td(None if self.utend   is None else self.utend[:-3])
-            st += td('%5.0f' % float(self.expose) if self.expose is not None else None, 'right')
-            st += td('%6.2f' % float(self.sample) if self.sample is not None else None, 'right')
-
+        st += td(self.id,'left full')
+        st += td(self.ra)
+        st += td(self.dec)
+        st += td(self.date)
+        st += td(self.utstart)
+        st += td(self.utend)
+        st += td('{0:6.1f}'.format(float(self.expose))
+                if self.expose is not None else None, 'right')
+        st += td('{0:7.3f}'.format(float(self.sample)) \
+                 if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
         st += td(self.amassmin)
         st += td(self.amassmax)
@@ -971,25 +959,45 @@ class Run(object):
             st += td(self.en_clr)
             st += td(self.output)
             st += td(self.hv_gain)
-            st += td(self.xstart[0]) + td(self.ystart[0]) + td(self.nx[0]) + td(self.ny[0])
-            st += td(self.xstart[1]) + td(self.ystart[1]) + td(self.nx[1]) + td(self.ny[1])
-        elif self.instrument == 'UCM' and full:
-            st += td2(self.nx[0], self.ny[0]) + td(self.xleft[0]) + td(self.xright[0]) + td(self.ystart[0])
-            st += td2(self.nx[1], self.ny[1]) + td(self.xleft[1]) + td(self.xright[1]) + td(self.ystart[1])
-            st += td2(self.nx[2], self.ny[2]) + td(self.xleft[2]) + td(self.xright[2]) + td(self.ystart[2])
+            st += td(self.xstart[0], 'cen full') + \
+                  td(self.ystart[0], 'cen full') + \
+                  td(self.nx[0], 'cen full') + td(self.ny[0],'cen full')
+            st += td(self.xstart[1], 'cen full') + \
+                  td(self.ystart[1], 'cen full') + \
+                  td(self.nx[1], 'cen full') + td(self.ny[1], 'cen full')
+            st += td(self.xstart[2], 'cen full') + \
+                  td(self.ystart[2],'cen full') + \
+                  td(self.nx[2], 'cen full') + td(self.ny[2], 'cen full')
+            st += td(self.xstart[3], 'cen full') + \
+                  td(self.ystart[3], 'cen full') + \
+                  td(self.nx[3], 'cen full') + td(self.ny[3], 'cen full')
+
+        elif self.instrument == 'UCM':
+            st += td2(self.nx[0], self.ny[0], 'cen full') + \
+                  td(self.xleft[0], 'cen full') + \
+                  td(self.xright[0], 'cen full') + \
+                  td(self.ystart[0], 'cen full')
+            st += td2(self.nx[1], self.ny[1], 'cen full') + \
+                  td(self.xleft[1], 'cen full') + \
+                  td(self.xright[1], 'cen full') + \
+                  td(self.ystart[1], 'cen full')
+            st += td2(self.nx[2], self.ny[2], 'cen full') + \
+                  td(self.xleft[2], 'cen full') + \
+                  td(self.xright[2], 'cen full') + \
+                  td(self.ystart[2], 'cen full')
 
         st += td(self.pid) + td(self.pi)
-        if full: st += tdnw(self.observers.replace(' ', ''))
-        st += td('%03d' % self.number)
+        st += tdnw(self.observers.replace(' ', ''), 'cen full')
+        st += td('{0:03d}'.format(self.number))
         st += td(self.comment,'left')
         st += '</tr>'
         return st
 
     def __eq__(self, other):
         """
-        Defines ==. Equality between runs is defined in terms of their formats which have to match identically
-        (same instrument, windows, readout speed etc.). Differences in target names, exposure times do
-        not matter
+        Defines ==. Equality between runs is defined in terms of their formats
+        which have to match identically (same instrument, windows, readout
+        speed etc.). Differences in target names, exposure times do not matter
         """
         if (isinstance(other, Run)):
             ok = self.instrument == other.instrument and same_mode(self,other) and \
@@ -1189,19 +1197,24 @@ def same_mode(run1, run2):
     return run1.mode == run2.mode or (run1.mode == 'FFCLR' and run2.mode == 'FFNCLR') or \
             (run1.mode == 'FFNCLR' and run2.mode == 'FFCLR') or (run1.mode == '1-PAIR' and run2.mode == '1-PCLR') or \
             (run1.mode == '1-PCLR' and run2.mode == '1-PAIR')
-        
+
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
-    return '<td class="' + type + '">' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
+    ntype = 'undef full' if type.find('full') > -1 else 'undef'
+    return '<td class="' + type + '">' + str(data) + '</td>' \
+        if data is not None else '<td class="' + ntype + '">&nbsp;</td>'
 
 def tdnw(data, type='cen'):
     """Handle html table data whether defined or not, disable line breaking"""
-    return '<td class="' + type + '" nowrap>' + str(data) + '</td>' if data is not None else '<td class="undef">&nbsp;</td>'
-                     
+    ntype = 'undef full' if type.find('full') > -1 else 'undef'
+    return '<td class="' + type + '" nowrap>' + str(data) + '</td>' \
+        if data is not None else '<td class="' + ntype + '">&nbsp;</td>'
+
 def td2(data1, data2, type='cen'):
     """Handle html table data whether defined or not, put 'x' in between values"""
+    ntype = 'undef full' if type.find('full') > -1 else 'undef'
     if data1 is None and data2 is None:
-        return '<td class="undef">&nbsp;</td>'
+        return '<td class="' + ntype + '">&nbsp;</td>'
     elif data1 is None:
         return '<td class="' + type + '">?x' + str(data2) + '</td>'
     elif data2 is None:
@@ -1218,21 +1231,22 @@ def th(data, type='cen', colspan=1):
 
 def flist_stats(fnames, nrow, ncol, thresh):
     """
-    This function computes the mean and RMS of the mean values of left and right halves of 
-    the CCDs in the frames listed in fnames. It returns 
+    This function computes the mean and RMS of the mean values of left and
+    right halves of the CCDs in the frames listed in fnames. It returns
 
     (lmin,lmax,lmm,lrm,lgrad,rmin,rmax,rmm,rrm,rgrad)
 
-    where 
+    where
 
     lmin  = the minimum left-hand mean values (1 per CCD)
     lmax  = the maximum left-hand mean values     "
     lmmm  = the mean of left-hand mean values     "
     lrm   = the mean of left-hand RMS values      "
-    lgrad = gradient of left-hand mean values, counts/frame, (1 per CCD) 
+    lgrad = gradient of left-hand mean values, counts/frame, (1 per CCD)
 
     and then the same for the right-hand side. Each of the above are themselves
     arrays.
+
     """
 
     import numpy as np
@@ -1335,7 +1349,7 @@ def load_runs(rdir, ldir=None):
     all available night directories.
     
     rdir  -- the run directory (YYYY-MM format)
-    ldir  -- directory containing logs where it is also expected that there 
+    ldir  -- directory containing logs where it is also expected that there
              will be SKIP_TARGETS, TARGETS, AUTO_TARGETS to help with loading
              target data. If None an attempt will be made to access the 
              directory using the environment variable ULTRACAM_LOGS
@@ -1364,8 +1378,9 @@ def load_runs(rdir, ldir=None):
     ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
     ndirs.sort()
 
-    # now read the directories loading the formats of all files of the form 'run[0-9][0-9][0-9].xml'
-    # also see if there are equivalent '.dat' and '.times' files present from which to get comments
+    # now read the directories loading the formats of all files of the form
+    # 'run[0-9][0-9][0-9].xml' also see if there are equivalent '.dat' and
+    # '.times' files present from which to get comments
 
     first = True
     xtest = re.compile('run[0-9][0-9][0-9]\.xml$')
