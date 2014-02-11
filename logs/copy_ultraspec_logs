@@ -4,12 +4,19 @@
 
 # copy standard files over, bar a few special cases. This one deletes files at
 # the destination
-rsync -avu --delete --exclude="*.fits" --exclude="old_data/" --include="*/" \
---include="2*[0-9]" --include "*.html" --include "*.js" --include "*.png" \
---include "*.css" --include "*.json" --exclude "*" logs $WEB_PATH/ultraspec/.
+rsync -avu --delete --include '20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]/' \
+--include '20*/*.html' --include 'ultra.json' --include 'guide.html' \
+--exclude '*' \
+logs/ $WEB_PATH/ultraspec/logs
+
+# copy some links over. Can't do this for all because of extensive use of
+# directory symlinks which we want to leave untouched
+rsync -avuL --include 'index.html' --include 'ultra.css' \
+--include 'ultra_logs.js' --include 'ultra_search.js' \
+--include 'ultra_search.html' --exclude '*' \
+logs/ $WEB_PATH/ultraspec/logs
 
 # make the permissions right
-
 cd $WEB_PATH/ultraspec
 find logs -type d -exec \chmod 755 \{} \;
 find logs -type f -exec \chmod 644 \{} \;
