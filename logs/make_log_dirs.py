@@ -1,19 +1,25 @@
 #!/usr/bin/env python
 
 """
-Script to setup directories in logs. Run from the top-level ultracam directory
+Script to setup directories in logs. Run from the top-level ultracam or
+ultraspec directory (will be checked).
 
-Once new data are imported into the raw data directories (requires directories 
-for each day containing log files in format 'yyyy-mm-dd.dat') run this script 
+Once new data are imported into the raw data directories (requires directories
+for each day containing log files in format 'yyyy-mm-dd.dat') run this script
 to set up corresponding directories in the log directories and to link the log
 files.
 """
 
 import os, re
 
+root  = '/storage/astro1/phsaap'
+
+ucam  = os.path.join(root, 'ultracam')
+uspc  = os.path.join(root, 'ultraspec')
+
 cwd = os.getcwd()
-if cwd != '/storage/astro1/phsaap/ultracam':
-    print 'This must be run from /storage/astro1/phsaap/ultracam'
+if cwd != ucam and cwd != uspc:
+    print 'This must be run from ',ucam,'or',uspc
     exit(1)
 
 raw = 'raw_data'
@@ -30,7 +36,7 @@ for (root,dirs,files) in os.walk('.'):
             rlist.append(m.group(1))
 
 # Create missing run directories
-for run in rlist:   
+for run in rlist:
     log_dir = os.path.join(log, run)
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
@@ -43,8 +49,7 @@ for run in rlist:
     if not os.path.exists(link_targ):
         link = os.path.join('../..', raw, run, 'telescope')
         print 'linking',link_targ,'--->',link
-        os.symlink(link, link_targ)        
-
+        os.symlink(link, link_targ)
 
 mdir = re.compile(raw + '/(\d\d\d\d-\d\d)/(\d\d\d\d-\d\d-\d\d)$')
 
@@ -54,7 +59,7 @@ for (root,dirs,files) in os.walk('.'):
     for d in dirs:
         fpath = os.path.join(root, d)
         m = mdir.search(fpath)
-        if m: 
+        if m:
             run  = m.group(1)
             date = m.group(2)
             if run in dlist:
@@ -82,9 +87,9 @@ for key,dirs in dlist.iteritems():
         if not os.path.exists(link_targ):
             link      = os.path.join('../..', raw, d)
             print 'linking',link_targ,'--->',link
-            os.symlink(link, link_targ)        
+            os.symlink(link, link_targ)
 
-        (year,month,day) = d.split('-')
+        year,month,day = d.split('-')
         link_targ = os.path.join(log, d, d + '.dat')
         if not os.path.exists(link_targ):
             fl = os.path.join(raw, d, d + '.dat')
@@ -94,4 +99,3 @@ for key,dirs in dlist.iteritems():
                 os.symlink(link, link_targ)
             else:
                 print 'Failed to find',fl,'to link to',link_targ
-                
