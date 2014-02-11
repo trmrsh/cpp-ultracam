@@ -1,0 +1,17 @@
+#
+# List of target names to skip for SIMBAD lookup
+#
+Bias
+Flat
+Noise Test
+Noise tests
+Dome Flats
+Test for occultations
+Dome Flat
+Moon Occultation1
+Testing formats
+Comet ISON
+Charon
+timing
+usdriver test
+timing test
