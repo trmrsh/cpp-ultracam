@@ -28,27 +28,46 @@ import trm.subs as subs
 import trm.simbad as simbad
 import Ultra
 
+cwd = os.getcwd()
+if cwd.find('ultracam') > -1:
+    instrument = 'ULTRACAM'
+elif cwd.find('ultraspec') > -1:
+    instrument = 'ULTRACAM'
+else:
+    print 'Could not recognise instrument from ' + cwd
+    print 'please fix.'
+    exit(1)
+
 # Start off with fixed strings for html output
 GUIDE_HEAD = \
 """
-<p>
-<a class="query" href="#">Run and target search</a>
+<h3>{instrument} guide</h3>
 
 <p>
-<a id="short" href="#">Short</a>, <a id="long" href="#">Long</a>.
+<a class="search" href="#">Run and target search</a>
+
+<p>
+<a id="short" href="#">Brief</a>, <a id="long" href="#">Full</a>.
+
+<p>
+Observing runs:<br>
+
 """
 
 LOG_FOOT = \
 """
 <p>
 <table>
-<tr><th class="left">Auto ID</th><td>automated look-up of positions
+<tr><th class="left">Auto ID</th><td class="left">automated look-up of positions
 through a combination of string matching and SIMBAD lookups, this shows
 the identified object name</td></tr>
-<tr><th class="left">Dwell</th><td>total time on target</td></tr>
-<tr><th class="left">Cycle</th><td>time from one exposure to the next</td></tr>
-<tr><th class="left">Speed</th><td>hex code for speed 'cdd' =  slow, 'fbb' =
-fast. Bias frames must match the data in this parameter.</td></tr>
+<tr><th class="left">Dwell</th><td class="left">total time on target</td></tr>
+<tr><th class="left">Cycle</th><td class="left">time from one exposure to the next</td></tr>
+<tr><th class="left">Spd</th><td class="left">readout speed. ULTRACAM: 'cdd' =  slow, 'fbb' =
+fast. ULTRASPEC: 'S', 'F' for slow and fast. Bias frames must match the data in
+this parameter.</td></tr>
+<tr><th class="left">Opt</th><td class="left">ULTRASPEC: output, 'N' normal, 'A' avalanche.</td></tr>
+<tr><th class="left">Gn</th><td class="left">ULTRASPEC: avalanche gain setting.</td></tr>
 </table>
 """
 
@@ -102,7 +121,7 @@ if __name__ == '__main__':
 
     # Write the guide
     with open('guide.html', 'w') as fg:
-        fg.write(GUIDE_HEAD)
+        fg.write(GUIDE_HEAD.format(instrument=instrument))
 
         for rdir in rdirs:
             fg.write('\n<p>\n')
@@ -114,11 +133,12 @@ if __name__ == '__main__':
             fg.write('<ul>\n')
 
             # Now the night-by-night directories
-            ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and ndir_re.match(x) is not None]
+            ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and \
+                         ndir_re.match(x) is not None]
             ndirs.sort()
 
             for ndir in ndirs:
-                fg.write('<li> <a class="fnight" id="' + ndir + '" href="#">' + ndir + '</a></li>\n')
+                fg.write('<li> <a class="night" id="' + ndir + '" href="#">' + ndir + '</a></li>\n')
             fg.write('</ul>\n</div>\n')
 
     fg.close()

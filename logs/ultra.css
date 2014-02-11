@@ -26,15 +26,12 @@ body{
     overflow: auto;
 }
 
-/* This for the main page */
-.details {
-    display: none;
-}
+/* data section */
 
 #maincontent{
     position: fixed;
     top: 0;
-    left: 200px; 
+    left: 200px;
     right: 0;
     bottom: 0;
     overflow: auto;
@@ -43,7 +40,6 @@ body{
 .innertube{
     margin: 15px; /*Margins for inner DIV inside each DIV (to provide padding)*/
 }
-
 
 p {color: #ffffe0}
 
@@ -150,3 +146,10 @@ a:hover {
     text-decoration:underline;
     font-size: 11pt;
 }
+
+.details {
+    display: none;
+}
+
+
+

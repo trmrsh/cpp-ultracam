@@ -1,8 +1,14 @@
 /*
- * Script to eanble dynamic web pages to search through JSON databases of
+ * Script to enable dynamic web pages to search through JSON databases of
  * ultraspec and ultracam runs. This requires the JSON files created using
  * make_json.py in the logs directories.
  */
+
+// swin used to refer to the search window
+var swin;
+
+// where json data goes
+var data;
 
 function to_dms (num, prec, sign) {
     // Expresses a number in degrees:minutes:seconds format
@@ -51,9 +57,9 @@ function search_table_head(ra, dec, dist, expose){
         '<head>\n' +
         '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">' +
         '</script>\n' +
-        '<script type="text/javascript" src="ultra_search.js">\n' +
-        '</script>\n' +
-        '<link rel="stylesheet" type="text/css" href="ultras.css" />\n' +
+        //        '<script type="text/javascript" src="ultra_logs.js">\n' +
+        //  '</script>\n' +
+        '<link rel="stylesheet" type="text/css" href="ultra.css" />\n' +
         '</head>\n' +
         '<body>\n' +
         '<h1>Run search results.</h1>\n';
@@ -99,9 +105,6 @@ function search_table_foot(){
 
 $(document).ready(function(){
 
-        var swin;
-        var wprops = "height=500,width=1050,scrollbars=yes,titlebar=yes";
-
         //  Loads the json file
         $.getJSON("ultra.json",
                   function(data)
@@ -135,12 +138,13 @@ $(document).ready(function(){
                       // Create table for bottom of page
 
                       // header
-                      var table = '<table/>\n<tr><th>ID</th><th>RA</th>' +
+                      var table = '<p>\nThere were ' + info.length + ' unique ID/RA/Dec combos.\n';
+                      table += '\n<p>\n<table/>\n<tr><th>ID</th><th>RA</th>' +
                           '<th>Dec</th><th class="left">Matching strings</th></tr>\n';
 
                       // contents
                       for (var i=0; i<info.length; i++){
-                          table += '<tr><td class="left"><a class="tsearch" id="' + i + 
+                          table += '<tr><td class="left"><a class="tsearch" id="' + i +
                               '" href="#">' + info[i].id + '</a>' +
                               '</td><td>' + to_dms(info[i].ra, 2, false) +
                               '</td><td>' + to_dms(info[i].dec, 1, true) +
@@ -152,37 +156,51 @@ $(document).ready(function(){
                       table += "</table>\n";
 
                       // stick in place
+                      console.log(document.getElementById("targetTable"));
                       document.getElementById("targetTable").innerHTML = table;
+
+                      console.log(document.getElementById("targetTable"));
+
+                      // Creates and displays search results given central ra, dec (h,d),
+                      // maximum distance, minium exposure
+                      function createTable(ra0, dec0, maxrad, minexp){
+                          var table = search_table_head(ra0,dec0,maxrad,minexp);
+                          ra0 *= 15.;
+
+                          for (var i=0; i<data.length; i++){
+                              var ra     = 15.*data[i].ra;
+                              var dec    = data[i].dec;
+                              var expose = data[i].expose;
+                              var dist   = Math.sqrt(Math.pow((ra-ra0)*
+                                                              Math.cos(Math.PI*dec/180.),2)+
+                                                     Math.pow(dec-dec0,2));
+                              if(dist < maxrad && expose > minexp)
+                                  table += search_table_row(data[i], dist);
+                          }
+                          table += search_table_foot();
+
+                          // send to a new window
+                          // send to a different window
+                          if(!swin || swin.closed){
+                              swin = window.open("","results",
+                                                 "height=500,width=1050,scrollbars=1,titlebar=1,resizable=1");
+                          }
+                          swin.document.open();
+                          swin.document.write(table);
+                          swin.document.close();
+                          swin.focus();
+                      }
+
+                      console.log(document.getElementById("targetTable"));
 
                       // Searches by RA and Dec extracted from page
                       $("#search").click(function(){
-                              var ra0    = 15.*document.getElementById('ra').value;
+                              var ra0    = document.getElementById('ra').value;
                               var dec0   = document.getElementById('dec').value;
                               var maxrad = document.getElementById('dist').value;
                               var minexp = document.getElementById('expose').value;
 
-                              // create results table
-                              var table = search_table_head(document.getElementById('ra').value,
-                                                            dec0,maxrad,minexp);
-
-                              for (var i=0; i<data.length; i++){
-                                  var ra     = 15.*data[i].ra;
-                                  var dec    = data[i].dec;
-                                  var expose = data[i].expose;
-                                  var dist   = Math.sqrt(Math.pow((ra-ra0)*
-                                                                  Math.cos(Math.PI*dec/180.),2)+
-                                                         Math.pow(dec-dec0,2));
-                                  if(dist < maxrad && expose > minexp)
-                                      table += search_table_row(data[i], dist);
-                              }
-                              table += search_table_foot();
-
-                              // send to a different window
-                              if(!swin)
-                                  swin = window.open("","Search results",wprops);
-                              swin.document.open();
-                              swin.document.write(table);
-                              swin.document.close();
+                              createTable(ra0, dec0, maxrad, minexp);
                           });
 
                       // Searches by RA and Dec via id in link
@@ -190,32 +208,10 @@ $(document).ready(function(){
                               evt.preventDefault();
                               document.getElementById('ra').value = info[this.id].ra;
                               document.getElementById('dec').value = info[this.id].dec;
-                              var ra0    = 15.*info[this.id].ra;
-                              var dec0   = info[this.id].dec;
                               var maxrad = document.getElementById('dist').value;
                               var minexp = document.getElementById('expose').value;
 
-                              var table = search_table_head(info[this.id].ra,dec0,maxrad,minexp);
-
-                              for (var i=0; i<data.length; i++){
-                                  var ra     = 15.*data[i].ra;
-                                  var dec    = data[i].dec;
-                                  var expose = data[i].expose;
-                                  var dist   = Math.sqrt(Math.pow((ra-ra0)*
-                                                                  Math.cos(Math.PI*dec/180.),2)+
-                                                         Math.pow(dec-dec0,2));
-                                  if(dist < maxrad && expose > minexp)
-                                      table += search_table_row(data[i], dist);
-                              }
-                              table += search_table_foot();
-
-                              // send to a new window
-                              // send to a different window
-                              if(!swin)
-                                  swin = window.open("","Search results",wprops);
-                              swin.document.open();
-                              swin.document.write(table);
-                              swin.document.close();
+                              createTable(info[this.id].ra, info[this.id].dec, maxrad, minexp);
                           });
                   });
     });

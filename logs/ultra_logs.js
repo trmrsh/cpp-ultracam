@@ -4,16 +4,45 @@
 //
 // TRM Jan 2014. Uses jquery.
 
-$(document).ready(function() {
+// initially logs are fully displayed
+var show = true;
 
-        // initially logs are fully displayed
-        var full = true;
+// shows/hides class=full elements, and the reverse on
+// class=brief elements
+function showHide() {
+    if(show){
+        $('.full').show();
+        $('.brief').hide();
+    }else{
+        $('.full').hide();
+        $('.brief').show();
+    }
+}
 
-        // Load guide
-        $("#guidecontent").load('guide.html');
+// Show log of a night in the main section
+function showMain(night){
+    var url = night + '/' + night + '.html';
+    $("#maincontent").load(url,function(){
+            showHide();
+        });
+}
 
-        // Load (initial) main content
-        $("#maincontent").load('2013-11-05/2013-11-05.html');
+$(window).load(function(){
+
+        // Shows a night log linked in the main section in the main section
+        // IDs prefixed by '_' to make unique.
+        $("#maincontent").on('click','.night',function(evt){
+                evt.preventDefault();
+                var night = this.id.substr(1);
+                showMain(night);
+            });
+
+        // Shows a night log linked in the guide section in the main section
+        $("#guidecontent").on('click','.night',function(evt){
+                evt.preventDefault();
+                var night = this.id;
+                showMain(night);
+            });
 
         // Hides/shows nights in a given run in the guide
         // Requires div elements with IDs equal to
@@ -27,50 +56,40 @@ $(document).ready(function() {
                 if(!vis) $(elem).show();
             });
 
-        // Shows a night log linked in the guide section in the main section
-        $("#guidecontent").on('click','.fnight',function(evt){
-                evt.preventDefault();
-                var night = this.id;
-                var url = night + '/' + night + '.html';
-                $("#maincontent").load(url);
-                if(full){
-                    $('.full').show();
-                }else{
-                    $('.full').hide();
-                }
-            });
-
-        // Shows a night log linked in the main section in the main section
-        // IDs prefixed by '_' to make unique.
-        $("#maincontent").on('click','.fnight',function(evt){
-                evt.preventDefault();
-                var night = this.id.substr(1);
-                var url = night + '/' + night + '.html';
-                $("#maincontent").load(url);
-                if(full){
-                    $('.full').show();
-                }else{
-                    $('.full').hide();
-                }
-            });
-
         // Shows the search page in the main section
-        $("#guidecontent").on('click','.query',function(evt){
+        $("#guidecontent").on('click','.search',function(evt){
                 evt.preventDefault();
-                $("#maincontent").load("ultraspec_query.html");
+                $("#maincontent").load("ultra_search.html");
             });
 
         // Hides all "full" class elements
         $("#guidecontent").on('click', "#short", function(evt){
                 evt.preventDefault();
-                $('.full').hide();
-                full = false;
+                show = false;
+                showHide();
             });
 
         // Shows all "full" class elements
         $("#guidecontent").on('click', "#long", function(evt){
                 evt.preventDefault();
-                $('.full').show();
-                full = true;
+                show = true;
+                showHide();
             });
+
     });
+
+
+$(document).ready(function() {
+
+        // Load guide
+        $("#guidecontent").load('guide.html',function(){
+                // Load main content as first night found
+                var elements = document.getElementsByClassName('night');
+                var night = elements[0].id;
+                showMain(night);
+            });
+
+    });
+
+
+

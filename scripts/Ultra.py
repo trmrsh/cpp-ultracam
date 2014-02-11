@@ -837,8 +837,7 @@ class Run(object):
         # build up start with small table indicating the telescope and
         # instrument
         st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="ultra' + \
-            ('spec' if inst == 'ULTRASPEC' else 'cam') + '.css" />\n' + \
+            '<link rel="stylesheet" type="text/css" href="ultra.css"/>\n' + \
             '</head>\n<body>' + '<h1>' + 'Night of ' + self.night + \
             '</h1>\n' + '<p>\n<table>\n' + \
             '<tr><td class="left">Telescope:</td>' + \
@@ -851,16 +850,16 @@ class Run(object):
         # there to make for convenient clicking through runs, but they won't
         # be high-lighted if there is no 'previous' or 'next'
         if previous is not None:
-            st += '<a class="fnight" id="_' + previous + \
+            st += '<a class="night" id="_' + previous + \
                   '" href="#">previous night</a>, '
         else:
             st  += 'previous night, '
 
         if next is not None:
-            st += '<a class="fnight" id="_' + next + \
-                  '" href="#">next night</a>.<br>'
+            st += '<a class="night" id="_' + next + \
+                  '" href="#">next night</a>.'
         else:
-            st += 'next night.<br>'
+            st += 'next night.'
 
         # Finally the main table
 
@@ -868,18 +867,21 @@ class Run(object):
         st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + \
               th('Target','left')
         st += th('Auto ID','left full')
-        st += th('RA') + th('Dec')
+        st += th('RA','cen full') + th('Dec','cen full')
         st += th('Date','cen full')
 
-        st += th('UT', colspan=2) + th('Dwell') + th('Cycle') + \
-              th('Frame') + th('Airmass',colspan=2)
+        st += th('UT','cen full',colspan=2)
+        st += th('UT','cen brief')
+        st += th('Dwell') + th('Cycle') + \
+              th('Frame') + th('Airmass','cen full',colspan=2)
 
         if self.instrument == 'UCM':
             st += th('Filts')
 
-        st += th('Mode') + th('Speed') + th('Bin') + th('Nb')
+        st += th('Mode') + th('Spd') + th('Bin')
 
         if self.instrument == 'UCM':
+            st += th('Nb')
             st += th('Size1','cen full') + th('XLl', 'cen full') + \
                   th('XR1', 'cen full') + th('YS1', 'cen full')
             st += th('Size2', 'cen full') + th('XL2', 'cen full') + \
@@ -888,9 +890,9 @@ class Run(object):
                   th('XR3', 'cen full') + th('YS3', 'cen full')
 
         elif self.instrument == 'USP':
-            st += th('Clear')
-            st += th("O'put")
-            st += th('Gain')
+            st += th('Clr')
+            st += th('Opt')
+            st += th("Gn")
             st += th('X1','cen full') + th('Y1','cen full') + \
                   th('NX1','cen full') + th('NY1','cen full')
             st += th('X2','cen full') + th('Y2','cen full') + \
@@ -900,30 +902,27 @@ class Run(object):
             st += th('X4','cen full') + th('Y4','cen full') + \
                   th('NX4','cen full') + th('NY4', 'cen full')
 
-        st += th('ID') + th('PI')
+        st += th('ID','cen full') + th('PI')
         st += th('Observers', 'cen full')
         st += th('Run') + th('Comment','left') + '</tr>\n'
 
         # Second header line
-        st += '<tr>\n' + th('no.') + th('')
-        st += th('','cen full')
-        st += th('') + th('')
+        st += '<tr>\n' + th('no.') + th(' ')
+        st += 3*th(' ','cen full')
         st += th('Start of run', 'cen full')
-        st += th('start') + th('end') + th('sec.') + th('sec.') + th('no.') + th('min') + th('max')
+        st += th('start') + th('end','cen full') + th('sec.') + th('sec.') + th('no.')
+        st += th('min','cen full') + th('max','cen full')
 
         if self.instrument == 'UCM':
-            st += th('')
-
-        st += th('') + th('') + th('') + th('')
-
-        if self.instrument == 'UCM':
+            st += 5*th('')
             st += 12*th('','cen full')
         elif self.instrument == 'USP':
+            st += 6*th('')
             st += 16*th('','cen full')
 
-        st += th('') + th('')
-        st += th('','cen full')
-        st += th('no.') + th('') + '</tr>\n'
+        st += th('no.','cen full')
+        st += th('')
+        st += th('','cen full') + 2*th('') + '</tr>\n'
 
         return st
 
@@ -937,25 +936,40 @@ class Run(object):
         st += td('{0:03d}'.format(self.number))
         st += td(self.target,'left')
         st += td(self.id,'left full')
-        st += td(self.ra)
-        st += td(self.dec)
-        st += td(self.date)
+        st += td(self.ra,'cen full')
+        st += td(self.dec,'cen full')
+        st += td(self.date, 'cen full')
         st += td(self.utstart)
-        st += td(self.utend)
+        st += td(self.utend, 'cen full')
         st += td('{0:6.1f}'.format(float(self.expose))
                 if self.expose is not None else None, 'right')
         st += td('{0:7.3f}'.format(float(self.sample)) \
                  if self.sample is not None else None, 'right')
         st += td(self.nframe, 'right')
-        st += td(self.amassmin)
-        st += td(self.amassmax)
+        st += td(self.amassmin,'cen full')
+        st += td(self.amassmax,'cen full')
         if self.instrument == 'UCM':
             st += td(self.filters)
         st += td(self.mode)
         st += td(self.speed)
         st += td2(self.x_bin, self.y_bin)
-        st += td(self.nblue)
-        if self.instrument == 'USP':
+        if self.instrument == 'UCM':
+            st += td(self.nblue)
+
+            st += td2(self.nx[0], self.ny[0], 'cen full') + \
+                  td(self.xleft[0], 'cen full') + \
+                  td(self.xright[0], 'cen full') + \
+                  td(self.ystart[0], 'cen full')
+            st += td2(self.nx[1], self.ny[1], 'cen full') + \
+                  td(self.xleft[1], 'cen full') + \
+                  td(self.xright[1], 'cen full') + \
+                  td(self.ystart[1], 'cen full')
+            st += td2(self.nx[2], self.ny[2], 'cen full') + \
+                  td(self.xleft[2], 'cen full') + \
+                  td(self.xright[2], 'cen full') + \
+                  td(self.ystart[2], 'cen full')
+
+        elif self.instrument == 'USP':
             st += td(self.en_clr)
             st += td(self.output)
             st += td(self.hv_gain)
@@ -972,21 +986,7 @@ class Run(object):
                   td(self.ystart[3], 'cen full') + \
                   td(self.nx[3], 'cen full') + td(self.ny[3], 'cen full')
 
-        elif self.instrument == 'UCM':
-            st += td2(self.nx[0], self.ny[0], 'cen full') + \
-                  td(self.xleft[0], 'cen full') + \
-                  td(self.xright[0], 'cen full') + \
-                  td(self.ystart[0], 'cen full')
-            st += td2(self.nx[1], self.ny[1], 'cen full') + \
-                  td(self.xleft[1], 'cen full') + \
-                  td(self.xright[1], 'cen full') + \
-                  td(self.ystart[1], 'cen full')
-            st += td2(self.nx[2], self.ny[2], 'cen full') + \
-                  td(self.xleft[2], 'cen full') + \
-                  td(self.xright[2], 'cen full') + \
-                  td(self.ystart[2], 'cen full')
-
-        st += td(self.pid) + td(self.pi)
+        st += td(self.pid,'cen full') + td(self.pi)
         st += tdnw(self.observers.replace(' ', ''), 'cen full')
         st += td('{0:03d}'.format(self.number))
         st += td(self.comment,'left')
@@ -1191,23 +1191,29 @@ class Run(object):
 
 def same_mode(run1, run2):
     """
-    Defines when two runs have the same mode as far as calibrations are concerned 
+    Defines when two runs have the same mode as far as calibrations are concerned
     (e.g. FFCLR and FFNCLR are regarded as the same)
     """
     return run1.mode == run2.mode or (run1.mode == 'FFCLR' and run2.mode == 'FFNCLR') or \
             (run1.mode == 'FFNCLR' and run2.mode == 'FFCLR') or (run1.mode == '1-PAIR' and run2.mode == '1-PCLR') or \
             (run1.mode == '1-PCLR' and run2.mode == '1-PAIR')
 
+def space(data):
+    if isinstance(data, str) and data == '' or data.isspace():
+        return '&nbsp;'
+    else:
+        return str(data)
+
 def td(data, type='cen'):
     """Handle html table data whether defined or not"""
     ntype = 'undef full' if type.find('full') > -1 else 'undef'
-    return '<td class="' + type + '">' + str(data) + '</td>' \
+    return '<td class="' + type + '">' + space(data) + '</td>' \
         if data is not None else '<td class="' + ntype + '">&nbsp;</td>'
 
 def tdnw(data, type='cen'):
     """Handle html table data whether defined or not, disable line breaking"""
     ntype = 'undef full' if type.find('full') > -1 else 'undef'
-    return '<td class="' + type + '" nowrap>' + str(data) + '</td>' \
+    return '<td class="' + type + '" nowrap>' + space(data) + '</td>' \
         if data is not None else '<td class="' + ntype + '">&nbsp;</td>'
 
 def td2(data1, data2, type='cen'):
@@ -1216,18 +1222,19 @@ def td2(data1, data2, type='cen'):
     if data1 is None and data2 is None:
         return '<td class="' + ntype + '">&nbsp;</td>'
     elif data1 is None:
-        return '<td class="' + type + '">?x' + str(data2) + '</td>'
+        return '<td class="' + type + '">?x' + space(data2) + '</td>'
     elif data2 is None:
-        return '<td class="' + type + '">' + str(data1) + 'x?</td>'
+        return '<td class="' + type + '">' + space(data1) + 'x?</td>'
     else:
-        return '<td class="' + type + '">' + str(data1) + 'x' + str(data2) + '</td>'
+        return '<td class="' + type + '">' + space(data1) + 'x' + space(data2) + '</td>'
 
 def th(data, type='cen', colspan=1):
     """HTML table header entry"""
+
     if colspan == 1:
-        return '<th class="' + type + '">' + str(data) + '</th>'
+        return '<th class="' + type + '">' + space(data) + '</th>'
     else:
-        return '<th class="' + type + '" colspan="' + str(colspan) + '">' + str(data) + '</th>'
+        return '<th class="' + type + '" colspan="' + str(colspan) + '">' + space(data) + '</th>'
 
 def flist_stats(fnames, nrow, ncol, thresh):
     """
