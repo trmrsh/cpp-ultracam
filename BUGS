@@ -1,0 +1,9 @@
+Known bugs
+==========
+
+11/11/13 -- Liam found a bug when accessing ultraspec ucm files where it 
+            thought there were differing number between th eucm files and 
+	    a 1 CCD defect file he had created. It works with 'rtplot' where
+	    it is most needed.
+
+
