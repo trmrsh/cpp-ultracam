@@ -21,7 +21,7 @@ function showHide() {
 
 // Show log of a night in the main section
 function showMain(night){
-    var url = night + '/' + night + '.html';
+    var url = night + '.html';
     $("#maincontent").load(url,function(){
             showHide();
         });

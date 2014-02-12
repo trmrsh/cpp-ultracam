@@ -10,53 +10,13 @@ var swin;
 // where json data goes
 var data;
 
-function to_dms (num, prec, sign) {
-    // Expresses a number in degrees:minutes:seconds format
-    // or equivalently hours:minutes:seconds. Can handle negative
-    // numbers. Designed for 2-digits in leading number, i.e.
-    // dd:mm:ss.ss or hh:mm:ss.ss
-    //
-    // num  -- the number
-    // prec -- precision on the seconds
-    // sign -- true to add leading sign
-    var pos  = num >= 0.;
-    var fd   = Math.abs(num)
-    var id   = Math.floor (fd);
-    var fm   = 60.*(fd-id);
-    var im   = Math.floor(fm);
-    var secs = (60.*(fm-im)).toFixed(prec);
-    if(secs == 60.){
-        im += 1;
-        secs = 0.;
-        if(im == 60.){
-            id += 1;
-            im = 0.;
-        }
-    }
-    var ret = "";
-    if(sign){
-        if(pos){
-            ret += "+";
-        }else{
-            ret += "-";
-        }
-    }
-    if(id < 10) ret += "0";
-    ret += id + ":";
-    if(im < 10) ret += "0";
-    ret += im + ":";
-    if(secs < 10) ret += "0";
-    ret += secs;
-    return ret;
-}
-
 function search_table_head(ra, dec, dist, expose){
     // Returns header for search results table
     var head =  '<!DOCTYPE html>\n' +
         '<html>\n' +
         '<head>\n' +
-        '<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">' +
-        '</script>\n' +
+        //'<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">' +
+        //'</script>\n' +
         //        '<script type="text/javascript" src="ultra_logs.js">\n' +
         //  '</script>\n' +
         '<link rel="stylesheet" type="text/css" href="ultra.css" />\n' +
@@ -70,7 +30,7 @@ function search_table_head(ra, dec, dist, expose){
         ', and with an exposure time of at\n' +
         'least ' + expose + ' minutes.</p>\n<p>\n';
 
-    head += "<table/>\n<tr><th>Target</th><th>ID</th><th>RA<br>hours</th>" +
+    head += "<table/>\n<tbody>\n<tr><th>Target</th><th>ID</th><th>RA<br>hours</th>" +
         "<th>Dec<br>deg.</th><th>Dist<br>deg.</th><th>Run</th><th>Night</th>" +
         "<th>Number</th><th>Expose<br>mins</th><th>Comment</th></tr>\n";
     return head;
@@ -84,7 +44,7 @@ function search_table_row(line, dist){
         '</td><td>' + to_dms(line.dec, 1, true) +
         '</td><td>' + dist.toFixed(2) +
         '</td><td>' + line.run +
-        '</td><td><a href="' + line.night + '/' + line.night + '.html">' + line.night +
+        '</td><td><a href="' + line.night + '.html">' + line.night +
         '</a></td><td>' + line.num +
         '</td><td>' + line.expose.toFixed(1) +
         '</td><td class="left">' + line.comment +
@@ -92,7 +52,7 @@ function search_table_row(line, dist){
 }
 
 function search_table_foot(){
-    foot = '</table>\n\n<p>\n' +
+    foot = '</tbody>\n</table>\n\n<p>\n' +
         '"Dist" is the offset in degrees of the ID-ed position from the search position.</p>\n\n' +
         '<hr>\n' +
         '<address>\n' +
@@ -139,12 +99,12 @@ $(document).ready(function(){
 
                       // header
                       var table = '<p>\nThere were ' + info.length + ' unique ID/RA/Dec combos.\n';
-                      table += '\n<p>\n<table/>\n<tr><th>ID</th><th>RA</th>' +
+                      table += '\n<p>\n<table/>\n<tbody>\n<tr><th>ID</th><th>RA</th>' +
                           '<th>Dec</th><th class="left">Matching strings</th></tr>\n';
 
                       // contents
                       for (var i=0; i<info.length; i++){
-                          table += '<tr><td class="left"><a class="tsearch" id="' + i +
+                          table += '<tr><td class="left"><a class="tsearch" id="id' + i +
                               '" href="#">' + info[i].id + '</a>' +
                               '</td><td>' + to_dms(info[i].ra, 2, false) +
                               '</td><td>' + to_dms(info[i].dec, 1, true) +
@@ -153,7 +113,7 @@ $(document).ready(function(){
                       }
 
                       // finish table
-                      table += "</table>\n";
+                      table += "</tbody>\n</table>\n";
 
                       // stick in place
                       console.log(document.getElementById("targetTable"));
@@ -182,8 +142,8 @@ $(document).ready(function(){
                           // send to a new window
                           // send to a different window
                           if(!swin || swin.closed){
-                              swin = window.open("","results",
-                                                 "height=500,width=1050,scrollbars=1,titlebar=1,resizable=1");
+                              swin = window.open("","_blank",
+                                                 "width=1100 height=500, resizable=yes, scrollbars=yes, menubar=yes");
                           }
                           swin.document.open();
                           swin.document.write(table);
@@ -206,12 +166,13 @@ $(document).ready(function(){
                       // Searches by RA and Dec via id in link
                       $(".tsearch").click(function(evt){
                               evt.preventDefault();
-                              document.getElementById('ra').value = info[this.id].ra;
-                              document.getElementById('dec').value = info[this.id].dec;
+                              document.getElementById('ra').value = info[this.id.substr(2)].ra;
+                              document.getElementById('dec').value = info[this.id.substr(2)].dec;
                               var maxrad = document.getElementById('dist').value;
                               var minexp = document.getElementById('expose').value;
 
-                              createTable(info[this.id].ra, info[this.id].dec, maxrad, minexp);
+                              createTable(info[this.id.substr(2)].ra,
+                                          info[this.id.substr(2)].dec, maxrad, minexp);
                           });
                   });
     });

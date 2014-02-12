@@ -32,7 +32,7 @@ cwd = os.getcwd()
 if cwd.find('ultracam') > -1:
     instrument = 'ULTRACAM'
 elif cwd.find('ultraspec') > -1:
-    instrument = 'ULTRACAM'
+    instrument = 'ULTRASPEC'
 else:
     print 'Could not recognise instrument from ' + cwd
     print 'please fix.'
