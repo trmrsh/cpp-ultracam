@@ -821,66 +821,61 @@ class Run(object):
             user = None
         return user
 
-    def html_start(self, previous, next):
+    @staticmethod
+    def html_head(instrument, full=True):
         """
         Returns string for initial part of html file. This interacts with a
         css file defined early on. Various extra parameters are needed to
         write in links to the file.
 
-        previous -- date of previous night of run (None for first night)
-        next     -- date of next night of run (None for last night)
+        instrument -- name of instrument
+        full       -- True for start, False for mid-way lines
         """
 
-        inst = 'ULTRACAM' if self.instrument == 'UCM' else \
-               'ULTRASPEC' if self.instrument == 'USP' else None
+        if instrument != 'ULTRACAM' and instrument != 'ULTRASPEC':
+            raise Exception('Instrument = ' + instrument + ' not recognised')
 
-        # build up start with small table indicating the telescope and
-        # instrument
-        st = '<html>\n<head>\n<title> Night of '+ self.night + '</title>\n' + \
-            '<link rel="stylesheet" type="text/css" href="ultra.css"/>\n' + \
-            '</head>\n<body>' + '<h1>' + 'Night of ' + self.night + \
-            '</h1>\n' + '<p>\n<table>\n' + \
-            '<tr><td class="left">Telescope:</td>' + \
-            td(self.telescope,'left') + '</tr>\n' + \
-            '<tr><td class="left">Instrument:</td>' + td(inst,'left') + \
-            '</tr>\n' + '<tr><td class="left">Run ID:</td>' + \
-            td(self.run,'left') + '</tr>\n</table><br>\n'
+        st = ''
+        # Spacer line
+        if not full:
+            st += '<tr>\n' + 2*th('')
+            st += 4*th('','cen full')
+            st += th('') + th('','cen full') + 3*th('')
+            st += 2*th('','cen full')
+            if instrument == 'ULTRACAM':
+                st += 5*th('')
+                st += 12*th('','cen full')
+            elif instrument == 'ULTRASPEC':
+                st += 6*th('')
+                st += 16*th('','cen full')
 
-        # now pointers to the previous and next nights. The words are always
-        # there to make for convenient clicking through runs, but they won't
-        # be high-lighted if there is no 'previous' or 'next'
-        if previous is not None:
-            st += '<a class="night" id="_' + previous + \
-                  '" href="#">previous night</a>, '
-        else:
-            st  += 'previous night, '
-
-        if next is not None:
-            st += '<a class="night" id="_' + next + \
-                  '" href="#">next night</a>.'
-        else:
-            st += 'next night.'
-
-        # Finally the main table
+            st += th('','cen full')
+            st += th('')
+            st += th('','cen full') + 2*th('') + '</tr>\n'
 
         # First header line
-        st += '<p>\n<table cellpadding=2>\n<tr>\n' + th('Run') + \
-              th('Target','left')
+        if full:
+            st  = '<p>\n<table cellpadding=2>\n'
+        st += '<tr>\n'
+        st += th('Run')
+        st += th('Target','left')
         st += th('Auto ID','left full')
-        st += th('RA','cen full') + th('Dec','cen full')
+        st += th('RA','cen full')
+        st += th('Dec','cen full')
         st += th('Date','cen full')
-
         st += th('UT','cen full',colspan=2)
         st += th('UT','cen brief')
-        st += th('Dwell') + th('Cycle') + \
-              th('Frame') + th('Airmass','cen full',colspan=2)
+        st += th('Dwell')
+        st += th('Cycle')
+        st += th('Frame')
+        st += th('Airmass','cen full',colspan=2)
 
-        if self.instrument == 'UCM':
+        if instrument == 'ULTRACAM':
             st += th('Filts')
 
         st += th('Mode') + th('Spd') + th('Bin')
 
-        if self.instrument == 'UCM':
+        if instrument == 'ULTRACAM':
             st += th('Nb')
             st += th('Size1','cen full') + th('XLl', 'cen full') + \
                   th('XR1', 'cen full') + th('YS1', 'cen full')
@@ -889,7 +884,7 @@ class Run(object):
             st += th('Size3', 'cen full') + th('XL2', 'cen full') + \
                   th('XR3', 'cen full') + th('YS3', 'cen full')
 
-        elif self.instrument == 'USP':
+        elif instrument == 'ULTRASPEC':
             st += th('Clr')
             st += th('Opt')
             st += th("Gn")
@@ -907,22 +902,24 @@ class Run(object):
         st += th('Run') + th('Comment','left') + '</tr>\n'
 
         # Second header line
-        st += '<tr>\n' + th('no.') + th(' ')
-        st += 3*th(' ','cen full')
-        st += th('Start of run', 'cen full')
-        st += th('start') + th('end','cen full') + th('sec.') + th('sec.') + th('no.')
-        st += th('min','cen full') + th('max','cen full')
+        if full:
+            st += '<tr>\n' + th('no.') + th(' ')
+            st += 3*th(' ','cen full')
+            st += th('Start of run', 'cen full')
+            st += th('start') + th('end','cen full') + th('sec.') + \
+                  th('sec.') + th('no.')
+            st += th('min','cen full') + th('max','cen full')
 
-        if self.instrument == 'UCM':
-            st += 5*th('')
-            st += 12*th('','cen full')
-        elif self.instrument == 'USP':
-            st += 6*th('')
-            st += 16*th('','cen full')
+            if instrument == 'ULTRACAM':
+                st += 5*th('')
+                st += 12*th('','cen full')
+            elif instrument == 'ULTRASPEC':
+                st += 6*th('')
+                st += 16*th('','cen full')
 
-        st += th('no.','cen full')
-        st += th('')
-        st += th('','cen full') + 2*th('') + '</tr>\n'
+            st += th('no.','cen full')
+            st += th('')
+            st += th('','cen full') + 2*th('') + '</tr>\n'
 
         return st
 

@@ -43,15 +43,30 @@ GUIDE_HEAD = \
 """
 <h3>{instrument} guide</h3>
 
-<p>
-<a class="search" href="#">Run and target search</a>
+"""
 
-<p>
-<a id="short" href="#">Brief</a>, <a id="long" href="#">Full</a>.
+LOG_TITLE_HEAD = \
+"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>ULTRASPEC logs</title>
 
-<p>
-Observing runs:<br>
+</head>
 
+<body>
+"""
+
+LOG_HEAD = \
+"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>ULTRASPEC logs</title>
+
+</head>
+
+<body>
 """
 
 LOG_FOOT = \
@@ -69,6 +84,9 @@ this parameter.</td></tr>
 <tr><th class="left">Opt</th><td class="left">ULTRASPEC: output, 'N' normal, 'A' avalanche.</td></tr>
 <tr><th class="left">Gn</th><td class="left">ULTRASPEC: avalanche gain setting.</td></tr>
 </table>
+
+</body>
+</html>
 """
 
 # Main program starts here
@@ -76,7 +94,8 @@ this parameter.</td></tr>
 if __name__ == '__main__':
 
     # arguments
-    parser = argparse.ArgumentParser(description='Compiles web pages for ULTRASPEC/CAM logs')
+    parser = argparse.ArgumentParser(
+        description='Compiles web pages for ULTRASPEC/CAM logs')
 
     parser.add_argument('-r', dest='rdir', default=None,
                         help='name of run directory (all will be searched otherwise)')
@@ -96,12 +115,12 @@ if __name__ == '__main__':
     targets = Ultra.Targets('TARGETS', 'AUTO_TARGETS')
 
     # File matching regular expressions
-    rdir_re = re.compile('^\d\d\d\d-\d\d$') # Search for YYYY-MM
+    rdir_re = re.compile('^\d\d\d\d-\d\d$')      # Search for YYYY-MM
     ndir_re = re.compile('^\d\d\d\d-\d\d-\d\d$') # Search for night directories
-    xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
+    xml_re  = re.compile('run\d\d\d\.xml$')      # Search for xml files
 
-    # Targets to skip Simbad searches for; will be added to as more failures are found ensuring
-    # that searches for a given target are only made once.
+    # Targets to skip Simbad searches for; will be added to as more failures
+    # are found ensuring that searches for a given target are only made once.
     with open('SKIP_TARGETS') as fp:
         sskip = fp.readlines()
         sskip = [name.strip() for name in sskip if not name.startswith('#')]
@@ -116,29 +135,37 @@ if __name__ == '__main__':
             exit(1)
         rdirs = [args.rdir,]
     else:
-        rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and rdir_re.match(x) is not None]
+        rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
+                 rdir_re.match(x) is not None]
     rdirs.sort()
 
     # Write the guide
     with open('guide.html', 'w') as fg:
         fg.write(GUIDE_HEAD.format(instrument=instrument))
 
+        fg.write('<p>\n<a href="ultra_search.html">Run search</a>\n');
+
+        fg.write('<p>\nObserving runs:<br>\n');
+
         for rdir in rdirs:
             fg.write('\n<p>\n')
             year,month = rdir.split('-')
             mname = subs.int2month(int(month))
-            id = mname + '_' + year
-            fg.write('<a class="run" id="' + id + '" href="#">' + mname + ' ' + year + '</a><br>\n')
-            fg.write('<div class="details" id="' + id + '_details">\n')
+            run = mname + ' ' + year
+            fg.write('<a class="run" href="#" onclick="showHideNights(\'' +
+                     run + '\')">' + run + '</a><br>\n')
+            fg.write('<div class="details" id="guide_details_' + run + '">\n')
             fg.write('<ul>\n')
 
             # Now the night-by-night directories
-            ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and \
-                         ndir_re.match(x) is not None]
+            ndirs = [x for x in os.listdir(rdir) \
+                     if os.path.isdir(os.path.join(rdir,x)) and \
+                     ndir_re.match(x) is not None]
             ndirs.sort()
 
             for ndir in ndirs:
-                fg.write('<li> <a class="night" id="' + ndir + '" href="#">' + ndir + '</a></li>\n')
+                fg.write('<li> <a class="night" id="guide_' + ndir + \
+                         '" href="#">' + ndir + '</a></li>\n')
             fg.write('</ul>\n</div>\n')
 
     fg.close()
@@ -169,54 +196,156 @@ if __name__ == '__main__':
 
             npath = os.path.join(rdir, ndir)
 
-            # Read night log (does not matter if none exists, although a warning will be printed)
+            # Read night log (does not matter if none exists, although a
+            # warning will be printed)
             nlog = Ultra.Log(os.path.join(npath, ndir + '.dat'))
 
-            # Read timing data (does not matter if none exists, although a warning will be printed)
+            # Read timing data (does not matter if none exists, although a
+            # warning will be printed)
             times = Ultra.Times(os.path.join(npath, ndir + '.times'))
 
-            # Start off html log for the night
+            # write container file title and log
             htlog = os.path.join(npath, ndir + '.html')
             if os.path.exists(htlog) and not args.all:
                 continue
 
             print 'Generating',htlog
-            fh = open(htlog, 'w')
+            with open(htlog, 'w') as fh:
+                fh.write(\
+"""
+<!DOCTYPE html>
+<html>
+<head>
+<title>{0} logs</title>
 
-            # Read XML files for this night
-            dpath = os.path.join(npath, 'data')
-            xmls = [os.path.join(dpath,x) for x in os.listdir(dpath) if xml_re.match(x) is not None]
-            xmls.sort()
+<link rel="stylesheet" type="text/css" href="../ultra.css" />
 
-            first = True
-            expose = 0.
-            for xml in xmls:
-                try:
-                    run = Ultra.Run(xml, nlog, times, targets, telescope, ndir, rdir, sskip, True)
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+</script>
 
-                    if first:
-                        previous = ndirs[inight-1] if inight > 0 else None
-                        next     = ndirs[inight+1] if inight < len(ndirs)-1 else None
-                        fh.write('\n' + run.html_start(previous, next) + '\n')
-                        first = False
+<script>
+var night = "{1}";
+</script>
+<script src="../ultra_guide.js">
+</script>
 
-                    fh.write('\n' + run.html_table_row() + '\n')
+</head>
 
-                    expose += float(run.expose) if run.expose is not None and run.expose != ' ' else 0.
-                    runs.append(run)
+<body>
 
-                except Exception, err:
-                    print 'XML error: ',err,'in',xml
+<div id="guidecontent">
+Guide
+</object></div>
 
-            # Shut down html file
-            fh.write('</table>\n\n' + '<p>Total exposure time = ' + str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
-            fh.write(LOG_FOOT)
-            fh.close()
+<div id="titlecontent">
+Title
+</object></div>
 
-    # Write out newly added / modified targets to disk to save future simbad lookups
+<div id="logcontent">
+Log
+</object></div>
+
+</body>
+</html>
+""".format(instrument, ndir))
+
+            # write heading for html log
+            htlog = os.path.join(npath, ndir + '_title.html')
+            if os.path.exists(htlog) and not args.all:
+                continue
+
+            print 'Generating',htlog
+            with open(htlog, 'w') as fh:
+                fh.write(LOG_TITLE_HEAD)
+
+                # build up start with small table indicating the telescope and
+                # instrument
+                st = \
+"""
+<h1> Night of {0}</h1>
+
+<p>
+<table>
+<tr><td class="left">Telescope: </td><td class="left">{1}</td></tr>
+<tr><td class="left">Instrument:</td><td class="left">{2}</td></tr>
+<tr><td class="left">Run ID:    </td><td class="left">{3}</td></tr>
+</table>
+""".format(ndir, telescope, instrument, rdir)
+
+                st += \
+"""
+<p>
+<a href="#" onclick="showBrief()">brief</a>,
+<a href="#" onclick="showFull()">full</a>,
+"""
+
+                # now pointers to the previous and next nights. The words are always
+                # there to make for convenient clicking through runs, but they won't
+                # be high-lighted if there is no 'previous' or 'next'.
+                if inight > 0:
+                    st += '\n<a class="night" id="main_{0}" href="#">previous night</a>, '\
+                        .format(ndirs[inight-1])
+                else:
+                    st  += '\nprevious night, '
+
+                if inight < len(ndirs)-1:
+                    st += '\n<a class="night" id="main_{0}" href="#">next night</a>.'\
+                        .format(ndirs[inight+1])
+                else:
+                    st += 'next night.'
+                st += \
+"""
+
+</body>
+</html>
+"""
+                fh.write(st)
+
+            # now the log with the run-by-run table
+            htlog = os.path.join(npath, ndir + '_log.html')
+            if os.path.exists(htlog) and not args.all:
+                continue
+
+            print 'Generating',htlog
+            with open(htlog, 'w') as fh:
+                fh.write(LOG_HEAD)
+                fh.write('\n' + Ultra.Run.html_head(instrument) + '\n')
+
+                # Read XML files for this night
+                dpath = os.path.join(npath, 'data')
+                xmls = [os.path.join(dpath,x) for x in os.listdir(dpath) \
+                        if xml_re.match(x) is not None]
+                xmls.sort()
+
+                expose = 0.
+                for nrun, xml in enumerate(xmls):
+                    try:
+                        run = Ultra.Run(xml, nlog, times, targets, telescope,
+                                        ndir, rdir, sskip, True)
+                        fh.write('\n' + run.html_table_row() + '\n')
+                        expose += float(run.expose) if run.expose is not None and \
+                                  run.expose != ' ' else 0.
+                        runs.append(run)
+
+                        # write extra header line
+                        if (nrun + 1) % 20 == 0 and nrun < len(xmls)-1:
+                            fh.write('\n' + Ultra.Run.html_head(instrument,False)
+                                     + '\n')
+
+                    except Exception, err:
+                        print 'XML error: ',err,'in',xml
+
+                # Shut down html file
+                fh.write('</table>\n\n' + '<p>Total exposure time = ' + \
+                         str(int(100.*expose/3600.)/100.) + ' hours.<br>\n')
+                fh.write(LOG_FOOT)
+
+    # Write out newly added / modified targets to disk to save future simbad
+    # lookups
     if len(Ultra.sims):
 
-        # These have to be appended to the AUTO_TARGETS file. So we read them in again
+        # These have to be appended to the AUTO_TARGETS file. So we read them
+        # in again
         ntargs = Ultra.Targets('AUTO_TARGETS')
 
         if os.path.exists('AUTO_TARGETS'):
@@ -241,7 +370,8 @@ if __name__ == '__main__':
         with open('FAILED_TARGETS','w') as fobj:
             fobj.write('# The following have no IDs:\n')
             for name, value in Ultra.failures.iteritems():
-                fobj.write('%-32s %s %s run%03d' % (name.replace(' ','~'),value[0],value[1],value[2]) + '\n')
+                fobj.write('%-32s %s %s run%03d' % (name.replace(' ','~'),value[0],
+                                                    value[1],value[2]) + '\n')
 
         print 'Wrote',len(Ultra.failures),'names to FAILED_TARGETS'
     else:
