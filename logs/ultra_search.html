@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>ultra run searcher</title>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
 </script>
@@ -34,9 +35,11 @@ new page.
 <table>
 <tr>
 <td class="left">Maximum distance:<br>(degrees)</td>
-<td class="left"><input type="number" id="dist" value="2" size="5"></td>
+<td class="left"><input type="number" id="dist" value="2"
+step="0.01" size="5" min="0.01" max="180"></td>
 <td class="left">Minimum exposure:<br>(minutes)</td>
-<td class="left"><input type="number" id="expose" value="0" size="5"></td>
+<td class="left"><input type="number" id="expose" value="0"
+step="1" size="5" min="0" max="500"></td>
 </tr>
 </table>
 
@@ -46,9 +49,11 @@ new page.
 <table>
 <tr>
 <td class="left">Right Ascension:<br>(decimal hours)</td>
-<td class="left"><input type="number" id="ra" value="0" size="5"></td>
+<td class="left"><input type="number" id="ra" value="0" step="0.001"
+size="5" min="0" max="24"></td>
 <td class="left">Declination:<br>(decimal degrees)</td>
-<td class="left"><input type="number" id="dec" value="0" size="5"></td>
+<td class="left"><input type="number" id="dec" value="0" step="0.01"
+size="5" min="-90" max="90"></td>
 </tr>
 </table>
 </p>

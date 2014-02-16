@@ -204,51 +204,6 @@ if __name__ == '__main__':
             # warning will be printed)
             times = Ultra.Times(os.path.join(npath, ndir + '.times'))
 
-            # write container file title and log
-            htlog = os.path.join(npath, ndir + '.html')
-            if os.path.exists(htlog) and not args.all:
-                continue
-
-            print 'Generating',htlog
-            with open(htlog, 'w') as fh:
-                fh.write(\
-"""
-<!DOCTYPE html>
-<html>
-<head>
-<title>{0} logs</title>
-
-<link rel="stylesheet" type="text/css" href="../ultra.css" />
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
-</script>
-
-<script>
-var night = "{1}";
-</script>
-<script src="../ultra_guide.js">
-</script>
-
-</head>
-
-<body>
-
-<div id="guidecontent">
-Guide
-</object></div>
-
-<div id="titlecontent">
-Title
-</object></div>
-
-<div id="logcontent">
-Log
-</object></div>
-
-</body>
-</html>
-""".format(instrument, ndir))
-
             # write heading for html log
             htlog = os.path.join(npath, ndir + '_title.html')
             if os.path.exists(htlog) and not args.all:

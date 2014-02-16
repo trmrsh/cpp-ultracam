@@ -1,0 +1,9 @@
+The log structure is a mix of html, js, css and php and thus is rather
+complex. It is also designed to work for different cameras without unnecessary
+repetition.
+
+Basic structure is an index.php file which defines the basic log page
+structure of a left-hand side guie, a title section and the table itself.
+The content is loaded and controlled via javascript (ultra_guide.js). Before
+it even gets to this point, asmall bit of php can control the initialisation
+of the log which is displayed. 

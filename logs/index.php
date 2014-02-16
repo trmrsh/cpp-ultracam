@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>ULTRASPEC logs</title>
+<!-- insert directory component before logs -->
+<title>
+<?php
+$cwd  = getcwd();
+$dirs = explode("/", $cwd);
+$len  = count($dirs);
+echo strtoupper($dirs[$len-2]);
+?> logs</title>
 
 <link rel="stylesheet" type="text/css" href="ultra.css" />
 
