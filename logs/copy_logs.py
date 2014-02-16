@@ -26,7 +26,7 @@ wpath = os.path.join(os.environ['WEB_PATH'], instrument, 'logs')
 
 extras = ('index.html', 'guide.html', 'ultra.css', 'ultra_logs.js',
           'ultra_search.html', 'ultra_search.js', 'ultra.json',
-          'targets.html', 'targets.js')
+          'targets.html', 'targets.js', 'ultra_guide.js')
 
 dre = re.compile('^\d\d\d\d-\d\d-\d\d$')
 
@@ -34,14 +34,23 @@ ndirs = [dir for dir in os.listdir('.') if dre.match(dir)]
 
 # copy night logs first (only if they have changed)
 for dir in ndirs:
-    llog = os.path.join(dir, dir + '.html')
+    llog = os.path.join(dir, dir + '_log.html')
     if os.path.exists(llog):
-        wlog = os.path.join(wpath, dir + '.html')
+        wlog = os.path.join(wpath, dir + '_log.html')
         if not os.path.exists(wlog) or \
                 os.path.getmtime(llog) > os.path.getmtime(wlog) + 0.01:
             print llog,'-->',wlog
             shutil.copy2(llog, wlog)
             os.chmod(wlog, 0o644)
+
+    ltitle = os.path.join(dir, dir + '_title.html')
+    if os.path.exists(ltitle):
+        wtitle = os.path.join(wpath, dir + '_title.html')
+        if not os.path.exists(wtitle) or \
+                os.path.getmtime(ltitle) > os.path.getmtime(wtitle) + 0.01:
+            print ltitle,'-->',wtitle
+            shutil.copy2(ltitle, wtitle)
+            os.chmod(wtitle, 0o644)
 
 # copy extras (which could well be links)
 for lname in extras:
