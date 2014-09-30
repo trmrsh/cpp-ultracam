@@ -37,6 +37,7 @@ $(ALIASES):
 	@echo 'alias bcrop     $(progdir)/bcrop'       >> $(ALIASES)
 	@echo 'alias boxavg    $(progdir)/boxavg'      >> $(ALIASES)
 	@echo 'alias boxmed    $(progdir)/boxmed'      >> $(ALIASES)
+	@echo 'alias bsub      $(progdir)/bsub'      >> $(ALIASES)
 	@echo 'alias cadd      $(progdir)/cadd'        >> $(ALIASES)
 	@echo 'alias cdiv      $(progdir)/cdiv'        >> $(ALIASES)
 	@echo 'alias cmul      $(progdir)/cmul'        >> $(ALIASES)
