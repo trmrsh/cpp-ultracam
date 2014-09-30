@@ -3,11 +3,12 @@
 """
 Script to generate a JSON database for use with dynamic web pages to search
 for ULTRASPEC?CAM runs. This should be run once new data are ingested into the
-archive and as many targets have been identified and make_logs run for the 
+archive and as many targets have been identified and make_logs run for the
 final time. Only targets with position IDs are tracked.
 
 It should be run in the 'logs' directory which has sub-directories of
-the form '2005-11' (Nov 2005).
+the form '2005-11' (Nov 2005). 'Others' will also be recognised as a run 
+directory.
 """
 import os, sys, re, json
 from xml.dom import Node
@@ -40,6 +41,8 @@ fp.close()
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
              rdir_re.match(x) is not None]
+if os.path.isdir('Others'):
+    rdirs.append('Others')
 rdirs.sort()
 
 # Data to store for each run
