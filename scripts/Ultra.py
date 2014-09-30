@@ -871,7 +871,9 @@ class Run(object):
         st += th('Airmass','cen full',colspan=2)
 
         if instrument == 'ULTRACAM':
-            st += th('Filts')
+            st += th('Filters')
+        elif instrument == 'ULTRASPEC':
+            st += th('Filter')
 
         st += th('Mode') + th('Spd') + th('Bin')
 
@@ -945,8 +947,7 @@ class Run(object):
         st += td(self.nframe, 'right')
         st += td(self.amassmin,'cen full')
         st += td(self.amassmax,'cen full')
-        if self.instrument == 'UCM':
-            st += td(self.filters)
+        st += td(self.filters)
         st += td(self.mode)
         st += td(self.speed)
         st += td2(self.x_bin, self.y_bin)
