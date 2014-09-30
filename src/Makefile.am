@@ -82,7 +82,7 @@ DATE = $(shell date)
 install-data-hook: $(progdir)/add $(progdir)/mul $(progdir)/div \
 $(progdir)/sub $(progdir)/cadd $(progdir)/cmul $(progdir)/cdiv \
 $(progdir)/csub $(progdir)/cset $(progdir)/uset $(progdir)/msub \
-$(progdir)/mdiv $(progdir)/cplot
+$(progdir)/mdiv $(progdir)/bsub $(progdir)/cplot
 	echo "This is $(PACKAGE)-$(VERSION), built on $(DATE)" > $(progdir)/VERSION
 	@echo "Installed link targets"
 
@@ -117,6 +117,9 @@ $(progdir)/cdiv: $(progdir)/carith
 
 $(progdir)/cset: $(progdir)/carith
 	cd $(progdir); ln -sf carith $@
+
+$(progdir)/bsub: $(progdir)/multiframe
+	cd $(progdir); ln -sf multiframe $@
 
 $(progdir)/msub: $(progdir)/multiframe
 	cd $(progdir); ln -sf multiframe $@
