@@ -20,6 +20,8 @@ the form '2005-11' (Nov 2005) which have a structure like so:
 
 etc. It also expects there to be a file called TARGETS with information
 of target positions and regular expressions for translating targets in.
+
+One other directory called 'Other' will be recognised as a run directory.
 """
 
 import os, sys, re, argparse
@@ -137,6 +139,9 @@ if __name__ == '__main__':
     else:
         rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
                  rdir_re.match(x) is not None]
+        if os.path.isdir('Others'):
+            rdirs.append('Others')
+
     rdirs.sort()
 
     # Write the guide
@@ -149,9 +154,13 @@ if __name__ == '__main__':
 
         for rdir in rdirs:
             fg.write('\n<p>\n')
-            year,month = rdir.split('-')
-            mname = subs.int2month(int(month))
-            run = mname + ' ' + year
+            if rdir == 'Others':
+                run = 'Others'
+            else:
+                year,month = rdir.split('-')
+                mname = subs.int2month(int(month))
+                run = mname + ' ' + year
+
             fg.write('<a class="run" href="#" onclick="showHideNights(\'' +
                      run + '\')">' + run + '</a><br>\n')
             fg.write('<div class="details" id="guide_details_' + run + '">\n')

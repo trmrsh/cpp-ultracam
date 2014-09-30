@@ -25,18 +25,19 @@ if cwd != ucam and cwd != uspc:
 raw = 'raw_data'
 log = 'logs'
 
-# Check for run directories
-mdir = re.compile(raw + '/(\d\d\d\d-\d\d)$')
-rlist = []
-for (root,dirs,files) in os.walk('.'):
-    for d in dirs:
-        fpath = os.path.join(root, d)
-        m = mdir.search(fpath)
-        if m:
-            rlist.append(m.group(1))
+# regular expressions to match run and night directories
+mrdir = re.compile('^\d\d\d\d-\d\d$')
+mndir = re.compile('^\d\d\d\d-\d\d-\d\d$')
 
-# Create missing run directories
+# Create list of run directories in the raw data directory
+rlist = [rdir for rdir in os.listdir(raw)
+         if mrdir.search(rdir) or rdir == 'Others']
+
+# Create equivalents in the log directory (if they don't exist)
+dlist = {}
 for run in rlist:
+
+    # log_dir is run directory name in log directories
     log_dir = os.path.join(log, run)
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
@@ -45,56 +46,46 @@ for run in rlist:
         print log_dir,'already exists but is not a directory.'
         exit(1)
 
+    # create link to telescope file
     link_targ = os.path.join(log, run, 'telescope')
     if not os.path.exists(link_targ):
         link = os.path.join('../..', raw, run, 'telescope')
         print 'linking',link_targ,'--->',link
         os.symlink(link, link_targ)
 
-mdir = re.compile(raw + '/(\d\d\d\d-\d\d)/(\d\d\d\d-\d\d-\d\d)$')
+    # Compile list of night-by-night directories
+    raw_dir = os.path.join(raw, run)
+    ndirs = [ndir for ndir in os.listdir(raw_dir)
+             if mndir.search(ndir)]
 
-# Now check for day directories
-dlist = {}
-for (root,dirs,files) in os.walk('.'):
-    for d in dirs:
-        fpath = os.path.join(root, d)
-        m = mdir.search(fpath)
-        if m:
-            run  = m.group(1)
-            date = m.group(2)
-            if run in dlist:
-                dlist[run].append(date)
-            else:
-                dlist[run] = [date,]
-
-# Create day directories, copy data logs across
-# if need be, link back to data directories
-for key,dirs in dlist.iteritems():
-    for d in dirs:
-        log_dir  = os.path.join(log, d)
+    key = run
+    dirs = ndirs
+    # make sure equivalents exist in log directory
+    for ndir in ndirs:
+        log_dir  = os.path.join(log, ndir)
         if not os.path.exists(log_dir):
             os.mkdir(log_dir)
             print 'Created directory',log_dir
-            link_targ = os.path.join(log, key, d)
-            link      = os.path.join('..', d)
+            link_targ = os.path.join(log, run, ndir)
+            link      = os.path.join('..', ndir)
             print 'linking',link_targ,'--->',link
             os.symlink(link, link_targ)
         elif not os.path.isdir(log_dir):
             print log_dir,'already exists but is not a directory.'
             continue
 
-        link_targ = os.path.join(log, d, 'data')
+        link_targ = os.path.join(log, ndir, 'data')
         if not os.path.exists(link_targ):
-            link      = os.path.join('../..', raw, d)
+            link      = os.path.join('../..', raw, ndir)
             print 'linking',link_targ,'--->',link
             os.symlink(link, link_targ)
 
-        year,month,day = d.split('-')
-        link_targ = os.path.join(log, d, d + '.dat')
+        year,month,day = ndir.split('-')
+        link_targ = os.path.join(log, ndir, ndir + '.dat')
         if not os.path.exists(link_targ):
-            fl = os.path.join(raw, d, d + '.dat')
+            fl = os.path.join(raw, ndir, ndir + '.dat')
             if os.path.exists(fl):
-                link = os.path.join('../..', raw, d, d + '.dat')
+                link = os.path.join('../..', raw, ndir, ndir + '.dat')
                 print 'linking',link_targ,'--->',link
                 os.symlink(link, link_targ)
             else:
