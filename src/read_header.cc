@@ -83,7 +83,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     }else{
         std::cerr << "Ultracam::read_header WARNING: unrecognized version number in read_header.cc = " << serverdata.version << std::endl;
         std::cerr << "Program will continue, but there are highly likely to be problems with timing and other aspects." << std::endl;
-        std::cerr << "Will assume post-Feb 2010, pre-Sep 2011 format #2" << std::endl;
+        std::cerr << "Will assume post-Feb 2010 format #2" << std::endl;
         format = 2;
     }
 
@@ -320,6 +320,9 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     const Subs::Time timestamp_change2(1,Subs::Date::Jan,2005);
     const Subs::Time timestamp_change3(1,Subs::Date::Mar,2010);
     const Subs::Time ultraspec_change1(21,Subs::Date::Sep,2011);
+
+    // double clears were implemented on this date
+    const Subs::Time ultraspec_change2(29,Subs::Date::Mar,2014); 
 
     if(format == 1 && nsatellite == -1){
 
@@ -1024,6 +1027,10 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
             //
             // Non-clear:  CLR|EXP1|FT1|RD1|TS1|EXP2|FT2|RD2|TS2| ..
             // Clear-mode: CLR|EXP1|FT1|RD1|TS1|CLR|EXP2|FT2|RD2|TS2|CLR|EXP3|FT3|RD3|TS3
+            //
+            // Since 29 Mar 2014, every clear is a double-clear because of a nasty problem
+            // we were having with saturation of flats. This is corrected with the
+            // ultraspec_change2 date
 
             if(serverdata.l3data.en_clr || frame_number == 1){
                 // Special case for the first frame or if clears are enabled.
@@ -1038,7 +1045,13 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                     }
                 }else{
                     ut_date = gps_times[1];
-                    ut_date.add_second(USPEC_CLR_TIME+serverdata.expose_time/2.);
+                    if(ut_date < ultraspec_change2){
+                        ut_date.add_second(USPEC_CLR_TIME+serverdata.expose_time/2.);
+                    }else{
+                        // Double clears were implemented on 29 Mar 2014 to
+                        // get round a nasty saturation problem we were having
+                        ut_date.add_second(2*USPEC_CLR_TIME+serverdata.expose_time/2.);
+                    }
                 }
 
                 // Now for non-clear mode
