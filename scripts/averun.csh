@@ -43,15 +43,6 @@ endif
 
 set run  = $1:t
 
-# test whether file includes a path because :h modifier does
-# not work properly.
-echo $1 | grep -q '/'
-if ( $status ) then
-    set head = ""
-else
-    set head = $1:h
-endif
-
 set n1   = $2
 set n2   = $3
 
@@ -60,7 +51,7 @@ if( $n2 < $n1 ) then
   exit 1
 endif
 
-$ULTRACAM/grab ${head}/${run} first=$n1 last=$n2 \\
+$ULTRACAM/grab $1 first=$n1 last=$n2 \\
 
 \ls ${run}_*.ucm >! ${run}.lis
 
