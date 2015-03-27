@@ -12,7 +12,7 @@ a structure like so:
   run###.dat files.
 
 A file called 2005-11-23.times will be created here if not already present.
-A run directory called 'Other' will also be recognised.
+A run directory called 'Others' will also be recognised.
 
 """
 
@@ -33,8 +33,8 @@ if __name__ == "__main__":
 
     rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and
              dre1.match(x)]
-    if os.path.isdir('Other'):
-        rdirs.append('Other')
+    if os.path.isdir('Others'):
+        rdirs.append('Others')
 
     for rdir in rdirs:
 
