@@ -31,12 +31,26 @@ rdir_re = re.compile('^\d\d\d\d-\d\d$') # Search for YYYY-MM
 ndir_re = re.compile('^\d\d\d\d-\d\d-\d\d$') # Search for night directories
 xml_re  = re.compile('run\d\d\d\.xml$') # Search for xml files
 
-# Targets to skip Simbad searches for; will be added to as more failures are
-# found ensuring that searches for a given target are only made once.
+# Targets to skip Simbad searches for. These are standard ones always to be avoided.
 fp    = open('SKIP_TARGETS')
 sskip = fp.readlines()
 sskip = [name.strip() for name in sskip if not name.startswith('#')]
 fp.close()
+print 'Loaded',len(sskip),'names to skip from SKIP_TARGETS'
+
+# Read in failed targets. These are ones that just don't happen to work. The list
+# could well change with time.
+if os.path.isfile('FAILED_TARGETS'):
+    with open('FAILED_TARGETS') as fp:
+        nfail = 0
+        for line in fp:
+            if not line.startswith('#'):
+                target,rdir,ndir,srun = line.split()
+                sskip.append(target.replace('~',' '))
+                nfail += 1
+        print 'Loaded',nfail,'names to skip from FAILED_TARGETS'
+else:
+    print 'Did not find any FAILED_TARGETS list'
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \

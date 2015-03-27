@@ -127,6 +127,33 @@ if __name__ == '__main__':
         sskip = fp.readlines()
         sskip = [name.strip() for name in sskip if not name.startswith('#')]
 
+    # Read in failed targets. This is a list of object name, run directory, night date and run
+    # for each target that failed. The names are added to the list of targets to be skipped
+    # but the details are preserved here so they can be written out into the FAILED_TARGETS
+    # list at the end. If they are identified they can be edited out of the FAILED_TARGETS later
+    failed = {}
+    if os.path.isfile('FAILED_TARGETS'):
+        nline = 0
+        with open('FAILED_TARGETS') as fp:
+            for line in fp:
+                nline += 1
+                if not line.startswith('#'):
+                    try:
+                        target,rdir,ndir,srun = line.split()
+                        run = int(srun[3:])
+                        failed[target] = (rdir, ndir, run)
+                        sskip.append(target.replace('~',' '))
+                    except Exception, err:
+                        print 'Error reading FAILED_TARGETS'
+                        print 'Line number',nline
+                        print 'Line =',line
+                        exit(1)
+
+        print 'Loaded',len(failed),'targets from FAILED_TARGETS; will skip SIMBAD lookups for these.'
+        print 'If you want them to be re-tried, edit them out of FAILED_TARGETS'
+    else:
+        print 'Did not find any FAILED_TARGETS list'
+
     # Create a list directories of runs to search through
     if args.rdir:
         if not os.path.isdir(args.rdir):
@@ -329,15 +356,20 @@ if __name__ == '__main__':
         print 'There were no targets identified using Simbad'
         print 'No new AUTO_TARGETS file was written.'
 
-    # write list of failures
-    if len(Ultra.failures):
+    # write list of failures to FAILED_TARGET, including
+    # those loaded from the same file at the start.
+    if len(Ultra.failures) or len(failed):
         with open('FAILED_TARGETS','w') as fobj:
             fobj.write('# The following have no IDs:\n')
             for name, value in Ultra.failures.iteritems():
-                fobj.write('%-32s %s %s run%03d' % (name.replace(' ','~'),value[0],
-                                                    value[1],value[2]) + '\n')
+                fobj.write('{0:<32s} {1:s} {2:s} run{3:03d}\n'.format(
+                        name.replace(' ','~'),value[0],value[1],value[2]))
 
-        print 'Wrote',len(Ultra.failures),'names to FAILED_TARGETS'
+            for name, value in failed.iteritems():
+                fobj.write('{0:<32s} {1:s} {2:s} run{3:03d}\n'.format(
+                        name.replace(' ','~'),value[0],value[1],value[2]))
+
+        print 'Wrote',len(Ultra.failures)+len(failed),'names to FAILED_TARGETS'
     else:
         print 'There were no targets that could not be identified.'
         print 'No new FAILED_TARGETS file was written.'
