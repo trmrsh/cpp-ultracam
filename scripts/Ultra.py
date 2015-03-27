@@ -276,8 +276,8 @@ class Run(object):
     RESPC = re.compile('\s+')
 
     def __init__(self, xml, log=None, times=None, targets=None, \
-                 telescope=None, night=None, run=None, sskip=[], \
-                 warn=False, noid=False):
+                     telescope=None, night=None, run=None, sskip=[], \
+                     warn=False, noid=False):
         """xml       -- xml file name with format run###.xml
 
         log       -- previously read night log
@@ -462,7 +462,8 @@ class Run(object):
                 (self.application.find('appl1_pon_cfg') > -1) or \
                 (self.application.find('ccd201_pon_cfg') > -1)
             self.poweroff = (self.application.find('poweroff') > -1) or \
-                (self.application.find('appl2_pof_cfg') > -1)
+                (self.application.find('appl2_pof_cfg') > -1) or \
+                (self.application.find('ccd201_pof_cfg') > -1)
 
             if self.poweron:
                 self.target = 'Power on'
@@ -708,8 +709,8 @@ class Run(object):
 
                 elif self.instrument == 'USP':
 
-                    self.speed    = ('F' if param['SPEED'] == '0' else \
-                                         ('M' if param['SPEED'] == '1' else 'S')) if 'SPEED' in param else None
+                    self.speed    = ('S' if param['SPEED'] == '0' else \
+                                         ('M' if param['SPEED'] == '1' else 'F')) if 'SPEED' in param else None
                     self.en_clr   = ('Y' if param['EN_CLR'] == '1' else 'N') if 'EN_CLR' in param else 'N'
                     self.hv_gain  = param['HV_GAIN'] if 'HV_GAIN' in param else None
                     self.output   = ('N' if param['OUTPUT'] == '0' else 'A') if 'OUTPUT' in param else None
@@ -1006,7 +1007,7 @@ class Run(object):
                 (not Run.FUSSY or (self.hv_gain is None and other.hv_gain is None) or self.hv_gain == other.hv_gain) and \
                 ((self.output is None and other.output is None) or self.output == other.output)
 
-            
+
             if ok:
                 if self.instrument == 'UCM' and self.nwindow is not None:
                     for i in range(self.nwindow // 2):
