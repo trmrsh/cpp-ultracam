@@ -1,4 +1,4 @@
-#!/usr/bin/env csh
+#!/usr/bin/env tcsh
 # !!begin
 # !!title    averun
 # !!author   T.R. Marsh
