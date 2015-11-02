@@ -391,7 +391,7 @@ for nc in nccd:
     theader = fits.Header()
     theader['NCCD'] = nc
     theader['NAPERTUR'] = x[nc].shape[1]
-    tbhdu = fits.new_table(cols[nc], theader, len(x[nc]))
+    tbhdu = fits.BinTableHDU.from_columns(cols[nc], theader, len(x[nc]))
     tbhdu.header['NCCD'] = nc
     tbhdu.header['EXTNAME'] = 'CCD ' + str(nc)
     tbhdu.data.field('MJD')[:]    = mjd[nc]
