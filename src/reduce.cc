@@ -1180,20 +1180,20 @@ int main(int argc, char* argv[]){
 
             if(nfile == file.size()) break;
             do{
-            data.read(file[nfile]);
-            // Find the time associated with the file
-            hnode = data.find("UT_date");
-            if(hnode->has_data()){
-                hnode->value->get_value(ut_date);
-                has_a_time = true;
-            }else if(!lplot && hcopy == "null"){
-                std::cout << "No header item 'UT_date' found in file " << file[nfile] << ". Will just print time = file number to the log file but continue to reduce" << std::endl;
-                has_a_time = false;
-            }else{
-                throw Ultracam::Ultracam_Error("Failed to find header item 'UT_date' in file " + file[nfile]);
-            }
+                data.read(file[nfile]);
+                // Find the time associated with the file
+                hnode = data.find("UT_date");
+                if(hnode->has_data()){
+                    hnode->value->get_value(ut_date);
+                    has_a_time = true;
+                }else if(!lplot && hcopy == "null"){
+                    std::cout << "No header item 'UT_date' found in file " << file[nfile] << ". Will just print time = file number to the log file but continue to reduce" << std::endl;
+                    has_a_time = false;
+                }else{
+                    throw Ultracam::Ultracam_Error("Failed to find header item 'UT_date' in file " + file[nfile]);
+                }
 
-            if(has_a_time && ut_date < ttime) nfile++;
+                if(has_a_time && ut_date < ttime) nfile++;
             }while(nfile < file.size() && has_a_time && ut_date < ttime);
             if(nfile == file.size()) break;
 
@@ -1204,51 +1204,51 @@ int main(int argc, char* argv[]){
 
             if(has_a_time){
 
-            if((nfile - first) % (image_skip + 1) == 0 &&
-               (Reduce::terminal_output == Reduce::FULL || Reduce::terminal_output == Reduce::MEDIUM || Reduce::terminal_output == Reduce::LITTLE)){
-                if(Reduce::aperture_twopass){
-                if(npass == 1){
-                    std::cout << "Computing positions for file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
-                }else{
-                    std::cout << "Extracting fluxes from file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
+                if((nfile - first) % (image_skip + 1) == 0 &&
+                   (Reduce::terminal_output == Reduce::FULL || Reduce::terminal_output == Reduce::MEDIUM || Reduce::terminal_output == Reduce::LITTLE)){
+                    if(Reduce::aperture_twopass){
+                        if(npass == 1){
+                            std::cout << "Computing positions for file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
+                        }else{
+                            std::cout << "Extracting fluxes from file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
+                        }
+                    }else{
+                        std::cout << "Processing file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
+                    }
                 }
-                }else{
-                std::cout << "Processing file = " << file[nfile] << ", time = " << data["UT_date"]->get_time() << std::endl;
-                }
-            }
 
-            // Check case of u-band co-adds
-            if((hnode = data.find("Instrument.nblue"))->has_data() && hnode->value->get_int() > 1){
-                hnode = data.find("UT_date_blue");
-                if(hnode->has_data()){
-                hnode->value->get_value(ut_date_blue);
-                hnode = data.find("Frame.reliable_blue");
-                if(hnode->has_data()){
-                    reliable_blue = hnode->value->get_bool();
+                // Check case of u-band co-adds
+                if((hnode = data.find("Instrument.nblue"))->has_data() && hnode->value->get_int() > 1){
+                    hnode = data.find("UT_date_blue");
+                    if(hnode->has_data()){
+                        hnode->value->get_value(ut_date_blue);
+                        hnode = data.find("Frame.reliable_blue");
+                        if(hnode->has_data()){
+                            reliable_blue = hnode->value->get_bool();
+                        }else{
+                            throw Ultracam_Error("Found UT_date_blue but no corresponding Frame.reliable_blue in file " + file[nfile]);
+                        }
+                    }else{
+                        throw Ultracam_Error("Instrument.nblue > 1 indicated u-band co-add option but no UT_date_blue was found in file " + file[nfile]);
+                    }
                 }else{
-                    throw Ultracam_Error("Found UT_date_blue but no corresponding Frame.reliable_blue in file " + file[nfile]);
+                    ut_date_blue  = ut_date;
+                    reliable_blue = reliable;
                 }
-                }else{
-                throw Ultracam_Error("Instrument.nblue > 1 indicated u-band co-add option but no UT_date_blue was found in file " + file[nfile]);
-                }
-            }else{
-                ut_date_blue  = ut_date;
-                reliable_blue = reliable;
-            }
 
             }else{
-            if((nfile - first) % (image_skip + 1) == 0 &&
-               (Reduce::terminal_output == Reduce::FULL || Reduce::terminal_output == Reduce::MEDIUM || Reduce::terminal_output == Reduce::LITTLE)){
-                if(Reduce::aperture_twopass){
-                if(npass == 1){
-                    std::cout << "Computing positions for file = " << file[nfile] << std::endl;
-                }else{
-                    std::cout << "Extracting fluxes from file = " << file[nfile]  << std::endl;
+                if((nfile - first) % (image_skip + 1) == 0 &&
+                   (Reduce::terminal_output == Reduce::FULL || Reduce::terminal_output == Reduce::MEDIUM || Reduce::terminal_output == Reduce::LITTLE)){
+                    if(Reduce::aperture_twopass){
+                        if(npass == 1){
+                            std::cout << "Computing positions for file = " << file[nfile] << std::endl;
+                        }else{
+                            std::cout << "Extracting fluxes from file = " << file[nfile]  << std::endl;
+                        }
+                    }else{
+                        std::cout << "Processing file = " << file[nfile] << std::endl;
+                    }
                 }
-                }else{
-                std::cout << "Processing file = " << file[nfile] << std::endl;
-                }
-            }
             }
         }
 
