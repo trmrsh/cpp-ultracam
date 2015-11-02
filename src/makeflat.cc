@@ -211,7 +211,7 @@ int main(int argc, char* argv[]){
     std::vector<double> low;
     input.get_value("low",  low,  7000.,  1., DBL_MAX, out.size(), "lowest mean level to consider");
     std::vector<double> high;
-    input.get_value("high", high, 30000., 1., DBL_MAX, out.size(), "highest mean level to consider");
+    input.get_value("high", high, 24000., 1., DBL_MAX, out.size(), "highest mean level to consider");
     float satval;
     input.get_value("satval", satval, 61000.f, -FLT_MAX, FLT_MAX, "saturation value");
     float maxsat;
