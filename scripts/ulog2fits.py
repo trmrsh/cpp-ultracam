@@ -5,11 +5,9 @@ Reads in an ultracam log file and generates an equivalent
 FITS file with the data stored in binary tables. These are
 about half the size of the ASCII log files. For large log files
 this can be quite slow. The routine tries not to use too much
-memory by accumulating in numpy arrays. This uses pyfits which 
-cannot write gzipped fits files, but can read them, so you should
-gzip the files at the end which compresses quite a bit further still
-(~ factor 5). Once generated the FITS files are much faster to read
-than their ASCII equivalents.
+memory by accumulating in numpy arrays. 
+
+astropy.io.fits must be installed for this script to work.
 
 Invocation:
 
@@ -50,10 +48,7 @@ if not clobber and os.path.exists(ufits):
     exit(1)
 
 import numpy as npy
-try:
-    import pyfits as fits
-except:
-    import astropy.io.fits as fits
+import astropy.io.fits as fits
 
 # OK, now for the real work.
 
@@ -144,7 +139,7 @@ for line in fin:
             # post March 2010 log files
             format = 2
             print 'This is a post-March 2010 reduce log file.'
-            
+
     elif not line.isspace():
 
         if format is None:
@@ -157,7 +152,7 @@ for line in fin:
 # if we re-find a CCD, we check that aperture numbers match. Also
 # check that extra CCDs are not found after all were thought to have
 # been found
-                    
+
         if (format == 1 and (len(svar) - 8 ) % 14 > 0) or (format == 2 and (len(svar) - 7 ) % 14 > 0):
             print 'ulog2fits: incorrect number of entries in line ' + str(nline) + ' of ' + ulog
             fin.close()
@@ -315,7 +310,7 @@ for line in fin:
                 nrej[nc]   = npy.append(nrej[nc], tnrej[nc], 0)
                 worst[nc]  = npy.append(worst[nc], tworst[nc], 0)
                 eflag[nc]  = npy.append(eflag[nc], teflag[nc], 0)
-                    
+
             # zero the temporary arrays
             tmjd[nc]    = []
             ttflag[nc]  = []
