@@ -58,9 +58,7 @@ set root   = $run:t
 rm ${root}_[0-90-90-90-90-9].ucm
 
 # grab the frames
-$ULTRACAM/grab $run ndigit=5 first=$first last=0 trim=no bias=no
-
-
+$ULTRACAM/grab $run ndigit=5 first=$first last=0 trim=no bregion=no bias=no
 
 echo "root = $root"
 
