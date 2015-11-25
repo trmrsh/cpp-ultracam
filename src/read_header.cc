@@ -1153,8 +1153,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         //std::cerr << "Ultracam::read_header WARNING: timing for MOSCAM still to be worked out!!" << std::endl;
         //double texp = gps_times[0] - gps_times[1];
         ut_date = gps_timestamp;
-        //ut_date.add_second(texp/2.);
         exposure_time = serverdata.expose_time;
+        ut_date.add_second(exposure_time/2.);
     }
 
     // Save old values
