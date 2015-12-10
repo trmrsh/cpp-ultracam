@@ -69,7 +69,8 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
     // In Feb 2010, format changed. Spot by testing for the version number,
     // issue a warning
     int format;
-    if(serverdata.instrument == "ULTRASPEC" && serverdata.version == -1){
+    if((serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM") 
+        && serverdata.version == -1){
         // temporary fix for new ULTRASPEC stuff
         format = 2;
     }else if(serverdata.version == -1 || serverdata.version == 70514 ||
@@ -136,7 +137,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
         }
         nnanosec = intread.ui;
         if(nnanosec == (unsigned int)(-1)) nnanosec = 0;
-
+    
         // number of satellites. -1 indicates no GPS, and thus times generated from
         // when software loaded into kernel. Useful for relative times still.
         if(LITTLE){
@@ -243,7 +244,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
           if(tstamp & PCPS_LS_ENB)   std::cerr << "Current second is a leap second" << std::endl;
         */
     }
-
+    
     // Frame number. First one = 1
     if(LITTLE){
         intread.c[0] = buffer[4];
@@ -450,7 +451,7 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                     gps_timestamp.add_second(double(nsec % Constants::IDAY) + double(nnanosec)/1.e9);
 
                 }else if(format == 2){
-
+                    
                     // This format started in Feb 2010 before the NTT run with a new GPS thingy.
                     // nsec in this case represents the number of seconds from the start of
                     // "unix time", 1 Jan 1970
@@ -1143,6 +1144,17 @@ void Ultracam::read_header(char* buffer, const Ultracam::ServerData& serverdata,
                 reliable = false;
             }
         }
+    }else if(serverdata.instrument == "MOSCAM"){
+        // MOSCAM timing is yet to be worked out reliably. It is slightly complicated
+        // since the whole chip is not read out simultaneously. Instead the central rows
+        // are read out first with readout taking ~1/100th of a second.
+        // In what follows I assume the timestamp is for the start of the exposure
+        // and applies to the whole frame.
+        //std::cerr << "Ultracam::read_header WARNING: timing for MOSCAM still to be worked out!!" << std::endl;
+        //double texp = gps_times[0] - gps_times[1];
+        ut_date = gps_timestamp;
+        exposure_time = serverdata.expose_time;
+        ut_date.add_second(exposure_time/2.);
     }
 
     // Save old values

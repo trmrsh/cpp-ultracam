@@ -309,8 +309,19 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
     mwindow.resize(uinfo.nccd);
 
     // Following parameters are not fundamental but allow frames to be compared on the same basis
-    const int NXTOT = serverdata.instrument == "ULTRACAM" ? 1080 : 1056; // largest ever X dimension
-    const int NYTOT = serverdata.instrument == "ULTRACAM" ? 1032 : 1072; // largest ever Y dimension
+    int NXTOT, NYTOT;
+    if(serverdata.instrument == "ULTRACAM"){
+        NXTOT = 1080; // largest ever X dimension
+        NYTOT = 1032; // largest ever Y dimension
+    }else if (serverdata.instrument == "ULTRASPEC"){
+        NXTOT = 1072;
+        NYTOT = 1056;
+    }else if (serverdata.instrument == "MOSCAM"){
+        NXTOT = 2048;
+        NYTOT = 2048;
+    }else{
+        throw Input_Error("parseXML error: unrecognised instrument = [" + serverdata.instrument + "]");
+    }
 
     // Trim all but overscan mode
     bool ok_to_trim = (trim && serverdata.readout_mode != Ultracam::ServerData::FULLFRAME_OVERSCAN);
@@ -600,8 +611,7 @@ void parse_filesave_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::Se
 }
 
 /* This is now pretty horrific as it has to cope with standard ultracam xml data which comes in several forms
- * and also the more recent L3CCD stuff */
-
+ * and also the more recent L3CCD stuff and finally the sCMOS stuff */
 void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::ServerData& serverdata){
 
     using Ultracam::Input_Error;
@@ -626,8 +636,10 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
 
             if(Subs::toupper(instrument) == "ULTRACAM"){
                 serverdata.instrument = "ULTRACAM";
-            }else if(Subs::toupper(instrument) != "ULTRASPEC" || Subs::toupper(instrument) != "CCD201"){
+            }else if(Subs::toupper(instrument) == "ULTRASPEC" || Subs::toupper(instrument) == "CCD201"){
                 serverdata.instrument = "ULTRASPEC";
+            }else if(Subs::toupper(instrument) == "MOSCAM"){
+                serverdata.instrument = "MOSCAM";
             }else{
                 throw std::string("Instrument = " + instrument + " not recognised!");
             }
@@ -703,6 +715,11 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                              (name.find("ccd201_driftscan_cfg") != std::string::npos)){
                         serverdata.readout_mode = Ultracam::ServerData::L3CCD_DRIFT;
 
+                    } else if(serverdata.instrument == "MOSCAM" &&
+                              (name.find("standard") != std::string::npos)){
+                        // sCMOS data can be reasonably well treated as standard output L3CCD data
+                        serverdata.readout_mode = Ultracam::ServerData::L3CCD_WINDOWS;
+
                     }else{
                         throw Input_Error("parseXML error: unrecognised application & readout mode = [" + name + "]");
                     }
@@ -749,7 +766,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     istr.clear();
                     found_exposure = true;
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "DWELL"  && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "DWELL"  && 
+                        (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> uinfo.expose_time;
                     if(!istr) throw Input_Error("parseXML error: Could not translate exposure time");
@@ -761,7 +779,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     found_gain_speed = true;
 
                 }else if((AttToString((DOMElement*)child->item(j), "name") == "NO_EXPOSURES" && serverdata.instrument == "ULTRACAM")||
-                         (AttToString((DOMElement*)child->item(j), "name") == "NUM_EXPS"  && serverdata.instrument == "ULTRASPEC")){
+                         (AttToString((DOMElement*)child->item(j), "name") == "NUM_EXPS"  && 
+                         (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM"))){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> uinfo.number_of_exposures;
                     if(!istr) throw Input_Error("parseXML error: Could not translate number of exposures");
@@ -769,7 +788,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     found_number_of_exposures = true;
 
                 }else if((AttToString((DOMElement*)child->item(j), "name") == "X_BIN_FAC" && serverdata.instrument == "ULTRACAM") ||
-                         (AttToString((DOMElement*)child->item(j), "name") == "X_BIN"     && serverdata.instrument == "ULTRASPEC")){
+                         (AttToString((DOMElement*)child->item(j), "name") == "X_BIN"     && 
+                         (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM"))){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> uinfo.xbin;
                     if(!istr) throw Input_Error("parseXML error: Could not translate X binning factor");
@@ -777,7 +797,8 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     found_xbin = true;
 
                 }else if((AttToString((DOMElement*)child->item(j), "name") == "Y_BIN_FAC" && serverdata.instrument == "ULTRACAM") ||
-                         (AttToString((DOMElement*)child->item(j), "name") == "Y_BIN"     && serverdata.instrument == "ULTRASPEC")){
+                         (AttToString((DOMElement*)child->item(j), "name") == "Y_BIN"     && 
+                         (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM"))){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> uinfo.ybin;
                     if(!istr) throw Input_Error("parseXML error: Could not translate Y binning factor");
@@ -792,28 +813,32 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     found_nblue = true;
 
                 }else if((AttToString((DOMElement*)child->item(j), "name") == "CLR_EN" ||
-                          AttToString((DOMElement*)child->item(j), "name") == "EN_CLR") && serverdata.instrument == "ULTRASPEC"){
+                          AttToString((DOMElement*)child->item(j), "name") == "EN_CLR") && 
+                          (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.en_clr;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD EN_CLR parameter");
                     istr.clear();
                     found_en_clr = true;
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "GAIN" && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "GAIN" && 
+                        (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.gain;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD GAIN parameter");
                     istr.clear();
                     found_gain = true;
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "HV_GAIN" && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "HV_GAIN" && 
+                    (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.hv_gain;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD HV_GAIN parameter");
                     istr.clear();
                     found_hv_gain = true;
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "OUTPUT" && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "OUTPUT" && 
+                    (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.output;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD OUTPUT parameter");
@@ -821,14 +846,14 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                     found_output = true;
 
                     /*
-                      }else if(AttToString((DOMElement*)child->item(j), "name") == "RD_TIME" && serverdata.instrument == "ULTRASPEC"){
+                      }else if(AttToString((DOMElement*)child->item(j), "name") == "RD_TIME" && (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                       istr.str(AttToString((DOMElement*)child->item(j), "value"));
                       istr >> serverdata.l3data.rd_time;
                       if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD RD_TIME parameter");
                       istr.clear();
                       found_rd_time = true;
 
-                      }else if(AttToString((DOMElement*)child->item(j), "name") == "RS_TIME" && serverdata.instrument == "ULTRASPEC"){
+                      }else if(AttToString((DOMElement*)child->item(j), "name") == "RS_TIME" && (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                       istr.str(AttToString((DOMElement*)child->item(j), "value"));
                       istr >> serverdata.l3data.rs_time;
                       if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD RS_TIME parameter");
@@ -836,14 +861,16 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
                       found_rs_time = true;
                     */
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "SPEED" && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "SPEED" && 
+                        (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.speed;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD SPEED parameter");
                     istr.clear();
                     found_speed = true;
 
-                }else if(AttToString((DOMElement*)child->item(j), "name") == "LED_FLSH" && serverdata.instrument == "ULTRASPEC"){
+                }else if(AttToString((DOMElement*)child->item(j), "name") == "LED_FLSH" && 
+                    (serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
                     istr.str(AttToString((DOMElement*)child->item(j), "value"));
                     istr >> serverdata.l3data.led_flsh;
                     if(!istr) throw Input_Error("parseXML error: Could not translate L3CCD LED_FLSH parameter");
@@ -1011,7 +1038,7 @@ void parse_instrument_status(const DOMNode* const node, Uinfo& uinfo, Ultracam::
         }
         if(!found_nblue) serverdata.nblue = 0;
 
-    }else if(serverdata.instrument == "ULTRASPEC"){
+    }else if((serverdata.instrument == "ULTRASPEC" || serverdata.instrument == "MOSCAM")){
         if(!found_en_clr){
             if(serverdata.readout_mode == Ultracam::ServerData::L3CCD_WINDOWS)
                 throw Input_Error("parseXML error: could not find L3CCD parameter EN_CLR.");
