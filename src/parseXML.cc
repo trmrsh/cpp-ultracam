@@ -314,8 +314,8 @@ void Ultracam::parseXML(char source, const std::string& XML_URL, Ultracam::Mwind
         NXTOT = 1080; // largest ever X dimension
         NYTOT = 1032; // largest ever Y dimension
     }else if (serverdata.instrument == "ULTRASPEC"){
-        NXTOT = 1072;
-        NYTOT = 1056;
+        NXTOT = 1056;
+        NYTOT = 1072;
     }else if (serverdata.instrument == "MOSCAM"){
         NXTOT = 2048;
         NYTOT = 2048;
