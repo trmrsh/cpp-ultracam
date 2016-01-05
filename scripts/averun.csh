@@ -1,4 +1,4 @@
-#!/usr/bin/env csh -f
+#!/usr/bin/csh -f
 #
 # !!begin
 # !!title    averun
