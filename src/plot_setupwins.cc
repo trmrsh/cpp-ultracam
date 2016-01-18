@@ -80,6 +80,9 @@ void Ultracam::plot_setupwins(const std::string& setwin, int numccd, float x1, f
             std::string URL = setwin + std::string(":5100");
             curl_easy_setopt(curl_handle, CURLOPT_URL, URL.c_str());
 
+            // Set a 10sec timeout (reduces time wasted when server not available)
+            curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, 5L);
+
             // Get the data
             int success = curl_easy_perform(curl_handle);
 
@@ -309,6 +312,9 @@ void Ultracam::plot_setupwins(const std::string& setwin, int numccd, float x1, f
         }
     }
     catch(const Ultracam_Error& e){
-        std::cerr << "Error in plot_setupwins: " << e << "\n" << BEEP << std::flush;
+        std::cerr << "\nError in plot_setupwins: " << e << BEEP << std::endl;
+        std::cerr << "This may indicate that the setup windows server is not running\n" 
+                  << "or that you have the address wrong. Either correct the address\n"
+                  << "or just specify setup=no to avoid trying to access it.\n\n" << std::flush;
     }
 }
