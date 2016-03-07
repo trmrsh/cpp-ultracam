@@ -1,4 +1,4 @@
-#!/bin/csh
+#!/bin/csh -f
 
 # !!begin
 # !!title    check_for_bad_data
