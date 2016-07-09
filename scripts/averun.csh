@@ -52,12 +52,29 @@ if( $n2 < $n1 ) then
   exit 1
 endif
 
-$ULTRACAM/grab $1 first=$n1 last=$n2 \\
+$ULTRACAM/grab $1 ndigit=4 first=$n1 last=$n2 \\
 
-\ls ${run}_*.ucm >! ${run}.lis
+# blank the file list
+cat /dev/null >! ${run}.lis
+
+# write ucm names to the list
+@ n = $n1
+while ($n <= $n2)
+  if ( $n < 10 ) then 
+    echo $run"_000"$n".ucm" >> ${run}.lis
+  else if($n < 100) then
+    echo $run"_00"$n".ucm" >> ${run}.lis
+  else if($n < 1000) then
+    echo $run"_0"$n".ucm" >> ${run}.lis
+  else
+    echo $run"_"$n".ucm" >> ${run}.lis
+  endif
+  @ n += 1
+end
 
 $ULTRACAM/combine ${run}.lis method=c sigma=4 careful=yes adjust=i output=$run
 
 echo " "
 echo "Result stored in file = ${run}.ucm"
+echo "List of frames combined written to ${run}.lis"
 
