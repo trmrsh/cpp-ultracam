@@ -665,9 +665,9 @@ namespace Reduce {
     Ultracam::Frame bad_pixel_frame;                   // Bad pixel frame if bad_pixel
 
     // Lightcurve plotting parameters
-    std::string image_device;                               // The image display device
+    std::string image_device;                          // The image display device
     float  lightcurve_frac;                            // Fraction of plot devoted to lightcurve
-    std::string lightcurve_device;                          // Device for the lightcurve etc plots
+    std::string lightcurve_device;                     // Device for the lightcurve etc plots
     float  lightcurve_max_xrange;                      // Maximum X range (if > 0)
     X_UNITS lightcurve_xunits;                         // Units of x axis
     float  lightcurve_extend_xrange;                   // Factor by which to extend automatic X range
@@ -677,12 +677,12 @@ namespace Reduce {
     float  lightcurve_y1;                              // Lower Y limit
     float  lightcurve_y2;                              // Upper Y limit
     float  lightcurve_extend_yrange;                   // Factor by which to extend Y range if it is not fixed
-    std::vector<Laps> lightcurve_targ;                      // Lightcurve target info
+    std::vector<Laps> lightcurve_targ;                 // Lightcurve target info
 
     // Positions
     bool  position_plot;                               // Whether to plot positions
     float position_frac;                               // Fraction of plot to devote to the positions
-    std::vector<Paps> position_targ;                        // Position target info
+    std::vector<Paps> position_targ;                   // Position target info
     bool  position_x_yrange_fixed;                     // Y range on X positions fixed or not
     float position_x_y1;                               // Lower Y limit on X positions
     float position_x_y2;                               // Upper Y limit on X positions
@@ -695,7 +695,7 @@ namespace Reduce {
     bool  transmission_plot;                           // Whether to plot transmission
     float transmission_frac;                           // Fraction of vertical height to devote to the transmission
     float transmission_ymax;                           // Maximum transmission to plot
-    std::vector<Taps> transmission_targ;                    // Transmission target info
+    std::vector<Taps> transmission_targ;               // Transmission target info
 
     // Seeing
     bool seeing_plot;                                  // Whether to plot seeing
@@ -821,6 +821,7 @@ int main(int argc, char* argv[]){
         input.sign_in("tmax",     Subs::Input::GLOBAL, Subs::Input::NOPROMPT);
         input.sign_in("flist",    Subs::Input::GLOBAL, Subs::Input::PROMPT);
         input.sign_in("lplot",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
+        input.sign_in("pjunk",    Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
         input.sign_in("hcopy",    Subs::Input::LOCAL,  Subs::Input::PROMPT);
         input.sign_in("implot",   Subs::Input::LOCAL,  Subs::Input::PROMPT);
         input.sign_in("skip",     Subs::Input::LOCAL,  Subs::Input::NOPROMPT);
@@ -949,7 +950,7 @@ int main(int argc, char* argv[]){
         light_curve_title += ", log: " + save_log;
 
         // Carry on getting inputs
-        bool lplot;
+        bool lplot, pjunk;
         bool implot;
         int image_skip;
         char stackdirn;
@@ -961,6 +962,9 @@ int main(int argc, char* argv[]){
 
         if(Reduce::star_radius.size() == 0){
             input.get_value("lplot", lplot, true, "do you want to plot light curves?");
+            input.set_default("pjunk", pjunk);
+            input.get_value("pjunk", pjunk, false,
+                            "do you want to plot data with junk times?");
 
             input.get_value("hcopy", hcopy, "null", "name of hard copy device to save final picture of light curves (null to ignore)");
 
@@ -1888,7 +1892,7 @@ int main(int argc, char* argv[]){
 
                     // Light curve plot section
                     if(lplot || hcopy != "null")
-                        Ultracam::light_plot(lcurve_plot, all_ccds, ut_date, false, hcopy, light_curve_title);
+                        Ultracam::light_plot(lcurve_plot, all_ccds, ut_date, false, hcopy, light_curve_title, pjunk);
 
                     nexp++;
                 }
@@ -2020,7 +2024,7 @@ int main(int argc, char* argv[]){
 
         // Make a hard copy
         if(hcopy != "null")
-            Ultracam::light_plot(lcurve_plot, all_ccds, ut_date, true, hcopy, light_curve_title);
+            Ultracam::light_plot(lcurve_plot, all_ccds, ut_date, true, hcopy, light_curve_title, pjunk);
 
     }
 

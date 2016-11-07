@@ -1017,7 +1017,8 @@ namespace Ultracam {
 
   //! Light curve plotter for reduce
   void light_plot(const Subs::Plot& lcurve_plot, const std::vector<std::vector<Reduce::Point> >& all_ccds, 
-		  const Subs::Time& ut_date, bool makehcopy, const std::string& hcopy, const std::string& title);
+                  const Subs::Time& ut_date, bool makehcopy, const std::string& hcopy,
+                  const std::string& title, bool pjunk);
 
   //! Structure for relative CCD orientation
   struct Transform {
