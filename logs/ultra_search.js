@@ -161,7 +161,7 @@ function search_table_head(ra, dec, dist, expose){
     head += "<table/>\n<tbody>\n<tr><th>Target</th><th>ID</th>" +
         "<th>RA<br>hours</th><th>Dec<br>deg.</th>" +
         "<th>Dist<br>deg.</th><th>Run</th><th>Night</th>" +
-        "<th>Number</th><th>Expose<br>mins</th><th>Comment</th></tr>\n";
+        "<th>Number</th><th>Expose<br>mins</th><th>PI</th><th>Comment</th></tr>\n";
     return head;
 }
 
@@ -176,6 +176,7 @@ function search_table_row(line, dist){
         '</td><td><a href="index.php?night=' + line.night + '">' + line.night +
         '</a></td><td>' + line.num +
         '</td><td>' + line.expose.toFixed(1) +
+        '</td><td>' + line.pi +
         '</td><td class="left">' + line.comment +
         '</td></tr>\n';
 }
