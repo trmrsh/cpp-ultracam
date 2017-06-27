@@ -36,7 +36,7 @@ fp    = open('SKIP_TARGETS')
 sskip = fp.readlines()
 sskip = [name.strip() for name in sskip if not name.startswith('#')]
 fp.close()
-print 'Loaded',len(sskip),'names to skip from SKIP_TARGETS'
+print('Loaded',len(sskip),'names to skip from SKIP_TARGETS')
 
 # Read in failed targets. These are ones that just don't happen to work. The list
 # could well change with time.
@@ -48,9 +48,9 @@ if os.path.isfile('FAILED_TARGETS'):
                 target,rdir,ndir,srun = line.split()
                 sskip.append(target.replace('~',' '))
                 nfail += 1
-        print 'Loaded',nfail,'names to skip from FAILED_TARGETS'
+        print('Loaded',nfail,'names to skip from FAILED_TARGETS')
 else:
-    print 'Did not find any FAILED_TARGETS list'
+    print('Did not find any FAILED_TARGETS list')
 
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
@@ -69,10 +69,10 @@ for rdir in rdirs:
         f = open(os.path.join(rdir, 'telescope'))
         telescope = f.readline().rstrip()
         f.close()
-        print 'Run directory =',rdir,', telescope =',telescope
-    except Exception, err:
+        print('Run directory =',rdir,', telescope =',telescope)
+    except Exception as err:
         telescope = None
-        print 'Run directory =',rdir,',',err
+        print('Run directory =',rdir,',',err)
 
     # Now the night-by-night directories
     ndirs = [x for x in os.listdir(rdir) \
@@ -103,7 +103,7 @@ for rdir in rdirs:
         for xml in xmls:
             try:
                 run = Ultra.Run(xml, nlog, times, targets, telescope, ndir,
-                                rdir, sskip, True)
+                                rdir, sskip, True, aircomp=False)
 
                 # update targets to reduce simbad lookups
                 if run.simbad:
@@ -125,16 +125,17 @@ for rdir in rdirs:
                          'id' : run.id.strip(),
                          'expose' : 0. if run.expose is None else \
                              float(run.expose)/60.,
+                         'pi' : run.pi,
                          'comment' : run.comment.strip()})
 
-            except Exception, err:
-                print 'XML error: ',err,'in',xml
+            except Exception as err:
+                print('XML error: ',err,'in',xml)
 
-print '\nFound',len(entries),'runs.'
+print('\nFound',len(entries),'runs.')
 
 with open('ultra.json','w') as fout:
     json.dump(entries, fout)
 
-print 'Written to ultra.json'
+print('Written to ultra.json')
 
 

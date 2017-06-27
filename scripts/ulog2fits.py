@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 """
 Reads in an ultracam log file and generates an equivalent
 FITS file with the data stored in binary tables. These are
@@ -20,7 +22,7 @@ clobber  -- y or n to clobber files on output
 import sys
 
 if len(sys.argv) != 3:
-    print 'usage: ' + sys.argv[0] + ' ulog clobber'
+    print('usage: ' + sys.argv[0] + ' ulog clobber')
     exit(1)
 
 ulog  = sys.argv[1]
@@ -29,7 +31,7 @@ if sys.argv[2] == 'y' or sys.argv[2] == 'Y':
 elif sys.argv[2] == 'n' or sys.argv[2] == 'N':
     clobber = False
 else:
-    print '"clobber" must be "y" or "n"'
+    print('"clobber" must be "y" or "n"')
     exit(1)
 
 if ulog.rfind('.log') == -1 or ulog.rfind('.log') != len(ulog) - 4:
@@ -40,11 +42,11 @@ ufits = ulog[:-4] + '.fits'
 import os.path
 
 if not os.path.exists(ulog):
-    print 'Cannot find input file = ' + ulog
+    print('Cannot find input file = ' + ulog)
     exit(1)
 
 if not clobber and os.path.exists(ufits):
-    print 'Output file = ' + ufits + ' already exists'
+    print('Output file = ' + ufits + ' already exists')
     exit(1)
 
 import numpy as npy
@@ -117,7 +119,7 @@ NREP   = 2000
 nhead  = 0
 nunit  = 0
 nlhead = 0
-print
+print()
 
 format = None
 
@@ -134,16 +136,16 @@ for line in fin:
         if line.startswith('# name/number mjd flag nsat'):
             # old-style log files with number of satellites
             format = 1
-            print 'This is a pre-March 2010 reduce log file.'
+            print('This is a pre-March 2010 reduce log file.')
         if line.startswith('# name/number mjd flag expose'):
             # post March 2010 log files
             format = 2
-            print 'This is a post-March 2010 reduce log file.'
+            print('This is a post-March 2010 reduce log file.')
 
     elif not line.isspace():
 
         if format is None:
-            print 'Could not identify the format of the log file.'
+            print('Could not identify the format of the log file.')
             exit(1)
 
         svar = line.split()
@@ -154,7 +156,7 @@ for line in fin:
 # been found
 
         if (format == 1 and (len(svar) - 8 ) % 14 > 0) or (format == 2 and (len(svar) - 7 ) % 14 > 0):
-            print 'ulog2fits: incorrect number of entries in line ' + str(nline) + ' of ' + ulog
+            print('ulog2fits: incorrect number of entries in line ' + str(nline) + ' of ' + ulog)
             fin.close()
             exit(1)
 
@@ -169,7 +171,7 @@ for line in fin:
         else:
 
             if found_all_ccds:
-                print 'ulog2fits: new CCD was found even though all were thought to be found in line ' + str(nline) + ' of ' + ulog
+                print('ulog2fits: new CCD was found even though all were thought to be found in line ' + str(nline) + ' of ' + ulog)
 
             nunit += len(line)
 
@@ -440,7 +442,7 @@ for nc in nccd:
 hdulist = fits.HDUList(hdus)
 hdulist.update_extend()
 hdulist.writeto(ufits, clobber=clobber)
-print '\nFinished.'
+print('\nFinished.')
 
 
 

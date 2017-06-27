@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 """
 Support routines for Python analysis of Ultracam & Ultraspec
 files. Mainly for database work.
@@ -10,8 +12,8 @@ from xml.dom import Node
 from xml.dom.minidom import parse, parseString
 import trm.subs as subs
 import trm.simbad as simbad
-import trm.sla as sla
 import urllib
+from astropy import time, coordinates as coord, units as u
 
 # global to capture names of objects without any ID
 failures = {}
@@ -75,7 +77,7 @@ class Log(object):
                             if m:
                                 self.target[num]  = m.group(1)
 
-        except Exception, err:
+        except Exception as err:
            sys.stderr.write('Night log problem:' + str(err) + '\n')
 
 class Times(object):
@@ -110,7 +112,7 @@ class Times(object):
                     num = int(line[3:6])
                     self.date[num],self.utstart[num],self.utend[num],self.nframe[num],\
                         self.expose[num],self.sample[num] = line[6:].split()
-        except Exception, err:
+        except Exception as err:
             sys.stderr.write('File = ' + fname + ', timing data problem: ' + str(err) + '\n')
 
 class Targets(dict):
@@ -179,9 +181,9 @@ class Targets(dict):
 
                         self[target] = {'ra' : ra, 'dec' : dec, 'names' : names}
                 f.close()
-                print len(self),'targets after loading',fname
+                print(len(self),'targets after loading',fname)
             else:
-                print 'No targets loaded from',fname,'as it does not exist.'
+                print('No targets loaded from',fname,'as it does not exist.')
 
     def write(self, fname):
         """
@@ -189,7 +191,7 @@ class Targets(dict):
         """
 
         # write in RA order
-        ras   = dict([(targ,entry['ra']) for targ, entry in self.iteritems()])
+        ras   = dict([(targ,entry['ra']) for targ, entry in self.items()])
         targs = sorted(ras, key=ras.get)
 
         f = open(fname,'w')
@@ -214,7 +216,7 @@ class Targets(dict):
         """
 
         # write in RA order
-        ras   = dict([(targ,entry['ra']) for targ, entry in self.iteritems()])
+        ras   = dict([(targ,entry['ra']) for targ, entry in self.items()])
         targs = sorted(ras, key=ras.get)
 
         f = open(fname,'w')
@@ -277,7 +279,7 @@ class Run(object):
 
     def __init__(self, xml, log=None, times=None, targets=None, \
                      telescope=None, night=None, run=None, sskip=[], \
-                     warn=False, noid=False):
+                     warn=False, noid=False, aircomp=True):
         """xml       -- xml file name with format run###.xml
 
         log       -- previously read night log
@@ -303,6 +305,8 @@ class Run(object):
                      defined)
 
         noid      -- make no effort to ID a target
+
+        aircomp   -- True to compute airmass at start and end of runs. False if not needed as it will go faster.
 
         At the end there are a whole stack of attributes. Not all will
         be set, and if they are not they will be 'None'. Some are specific
@@ -354,7 +358,7 @@ class Run(object):
         comment    -- log file comment
         simbad     -- flag: True if target data came from Simbad.
         nblue      -- Number of u-band co-adds.
-
+        pi         -- PI
         """
 
         self.fname     = xml
@@ -501,7 +505,7 @@ class Run(object):
                         # To save time, the 'targets' dictionary should
                         # be updated between multiple invocations of run and then this lookup will not be repeated.
 
-                        print 'Querying SIMBAD query for target =',self.target
+                        print('Querying SIMBAD query for target =',self.target)
                         qsim = simbad.Query(self.target).query()
                         if len(qsim) == 0:
                             sys.stderr.write('Warning: SIMBAD returned no matches to ' + self.target + '\n')
@@ -516,7 +520,7 @@ class Run(object):
                             pos  = qsim[0]['Position']
                             name = name.strip()
                             name = re.sub(Run.RESPC, ' ', name)
-                            print 'Matched with name =',name,'position =',pos
+                            print('Matched with name =',name,'position =',pos)
                             try:
                                 ms = pos.find('-')
                                 if ms > -1:
@@ -546,7 +550,7 @@ class Run(object):
                                 else:
                                     sims[self.id] = [self.target,]
 
-                            except ValueError, err:
+                            except ValueError as err:
                                 sys.stderr.write('Failed to parse target = ' + name + ', position = ' + pos + '\n')
                                 failures[self.target] = (self.run, self.night, self.number)
 
@@ -639,36 +643,68 @@ class Run(object):
                     self.sample  = self.sample if self.sample != 'UNDEF' else None
 
                     # Try to compute start and end hour angles
-                    if self.ra is not None and self.dec is not None and self.telescope is not None and \
+                    if aircomp and self.ra is not None and self.dec is not None and self.telescope is not None and \
                             self.utstart is not None and self.utend is not None and self.date is not None and self.date != 'UNDEF':
                         try:
+
+                            # Set the observing location
                             tel,obs,longitude,latitude,height = subs.observatory(self.telescope)
+                            tel = coord.EarthLocation(longitude, latitude, height)
+
+                            # Set the target position
                             ra,dec,system = subs.str2radec(self.ra + ' ' + self.dec)
-                            uts = subs.hms2d(self.utstart)
+                            ra = coord.angles.Longitude(ra,u.hourangle)
+                            dec = coord.angles.Latitude(dec,u.deg)
+                            targ = coord.SkyCoord(ra, dec)
+
+                            # Extract date
                             d,m,y = self.date.split('/')
-                            mjd = sla.cldj(int(y), int(m), int(d))
-                            ams,alt,az,ha,pa,delz = sla.amass(mjd+uts/24.,longitude,latitude,height,ra,dec)
-                            if ha > 12.:
-                                self.hastart = ha - 24.
+
+                            # Set the start time & get observing info
+                            uts = time.Time('{0:s}-{1:s}-{2:s} {3:s}'.format(y,m,d, self.utstart),
+                                            format='iso', scale='utc', location=tel)
+                            lst = uts.sidereal_time('apparent')
+                            ha = lst - ra
+
+                            if ha.hour > 12.:
+                                self.hastart = ha.hour - 24.
                             else:
-                                self.hastart = ha
-                            ute = subs.hms2d(self.utend)
+                                self.hastart = ha.hour
+
+                            altaz_s = targ.transform_to(coord.AltAz(obstime=uts, location=tel))
+                            alt = altaz_s.alt.value
+                            az = altaz_s.az.value
+                            ams = 1./math.sin(math.radians(alt))
+
+                            ute = time.Time('{0:s}-{1:s}-{2:s} {3:s}'.format(y,m,d, self.utend),
+                                            format='iso', scale='utc', location=tel)
+
                             if ute < uts:
-                                mjd += 1
-                            ame,alt,az,ha,pa,delz = sla.amass(mjd+ute/24.,longitude,latitude,height,ra,dec)
-                            if ha < self.hastart:
-                                self.haend = ha + 24.
+                                ute += time.TimeDelta(1,format='jd')
+
+                            lst = ute.sidereal_time('apparent')
+                            ha = lst - ra
+
+                            if ha.hour < self.hastart:
+                                self.haend = ha.hour + 24.
                             else:
-                                self.haend = ha
+                                self.haend = ha.hour
+
+                            altaz_s = targ.transform_to(coord.AltAz(obstime=ute, location=tel))
+                            alt = altaz_s.alt.value
+                            az = altaz_s.az.value
+                            ame = 1./math.sin(math.radians(alt))
+
                             amax = ams if ams > ame else ame
                             if self.hastart < 0 and self.haend > 0.:
-                                amin = 1./cosd(latitude-dec)
+                                amin = 1./cosd(latitude-dec.value)
                             else:
                                 amin = ams if ams < ame else ame
-                            self.amassmax = '%5.2f' % (amax,)
-                            self.amassmin = '%5.2f' % (amin,)
-                        except subs.SubsError, err:
-                            print err
+                            self.amassmax = '{:5.2f}'.format(amax)
+                            self.amassmin = '{:5.2f}'.format(amin)
+
+                        except subs.SubsError as err:
+                            print(err)
 
                 if self.instrument == 'UCM':
 
@@ -754,7 +790,7 @@ class Run(object):
             if warn and self.id is None and self.is_science() and self.target not in sskip:
                 sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.target + '\n')
 
-        except Exception, err:
+        except Exception as err:
               sys.stderr.write('File = ' + self.fname + ', error initialising Run: ' + str(err) + '\n')
 
 # for debugging
@@ -770,7 +806,7 @@ class Run(object):
             node        = dom.getElementsByTagName('observatory_status')[0]
             observatory = node.getElementsByTagName('name')[0].childNodes[0].data
             telescope   = node.getElementsByTagName('telescope')[0].childNodes[0].data
-        except Exception, err:
+        except Exception as err:
             sys.stderr.write('Error reading observatory_status: ' + str(err) + '\n')
             observatory = None
             telescope   = None
@@ -779,29 +815,29 @@ class Run(object):
     @staticmethod
     def _get_instrument_status(dom):
         try:
-            node        = dom.getElementsByTagName('instrument_status')[0]
-            instrument  = node.getElementsByTagName('name')[0].childNodes[0].data
+            node = dom.getElementsByTagName('instrument_status')[0]
+            instrument = node.getElementsByTagName('name')[0].childNodes[0].data
             application = [nd for nd in node.getElementsByTagName('application_status') \
                                if nd.getAttribute('id') == 'SDSU Exec'][0].getAttribute('name')
             param = {}
             for nd in node.getElementsByTagName('parameter_status'):
                 param[nd.getAttribute('name')] = nd.getAttribute('value')
-        except Exception, err:
+        except Exception as err:
             sys.stderr.write('Error reading instrument_status: ' + str(err) + '\n')
-            instrument  = None
+            instrument = None
             application = None
-            param       = None
+            param = None
         return (instrument, application, param)
 
     @staticmethod
     def _get_data_status(dom):
         try:
-            node        = dom.getElementsByTagName('data_status')[0]
-            framesize   = node.getAttribute('framesize')
+            node = dom.getElementsByTagName('data_status')[0]
+            framesize = node.getAttribute('framesize')
             headerwords = node.getElementsByTagName('header_status')[0].getAttribute('headerwords')
-        except Exception, err:
+        except Exception as err:
             sys.stderr.write('Error reading data_status: ' + str(err) + '\n')
-            framesize    = None
+            framesize = None
             headerwords = None
         return (framesize, headerwords)
 
@@ -817,8 +853,8 @@ class Run(object):
                         user[nd.tagName] = nd.childNodes[0].data
             else:
                 user = None
-        except Exception, err:
-            print 'Error reading user data: ',err
+        except Exception as err:
+            print('Error reading user data: ',err)
             user = None
         return user
 
@@ -1048,7 +1084,7 @@ class Run(object):
         'self', i.e. it does not search for windows enclosed by multiple windows in self. This probably never happens
         in practice in any case.
         """
-	if (isinstance(other, Run)):
+        if isinstance(other, Run):
 
             # Basic checks
             if self.instrument != other.instrument or self.x_bin is None or other.x_bin is None or \
@@ -1353,7 +1389,7 @@ def load_runs(rdir, ldir=None):
     """
     Loads all runs of a given run (YYYY-MM). It does this by winding through
     all available night directories.
-    
+
     rdir  -- the run directory (YYYY-MM format)
     ldir  -- directory containing logs where it is also expected that there
              will be SKIP_TARGETS, TARGETS, AUTO_TARGETS to help with loading
@@ -1375,10 +1411,10 @@ def load_runs(rdir, ldir=None):
         f = open(os.path.join(rundir, 'telescope'))
         telescope = f.readline().rstrip()
         f.close()
-        print 'Run directory =',rdir,', telescope =',telescope
-    except Exception, err:
+        print('Run directory =',rdir,', telescope =',telescope)
+    except Exception as err:
         telescope = None
-        print 'Run directory =',rdir,',',err
+        print('Run directory =',rdir,',',err)
 
     # get a list of night-by-night directories
     ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
@@ -1401,7 +1437,7 @@ def load_runs(rdir, ldir=None):
     sskip = fp.readlines()
     sskip = [name.strip() for name in sskip if not name.startswith('#')]
     fp.close()
-    print len(sskip),'names to skip after loading',os.path.join(ldir,'SKIP_TARGETS')
+    print(len(sskip),'names to skip after loading',os.path.join(ldir,'SKIP_TARGETS'))
 
     runs = []
     for ndir in ndirs:
@@ -1426,7 +1462,7 @@ def load_runs(rdir, ldir=None):
                 if run.is_not_power_onoff():
                     runs.append(run)
 
-            except Exception, err:
-                print 'XML error: ',err,'in',xml
+            except Exception as err:
+                print('XML error: ',err,'in',xml)
 
     return runs

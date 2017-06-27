@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 """
 Script to generate timing files for ULTRACAM and ULTRASPEC. Run this in the
 'logs' directory
@@ -50,7 +52,7 @@ if __name__ == "__main__":
 
             # only try to construct times file if it does not exist
             if not os.path.exists(times):
-                print 'File =',times,'does not exist; will create.'
+                print('File =',times,'does not exist; will create.')
                 ft = open(times,'w')
                 dfiles = [os.path.join(dpath, x[:-4])
                           for x in os.listdir(dpath)
@@ -59,7 +61,7 @@ if __name__ == "__main__":
                 for dfile in dfiles:
                     args = (gettime, dfile)
                     output  = subproc.Popen(args, stdout=subproc.PIPE,
-                                            stderr=subproc.PIPE).communicate()[0].split('\n')
+                                            stderr=subproc.PIPE).communicate()[0].decode('utf-8').split('\n')
                     run     = 'UNDEF'
                     date    = 'UNDEF'
                     utstart = 'UNDEF'
@@ -88,7 +90,7 @@ if __name__ == "__main__":
                              utend + ' ' + ngood + ' ' + expose + ' ' +
                              sample + '\n')
                 ft.close()
-                print 'Created file =',times
+                print('Created file =',times)
 
 
 

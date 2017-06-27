@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 usage = \
 """
 Script to generate html web pages ULTRASPEC or CAM
@@ -36,8 +38,8 @@ if cwd.find('ultracam') > -1:
 elif cwd.find('ultraspec') > -1:
     instrument = 'ULTRASPEC'
 else:
-    print 'Could not recognise instrument from ' + cwd
-    print 'please fix.'
+    print('Could not recognise instrument from ' + cwd)
+    print('please fix.')
     exit(1)
 
 # Start off with fixed strings for html output
@@ -143,24 +145,24 @@ if __name__ == '__main__':
                         run = int(srun[3:])
                         failed[target] = (rdir, ndir, run)
                         sskip.append(target.replace('~',' '))
-                    except Exception, err:
-                        print 'Error reading FAILED_TARGETS'
-                        print 'Line number',nline
-                        print 'Line =',line
+                    except Exception as err:
+                        print('Error reading FAILED_TARGETS')
+                        print('Line number',nline)
+                        print('Line =',line)
                         exit(1)
 
-        print 'Loaded',len(failed),'targets from FAILED_TARGETS; will skip SIMBAD lookups for these.'
-        print 'If you want them to be re-tried, edit them out of FAILED_TARGETS'
+        print('Loaded',len(failed),'targets from FAILED_TARGETS; will skip SIMBAD lookups for these.')
+        print('If you want them to be re-tried, edit them out of FAILED_TARGETS')
     else:
-        print 'Did not find any FAILED_TARGETS list'
+        print('Did not find any FAILED_TARGETS list')
 
     # Create a list directories of runs to search through
     if args.rdir:
         if not os.path.isdir(args.rdir):
-            print args.rdir,'is not a directory or does not exist'
+            print(args.rdir,'is not a directory or does not exist')
             exit(1)
         if not rdir_re.match(args.rdir):
-            print args.rdir,'dies not have the required YYYY-MM format'
+            print(args.rdir,'dies not have the required YYYY-MM format')
             exit(1)
         rdirs = [args.rdir,]
     else:
@@ -205,7 +207,7 @@ if __name__ == '__main__':
             fg.write('</ul>\n</div>\n')
 
     fg.close()
-    print 'Written guide to guide.html'
+    print('Written guide to guide.html')
 
     # Now the logs.
     for rdir in rdirs:
@@ -215,10 +217,10 @@ if __name__ == '__main__':
             f = open(os.path.join(rdir, 'telescope'))
             telescope = f.readline().rstrip()
             f.close()
-            print 'Run directory =',rdir,', telescope =',telescope
-        except Exception, err:
+            print('Run directory =',rdir,', telescope =',telescope)
+        except Exception as err:
             telescope = None
-            print 'Run directory =',rdir,',',err
+            print('Run directory =',rdir,',',err)
 
         # Now the night-by-night directories
         ndirs = [x for x in os.listdir(rdir) if os.path.isdir(os.path.join(rdir,x)) and \
@@ -245,7 +247,7 @@ if __name__ == '__main__':
             if os.path.exists(htlog) and not args.all:
                 continue
 
-            print 'Generating',htlog
+            print('Generating',htlog)
             with open(htlog, 'w') as fh:
                 fh.write(LOG_TITLE_HEAD)
 
@@ -297,7 +299,7 @@ if __name__ == '__main__':
             if os.path.exists(htlog) and not args.all:
                 continue
 
-            print 'Generating',htlog
+            print('Generating',htlog)
             with open(htlog, 'w') as fh:
                 fh.write(LOG_HEAD)
                 fh.write('\n' + Ultra.Run.html_head(instrument) + '\n')
@@ -323,8 +325,8 @@ if __name__ == '__main__':
                             fh.write('\n' + Ultra.Run.html_head(instrument,False)
                                      + '\n')
 
-                    except Exception, err:
-                        print 'XML error: ',err,'in',xml
+                    except Exception as err:
+                        print('XML error: ',err,'in',xml)
 
                 # Shut down html file
                 fh.write('</table>\n\n' + '<p>Total exposure time = ' + \
@@ -343,34 +345,34 @@ if __name__ == '__main__':
             os.rename('AUTO_TARGETS', 'AUTO_TARGETS.old')
 
         # add in the new ones
-        for rid, names in Ultra.sims.iteritems():
+        for rid, names in Ultra.sims.items():
             entry = targets[rid]
             ntargs[rid] = {'ra' : entry['ra'], 'dec' : entry['dec'], 'names' : names}
 
         ntargs.write('AUTO_TARGETS')
 
-        print 'Total of',len(Ultra.sims),'targets identified by Simbad.'
-        print 'Written to AUTO_TARGETS to save on future lookups.'
+        print('Total of',len(Ultra.sims),'targets identified by Simbad.')
+        print('Written to AUTO_TARGETS to save on future lookups.')
 
     else:
-        print 'There were no targets identified using Simbad'
-        print 'No new AUTO_TARGETS file was written.'
+        print('There were no targets identified using Simbad')
+        print('No new AUTO_TARGETS file was written.')
 
     # write list of failures to FAILED_TARGET, including
     # those loaded from the same file at the start.
     if len(Ultra.failures) or len(failed):
         with open('FAILED_TARGETS','w') as fobj:
             fobj.write('# The following have no IDs:\n')
-            for name, value in Ultra.failures.iteritems():
+            for name, value in Ultra.failures.items():
                 fobj.write('{0:<32s} {1:s} {2:s} run{3:03d}\n'.format(
                         name.replace(' ','~'),value[0],value[1],value[2]))
 
-            for name, value in failed.iteritems():
+            for name, value in failed.items():
                 fobj.write('{0:<32s} {1:s} {2:s} run{3:03d}\n'.format(
                         name.replace(' ','~'),value[0],value[1],value[2]))
 
-        print 'Wrote',len(Ultra.failures)+len(failed),'names to FAILED_TARGETS'
+        print('Wrote',len(Ultra.failures)+len(failed),'names to FAILED_TARGETS')
     else:
-        print 'There were no targets that could not be identified.'
-        print 'No new FAILED_TARGETS file was written.'
+        print('There were no targets that could not be identified.')
+        print('No new FAILED_TARGETS file was written.')
 
