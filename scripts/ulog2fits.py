@@ -184,9 +184,9 @@ for line in fin:
             cols[nc].append(fits.Column(name='FWHM', unit='pix', format='E'))
             cols[nc].append(fits.Column(name='beta', format='E'))
             if format == 1:
-                nap  = (len(svar) - 8 ) / 14
+                nap  = (len(svar) - 8 ) // 14
             elif format == 2:
-                nap  = (len(svar) - 7 ) / 14
+                nap  = (len(svar) - 7 ) // 14
 
             for ap in range(nap):
                 snap = str(ap+1)
@@ -342,8 +342,8 @@ fin.close()
 
 # Create primary HDU, no data but lots of header
 hdus = [fits.PrimaryHDU(header=header),]
-            
-nccd = tmjd.keys()
+
+nccd = list(tmjd.keys())
 nccd.sort()
 for nc in nccd:
     if len(tmjd[nc]) > 0:

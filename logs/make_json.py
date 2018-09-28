@@ -52,6 +52,31 @@ if os.path.isfile('FAILED_TARGETS'):
 else:
     print('Did not find any FAILED_TARGETS list')
 
+# Read in MAPPING, a list to map from nonstandard to standard names (does not have to exist)
+mapping = {}
+try:
+    nline = 0
+    with open('MAPPING') as fp:
+        for line in fp:
+            nline += 1
+            if not line.startswith('#') and not line.isspace():
+                try:
+                    nonstandard, standard = line.split()
+                    nonstandard = nonstandard.replace('~',' ')
+                    standard = standard.replace('~',' ')
+                    mapping[nonstandard] = standard
+                except Exception as err:
+                    print('Error reading MAPPING')
+                    print('Line number',nline)
+                    print('Line =',line)
+                    exit(1)
+
+    print('Loaded',len(mapping),'names from MAPPING which will used to translate names')
+    print('These will be applied before any lookups')
+
+except FileNotFoundError:
+    print('Found no mapping file called MAPPING')
+
 # Create a list directories of runs to search through
 rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
              rdir_re.match(x) is not None]
@@ -102,8 +127,10 @@ for rdir in rdirs:
         expose = 0.
         for xml in xmls:
             try:
-                run = Ultra.Run(xml, nlog, times, targets, telescope, ndir,
-                                rdir, sskip, True, aircomp=False)
+                run = Ultra.Run(
+                    xml, nlog, times, targets, telescope, ndir,
+                    rdir, sskip, True, aircomp=False, mapping=mapping
+                    )
 
                 # update targets to reduce simbad lookups
                 if run.simbad:

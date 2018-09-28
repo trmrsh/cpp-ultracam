@@ -12,9 +12,9 @@
 #include "trm/ultracam.h"
 
 namespace Ultracam {
-    
+
     template <class T> class CCD;
-    
+
     // These have to be declared before they are referred to in the class
     // which is why the forward reference to the class itself is needed. 
     template <class T>

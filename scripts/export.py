@@ -42,13 +42,13 @@ import Ultra
 import trm.subs as subs
 
 fwd = '/storage/astro2/www/phsaap/data'
-wd = os.getcwd()    
+wd = os.getcwd()
 if wd != fwd:
-    print 'You must run this script from ' + fwd
-    print 'The export directory must be a sub-directory of this one'
+    print('You must run this script from ' + fwd)
+    print('The export directory must be a sub-directory of this one')
 
 if len(sys.argv) != 4:
-    print 'usage: rundir edir progid'
+    print('usage: rundir edir progid')
     exit(1)
 
 # name the arguments
@@ -65,23 +65,23 @@ dtest = re.compile('^\d\d\d\d-\d\d$')
 if dtest.match(rdir):
     rundir = os.path.join(log_dir, rdir)
 else:
-    print 'Run = ' + rdir + ' does not have the form YYYY-MM'
+    print('Run = ' + rdir + ' does not have the form YYYY-MM')
     exit(1)
 
 if os.path.exists(edir) and not os.path.isdir(edir):
-    print edir,'exists but is not a directory; please fix.'
+    print(edir,'exists but is not a directory; please fix.')
     exit(1)
 elif not os.path.exists(edir):
     os.makedirs(edir)
-    print 'Created directory =',edir
+    print('Created directory =',edir)
 
 # get a list of night-by-night directories
 ndirs = [d for d in os.listdir(rundir) if os.path.isdir(os.path.join(rundir, d))]
 ndirs.sort()
 
 runs = Ultra.load_runs(rdir)
-                
-print 'Read',len(runs),'runs.'
+
+print('Read',len(runs),'runs.')
 
 # look for all runs which match the supplied identifier
 matches = {}
@@ -92,13 +92,13 @@ for i,run in enumerate(runs):
 science = dict(matches)
 
 # look for all calibrations that match the runs located
-for key,value in science.iteritems():
+for key,value in science.items():
     rdat = runs[value]
     for i,rcal in enumerate(runs):
         if rcal.is_calib() and rcal >= rdat:
             matches[rcal.night + ('%03d' % rcal.number)] = i
 
-keys = matches.keys()
+keys = list(matches.keys())
 keys.sort()
 
 # Chop down runs
@@ -110,8 +110,8 @@ edirs = [os.path.join(edir, rdir, night) for night in ndirs]
 for edr in edirs:
     if not os.path.exists(edr):
         os.makedirs(edr)
- 
-## Create hard links 
+
+## Create hard links
 #for run in runs:
 #    r = 'run' + ('%03d' % (run.number,))
 #    source_xml = os.path.join(raw_dir, run.night, r + '.xml')
@@ -141,17 +141,17 @@ for run in runs:
 
     if os.path.exists(source_xml):
         if os.path.exists(copy_xml):
-            print copy_xml,'already exists and will not be over-written'
+            print(copy_xml,'already exists and will not be over-written')
         else:
             shutil.copyfile(source_xml, copy_xml)
-            print 'Copied',source_xml,'to',copy_xml
+            print('Copied',source_xml,'to',copy_xml)
 
     if os.path.exists(source_dat):
         if os.path.exists(copy_dat):
-            print copy_dat,'already exists and will not be over-written'
+            print(copy_dat,'already exists and will not be over-written')
         else:
             shutil.copyfile(source_dat, copy_dat)
-            print 'Copied',source_dat,'to',copy_dat
+            print('Copied',source_dat,'to',copy_dat)
 
 # Write out a log file
 f = open(os.path.join(edir, 'index.html'), 'w')
@@ -241,14 +241,14 @@ for run in runs:
     s += '<a href="' + server + root + '.dat' + '">D</a></td>'
 
     fname = root + '.dat'
-    if os.path.exists(fname):                        
+    if os.path.exists(fname):
         fstat = os.stat(fname)
         mbytes = fstat.st_size // (1024*1024)
     else:
         mbytes = run.size() // (1024*1024)
 
     s += Ultra.td(str(mbytes))
-    s += Ultra.td(run.night) 
+    s += Ultra.td(run.night)
     s += Ultra.td('%03d' % run.number)
     s += Ultra.td(run.target,'left')
     s += Ultra.td(run.id,'left')
@@ -259,7 +259,7 @@ for run in runs:
     s += Ultra.td('%7.3f' % float(run.sample) if run.sample is not None else None, 'right')
     s += Ultra.td(run.nframe, 'right')
     s += Ultra.td(run.filters)
-    s += Ultra.td(run.pid) 
+    s += Ultra.td(run.pid)
     s += Ultra.td(run.pi)
     s += Ultra.td(run.comment,'left')
     s += '</tr>\n'

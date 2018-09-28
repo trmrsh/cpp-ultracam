@@ -277,9 +277,12 @@ class Run(object):
     FUSSY = True
     RESPC = re.compile('\s+')
 
+    # Matches object names in the form of coordinates
+    REPOS = re.compile(r'J(\d\d)(\d\d)(\d\d\.\d(?:\d*)?)([+-])(\d\d)(\d\d)(\d\d(?:\.\d*)?)$')
+
     def __init__(self, xml, log=None, times=None, targets=None, \
                      telescope=None, night=None, run=None, sskip=[], \
-                     warn=False, noid=False, aircomp=True):
+                     warn=False, noid=False, aircomp=True, mapping={}):
         """xml       -- xml file name with format run###.xml
 
         log       -- previously read night log
@@ -307,6 +310,8 @@ class Run(object):
         noid      -- make no effort to ID a target
 
         aircomp   -- True to compute airmass at start and end of runs. False if not needed as it will go faster.
+
+        mapping   -- dictionary to map from rubbish names into better ones. Applied before any attempt to lookup targets.
 
         At the end there are a whole stack of attributes. Not all will
         be set, and if they are not they will be 'None'. Some are specific
@@ -489,33 +494,73 @@ class Run(object):
                     self.observers = user['Observers'].strip() if 'Observers' in user else self.observers
                     self.pid     = user['ID'].strip() if 'ID' in user else self.pid
 
+                # Try to translate the target name to something more useful
+                self.tryname = mapping.get(self.target, self.target)
+
                 # Try to ID target with one of known position
-                if self.target is not None and noid is False:
+                if self.tryname is not None and noid is False:
 
                     if targets is not None:
                         # First try the list of loaded targets
-                        if self.target in targets.lnames:
-                            self.id  = targets.lnames[self.target]
+                        if self.tryname in targets.lnames:
+                            self.id  = targets.lnames[self.tryname]
                             entry    = targets[self.id]
                             self.ra  = subs.d2hms(entry['ra'],2,':',2)
                             self.dec = subs.d2hms(entry['dec'],2,':',1,sign=True)
 
-                    if self.id is None and self.is_science() and self.target not in sskip:
+                    if self.id is None and self.is_science() and self.tryname not in sskip:
                         # Failed to look up in target list, so try SIMBAD lookup.
                         # To save time, the 'targets' dictionary should
                         # be updated between multiple invocations of run and then this lookup will not be repeated.
 
-                        print('Querying SIMBAD query for target =',self.target)
-                        qsim = simbad.Query(self.target).query()
+                        print('Querying SIMBAD for target =',self.tryname)
+                        qsim = simbad.Query(self.tryname).query()
                         if len(qsim) == 0:
-                            sys.stderr.write('Warning: SIMBAD returned no matches to ' + self.target + '\n')
-                            failures[self.target] = (self.run, self.night, self.number)
+                            sys.stderr.write('Warning: SIMBAD returned no matches to ' + self.tryname + '\n')
+
+                            # Now going to try to translate the name assuming its a position like 'J123445.23-345645.3'
+                            m = Run.REPOS.search(self.tryname)
+                            if m:
+                                rah,ram,ras,decsgn,decd,decm,decs = m.group(1,2,3,4,5,6,7)
+                                rah,ram,ras,decd,decm,decs = int(rah),int(ram),float(ras),int(decd),int(decm),float(decs)
+                                if rah > 23 or ram > 59 or ras >= 60. or decd > 89 or decm > 59 or decs >= 60.:
+                                    print(
+                                        'Warning: {:s} matched the positional regular expression but the numbers were out of range'.format(
+                                            self.tryname), file=sys.stderr
+                                        )
+                                    failures[self.tryname] = (self.run, self.night, self.number)
+
+                                else:
+                                    print('Identified {:s} as a positional name'.format(self.tryname))
+                                    # At this point all is OK. Try updating the targets to save repeated lookups ..
+                                    if targets is not None:
+                                        targets.lnames[self.tryname] = self.tryname
+                                        if self.tryname in targets:
+                                            targets[self.tryname]['names'].append(self.tryname)
+                                        else:
+                                            ra = rah+ram/60+ras/3600
+                                            dec = decd+decm/60+decs/3600
+                                            dec = dec if decsgn == '+' else -dec
+                                            targets[self.tryname] = {
+                                                'ra' : ra, 'dec' : dec, 'names' : [self.tryname,]
+                                                }
+
+                                    # store the extra names in sims for later storage in AUTO_TARGETS
+                                    if self.tryname in sims:
+                                        sims[self.tryname].append(self.tryname)
+                                    else:
+                                        sims[self.tryname] = [self.tryname,]
+                            else:
+                                print('Warning: could not interpret the name as a position either',file=sys.stderr)
+                                failures[self.tryname] = (self.run, self.night, self.number)
+
                         elif len(qsim) > 1:
-                            sys.stderr.write('Warning: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' + self.target + '\n')
-                            failures[self.target] = (self.run, self.night, self.number)
+                            sys.stderr.write('Warning: SIMBAD returned ' + str(len(qsim)) + ' (>1) matches to ' +
+                                             self.tryname + '\n')
+                            failures[self.tryname] = (self.run, self.night, self.number)
                         else:
                             # OK we have found one, but we are still not done --
-                            # some SIMBAD lookup are no good
+                            # some SIMBAD lookups are no good
                             name = qsim[0]['Name']
                             pos  = qsim[0]['Position']
                             name = name.strip()
@@ -538,25 +583,28 @@ class Run(object):
 
                                 # At this point all is OK. Try updating the targets to save repeated lookups ..
                                 if targets is not None:
-                                    targets.lnames[self.target] = self.id
+                                    targets.lnames[self.tryname] = self.id
                                     if self.id in targets:
-                                        targets[self.id]['names'].append(self.target)
+                                        targets[self.id]['names'].append(self.tryname)
                                     else:
-                                        targets[self.id] = {'ra' : subs.hms2d(self.ra), 'dec' : subs.hms2d(self.dec), 'names' : [self.target,]}
+                                        targets[self.id] = {
+                                            'ra' : subs.hms2d(self.ra), 'dec' : subs.hms2d(self.dec),
+                                            'names' : [self.tryname,]
+                                            }
 
                                 # store the extra names in sims for later storage in AUTO_TARGETS
                                 if self.id in sims:
-                                    sims[self.id].append(self.target)
+                                    sims[self.id].append(self.tryname)
                                 else:
-                                    sims[self.id] = [self.target,]
+                                    sims[self.id] = [self.tryname,]
 
                             except ValueError as err:
                                 sys.stderr.write('Failed to parse target = ' + name + ', position = ' + pos + '\n')
-                                failures[self.target] = (self.run, self.night, self.number)
+                                failures[self.tryname] = (self.run, self.night, self.number)
 
                 if self.id is None:
                     # short-circuit repeated SIMBAD lookups
-                    sskip.append(self.target)
+                    sskip.append(self.tryname)
 
                 # Translate applications into meaningful mode names
                 app = self.application
@@ -787,8 +835,8 @@ class Run(object):
                         self.nx[1]     = param['X2_SIZE'] if 'X2_SIZE' in param else None
                         self.ny[1]     = param['Y1_SIZE'] if 'Y1_SIZE' in param else None
 
-            if warn and self.id is None and self.is_science() and self.target not in sskip:
-                sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.target + '\n')
+            if warn and self.id is None and self.is_science() and self.tryname not in sskip:
+                sys.stderr.write('File = ' + self.fname + ', no match for: ' + self.tryname + '\n')
 
         except Exception as err:
               sys.stderr.write('File = ' + self.fname + ', error initialising Run: ' + str(err) + '\n')
@@ -1059,7 +1107,7 @@ class Run(object):
                                 self.ny[i] != other.ny[i]:
                             ok  = False
                             break
-                    
+
             return ok
 
         else:
@@ -1337,7 +1385,7 @@ def flist_stats(fnames, nrow, ncol, thresh):
             lmx  = lm.max()
             rmn  = rm.min()
             rmx  = rm.max()
-            
+
             if first:
                 lmin.append(lmn)
                 lmax.append(lmx)

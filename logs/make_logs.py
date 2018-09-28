@@ -4,7 +4,7 @@ from __future__ import print_function
 
 usage = \
 """
-Script to generate html web pages ULTRASPEC or CAM
+Script to generate html web pages for ULTRA(SPEC|CAM)
 
 It should be run in the 'logs' directory which has sub-directories of
 the form '2005-11' (Nov 2005) which have a structure like so:
@@ -24,6 +24,11 @@ etc. It also expects there to be a file called TARGETS with information
 of target positions and regular expressions for translating targets in.
 
 One other directory called 'Other' will be recognised as a run directory.
+
+With the new astropy / ERFA timing code, it is quite slow, so avoid the 
+'-a' option unless it is really needed. To re-do a given night's directory,
+delete YYYY-MM-DD/YYYY-MM-DD_title.html and YYYY-MM-DD/YYYY-MM-DD_log.html.
+Use the '-r' option to re-do an entire run.
 """
 
 import os, sys, re, argparse
@@ -99,7 +104,7 @@ if __name__ == '__main__':
 
     # arguments
     parser = argparse.ArgumentParser(
-        description='Compiles web pages for ULTRASPEC/CAM logs')
+        description=usage)
 
     parser.add_argument('-r', dest='rdir', default=None,
                         help='name of run directory (all will be searched otherwise)')
@@ -156,6 +161,31 @@ if __name__ == '__main__':
     else:
         print('Did not find any FAILED_TARGETS list')
 
+    # Read in MAPPING, a list to map from nonstandard to standard names (does not have to exist)
+    mapping = {}
+    try:
+        nline = 0
+        with open('MAPPING') as fp:
+            for line in fp:
+                nline += 1
+                if not line.startswith('#') and not line.isspace():
+                    try:
+                        nonstandard, standard = line.split()
+                        nonstandard = nonstandard.replace('~',' ')
+                        standard = standard.replace('~',' ')
+                        mapping[nonstandard] = standard
+                    except Exception as err:
+                        print('Error reading MAPPING')
+                        print('Line number',nline)
+                        print('Line =',line)
+                        exit(1)
+
+        print('Loaded',len(mapping),'names from MAPPING which will used to translate names')
+        print('These will be applied before any lookups')
+
+    except FileNotFoundError:
+        print('Found no mapping file called MAPPING')
+
     # Create a list directories of runs to search through
     if args.rdir:
         if not os.path.isdir(args.rdir):
@@ -165,13 +195,23 @@ if __name__ == '__main__':
             print(args.rdir,'dies not have the required YYYY-MM format')
             exit(1)
         rdirs = [args.rdir,]
+
+        # all for the guide
+        gdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
+                     rdir_re.match(x) is not None]
+        if os.path.isdir('Others'):
+            gdirs.append('Others')
+
     else:
         rdirs = [x for x in os.listdir(os.curdir) if os.path.isdir(x) and \
                  rdir_re.match(x) is not None]
         if os.path.isdir('Others'):
             rdirs.append('Others')
+        gdirs = rdirs
 
     rdirs.sort()
+    gdirs.sort()
+
 
     # Write the guide
     with open('guide.html', 'w') as fg:
@@ -181,12 +221,12 @@ if __name__ == '__main__':
 
         fg.write('<p>\nObserving runs:<br>\n');
 
-        for rdir in rdirs:
+        for gdir in gdirs:
             fg.write('\n<p>\n')
-            if rdir == 'Others':
+            if gdir == 'Others':
                 run = 'Others'
             else:
-                year,month = rdir.split('-')
+                year,month = gdir.split('-')
                 mname = subs.int2month(int(month))
                 run = mname + ' ' + year
 
@@ -196,8 +236,8 @@ if __name__ == '__main__':
             fg.write('<ul>\n')
 
             # Now the night-by-night directories
-            ndirs = [x for x in os.listdir(rdir) \
-                     if os.path.isdir(os.path.join(rdir,x)) and \
+            ndirs = [x for x in os.listdir(gdir) \
+                     if os.path.isdir(os.path.join(gdir,x)) and \
                      ndir_re.match(x) is not None]
             ndirs.sort()
 
@@ -244,7 +284,7 @@ if __name__ == '__main__':
 
             # write heading for html log
             htlog = os.path.join(npath, ndir + '_title.html')
-            if os.path.exists(htlog) and not args.all:
+            if os.path.exists(htlog) and not args.all and not args.rdir:
                 continue
 
             print('Generating',htlog)
@@ -296,7 +336,7 @@ if __name__ == '__main__':
 
             # now the log with the run-by-run table
             htlog = os.path.join(npath, ndir + '_log.html')
-            if os.path.exists(htlog) and not args.all:
+            if os.path.exists(htlog) and not args.all and not args.rdir:
                 continue
 
             print('Generating',htlog)
@@ -313,8 +353,10 @@ if __name__ == '__main__':
                 expose = 0.
                 for nrun, xml in enumerate(xmls):
                     try:
-                        run = Ultra.Run(xml, nlog, times, targets, telescope,
-                                        ndir, rdir, sskip, True)
+                        run = Ultra.Run(
+                            xml, nlog, times, targets, telescope,
+                            ndir, rdir, sskip, True, mapping=mapping
+                            )
                         fh.write('\n' + run.html_table_row() + '\n')
                         expose += float(run.expose) if run.expose is not None and \
                                   run.expose != ' ' else 0.
