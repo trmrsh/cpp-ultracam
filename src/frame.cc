@@ -347,7 +347,7 @@ bool Ultracam::Frame::is_ultracam(const std::string& name){
   // test if a file is an ultracam file or not ...
   // based only upon its extension, so easily fooled.
   std::ifstream ftest(Subs::filnam(name, Ultracam::Frame::extnam()).c_str());
-  return (ftest);
+  return (ftest.good());
 }
 
 
