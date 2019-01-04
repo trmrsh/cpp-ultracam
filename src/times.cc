@@ -157,7 +157,6 @@ int main(int argc, char* argv[]){
     std::cout << "# " << std::endl;
     std::cout << "#                   File: " << url << std::endl;
     std::cout << "# " << std::endl;
-    bool drift = false;
 
     int nwins, rflag = serverdata.readout_mode;
     switch(rflag){
@@ -177,7 +176,6 @@ int main(int argc, char* argv[]){
       std::cout << "#           Readout mode: drift" << std::endl;
       nwins = int((1033./data[0][0].ny()/data[0][0].ybin()+1)/2.);
       std::cout << "#                  nwins: " << nwins << std::endl;
-      drift = true;
       break;
     case Ultracam::ServerData::WINDOWS_CLEAR:
       std::cout << "#           Readout mode: multiple windows with clear" << std::endl;

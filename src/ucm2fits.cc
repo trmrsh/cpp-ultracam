@@ -101,7 +101,7 @@ int main(int argc, char* argv[]){
     std::string fits;
 
     // stuff to do with FITS tables
-    char* ttype[] = {"Name", "Value", "Comment"};
+    const char* ttype[] = {"Name", "Value", "Comment"};
     char* tform[3];
     // Declare space for the format strings ... should be more than enough
     for(int i=0; i<3; i++) tform[i] = new char[10];
@@ -111,8 +111,8 @@ int main(int argc, char* argv[]){
     const char* DVAL = "Directory marker";
     const char* CNAM = "CCD number";
     const char* CCOM = "The CCD number of this frame";
-    char* SCALE = "LINEAR";
-    char* UNITS = "pixels";
+    const char* SCALE = "LINEAR";
+    const char* UNITS = "pixels";
 
     int inumber;
     float fnumber;
@@ -129,28 +129,28 @@ int main(int argc, char* argv[]){
         long int nrow;
         std::string::size_type name_max, value_max, comment_max;
         if(split){
-        nrow         = 1;
-        name_max     = strlen(CNAM);
-        value_max    = Subs::str(data.size()).length();
-        comment_max  = strlen(CCOM);
+	  nrow         = 1;
+	  name_max     = strlen(CNAM);
+	  value_max    = Subs::str(data.size()).length();
+	  comment_max  = strlen(CCOM);
         }else{
-        nrow         = 0;
-        name_max     = 0;
-        value_max    = 0;
-        comment_max  = 0;
+	  nrow         = 0;
+	  name_max     = 0;
+	  value_max    = 0;
+	  comment_max  = 0;
         }
 
         for(Subs::Header::const_iterator cit=data.begin(); cit != data.end(); cit++){
 
-        nrow++;
-        name_max = std::max(name_max, cit->fullname().length());
+	  nrow++;
+	  name_max = std::max(name_max, cit->fullname().length());
 
-        if(cit->value->is_a_dir())
+	  if(cit->value->is_a_dir())
             value_max = std::max(value_max, strlen(DVAL));
-        else
+	  else
             value_max = std::max(value_max, cit->value->get_string().length());
 
-        comment_max = std::max(comment_max, cit->value->get_comment().length());
+	  comment_max = std::max(comment_max, cit->value->get_comment().length());
         }
 
         // Define formats of each table column
@@ -158,7 +158,8 @@ int main(int argc, char* argv[]){
         strcpy(tform[1],(Subs::str(value_max) + "A").c_str());
         strcpy(tform[2],(Subs::str(comment_max) + "A").c_str());
 
-        const string::size_type MAXCHAR = std::max(std::max(name_max, value_max), comment_max);
+        const std::string::size_type MAXCHAR = \
+	  std::max(std::max(name_max, value_max), comment_max);
         p = new char[MAXCHAR+1];
 
         if(split){
@@ -191,10 +192,10 @@ int main(int argc, char* argv[]){
 
             inumber = nwin + 1;
             fits_write_key(fptr, TINT, "NWIN", &inumber, "Window number", &status);
-            fits_write_key(fptr, TSTRING, "CTYPE1", SCALE, "Transformation of X scale", &status);
-            fits_write_key(fptr, TSTRING, "CTYPE2", SCALE, "Transformation of Y scale", &status);
-            fits_write_key(fptr, TSTRING, "CUNIT1", UNITS, "Units of transformed X scale", &status);
-            fits_write_key(fptr, TSTRING, "CUNIT2", UNITS, "Units of transformed Y scale", &status);
+            fits_write_key(fptr, TSTRING, "CTYPE1", (void*)SCALE, "Transformation of X scale", &status);
+            fits_write_key(fptr, TSTRING, "CTYPE2", (void*)SCALE, "Transformation of Y scale", &status);
+            fits_write_key(fptr, TSTRING, "CUNIT1", (void*)UNITS, "Units of transformed X scale", &status);
+            fits_write_key(fptr, TSTRING, "CUNIT2", (void*)UNITS, "Units of transformed Y scale", &status);
 
                 fnumber = 1. - float(data[nccd][nwin].llx() - 1)/data[nccd][nwin].xbin();
             fits_write_key(fptr, TFLOAT, "CRPIX1", &fnumber, "Pixel equivalent in X of reference point", &status);
@@ -218,7 +219,7 @@ int main(int argc, char* argv[]){
             }
 
             // Add headers as a table
-            fits_create_tbl(fptr, BINARY_TBL, nrow, 3, ttype, tform, NULL, "ULTRACAM Headers", &status);
+            fits_create_tbl(fptr, BINARY_TBL, nrow, 3, (char**)ttype, tform, NULL, "ULTRACAM Headers", &status);
 
             // write name of header item
             strcpy(p, CNAM);
@@ -291,10 +292,10 @@ int main(int argc, char* argv[]){
             fits_write_key(fptr, TINT, "NCCD", &inumber, "CCD number", &status);
             inumber = nwin + 1;
             fits_write_key(fptr, TINT,    "NWIN", &inumber, "Window number", &status);
-            fits_write_key(fptr, TSTRING, "CTYPE1", SCALE, "Transformation of X scale", &status);
-            fits_write_key(fptr, TSTRING, "CTYPE2", SCALE, "Transformation of Y scale", &status);
-            fits_write_key(fptr, TSTRING, "CUNIT1", UNITS, "Units of transformed X scale", &status);
-            fits_write_key(fptr, TSTRING, "CUNIT2", UNITS, "Units of transformed Y scale", &status);
+            fits_write_key(fptr, TSTRING, "CTYPE1", (void*)SCALE, "Transformation of X scale", &status);
+            fits_write_key(fptr, TSTRING, "CTYPE2", (void*)SCALE, "Transformation of Y scale", &status);
+            fits_write_key(fptr, TSTRING, "CUNIT1", (void*)UNITS, "Units of transformed X scale", &status);
+            fits_write_key(fptr, TSTRING, "CUNIT2", (void*)UNITS, "Units of transformed Y scale", &status);
 
                 fnumber = 1. - float(xoff + data[nccd][nwin].llx() - 1)/data[nccd][nwin].xbin();
             fits_write_key(fptr, TFLOAT, "CRPIX1", &fnumber, "Pixel equivalent in X of reference point", &status);
@@ -321,7 +322,7 @@ int main(int argc, char* argv[]){
         }
 
         // Add headers as a table
-        fits_create_tbl(fptr, BINARY_TBL, nrow, 3, ttype, tform, NULL, "ULTRACAM Headers", &status);
+        fits_create_tbl(fptr, BINARY_TBL, nrow, 3, (char**)ttype, tform, NULL, "ULTRACAM Headers", &status);
 
         // Write entries to table one by one
         long int firstrow = 0;

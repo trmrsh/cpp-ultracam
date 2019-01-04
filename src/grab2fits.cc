@@ -275,7 +275,7 @@ int main(int argc, char* argv[]){
         char errmsg[FLEN_ERRMSG];
 
         // stuff to do with FITS tables
-        char* ttype[] = {"Name", "Value", "Comment"};
+        const char* ttype[] = {"Name", "Value", "Comment"};
         char* tform[3];
         // Declare space for the format strings ... should be more than enough
         for(int i=0; i<3; i++) tform[i] = new char[10];
@@ -283,8 +283,8 @@ int main(int argc, char* argv[]){
         const char* DVAL = "Directory marker";
         const char* CNAM = "CCD number";
         const char* CCOM = "The CCD number of this frame";
-        char* SCALE = "LINEAR";
-        char* UNITS = "pixels";
+        const char* SCALE = "LINEAR";
+        const char* UNITS = "pixels";
 
         for(;;){
 
@@ -382,7 +382,7 @@ int main(int argc, char* argv[]){
                 strcpy(tform[1],(Subs::str(value_max) + "A").c_str());
                 strcpy(tform[2],(Subs::str(comment_max) + "A").c_str());
 
-                const string::size_type MAXCHAR = std::max(std::max(name_max, value_max), comment_max);
+                const std::string::size_type MAXCHAR = std::max(std::max(name_max, value_max), comment_max);
                 char* parr[1];
                 char* &pptr = parr[0];
                 pptr = new char[MAXCHAR+1];
@@ -434,10 +434,10 @@ int main(int argc, char* argv[]){
 
                             inumber = nwin + 1;
                             fits_write_key(fptr, TINT, "NWIN", &inumber, "Window number", &status);
-                            fits_write_key(fptr, TSTRING, "CTYPE1", SCALE, "Transformation of X scale", &status);
-                            fits_write_key(fptr, TSTRING, "CTYPE2", SCALE, "Transformation of Y scale", &status);
-                            fits_write_key(fptr, TSTRING, "CUNIT1", UNITS, "Units of transformed X scale", &status);
-                            fits_write_key(fptr, TSTRING, "CUNIT2", UNITS, "Units of transformed Y scale", &status);
+                            fits_write_key(fptr, TSTRING, "CTYPE1", (void*)SCALE, "Transformation of X scale", &status);
+                            fits_write_key(fptr, TSTRING, "CTYPE2", (void*)SCALE, "Transformation of Y scale", &status);
+                            fits_write_key(fptr, TSTRING, "CUNIT1", (void*)UNITS, "Units of transformed X scale", &status);
+                            fits_write_key(fptr, TSTRING, "CUNIT2", (void*)UNITS, "Units of transformed Y scale", &status);
 
                             fnumber = 1. - float(data[nccd][nwin].llx() - 1)/data[nccd][nwin].xbin();
                             fits_write_key(fptr, TFLOAT, "CRPIX1", &fnumber, "Pixel equivalent in X of reference point", &status);
@@ -461,7 +461,7 @@ int main(int argc, char* argv[]){
                         }
 
                         // Add headers as a table
-                        fits_create_tbl(fptr, BINARY_TBL, nrow, 3, ttype, tform, NULL, "ULTRACAM Headers", &status);
+                        fits_create_tbl(fptr, BINARY_TBL, nrow, 3, (char**)ttype, tform, NULL, "ULTRACAM Headers", &status);
 
                         // write name of header item
                         strcpy(pptr, CNAM);
@@ -557,10 +557,10 @@ int main(int argc, char* argv[]){
                             fits_write_key(fptr, TINT, "NCCD", &inumber, "CCD number", &status);
                             inumber = nwin + 1;
                             fits_write_key(fptr, TINT,    "NWIN", &inumber, "Window number", &status);
-                            fits_write_key(fptr, TSTRING, "CTYPE1", SCALE, "Transformation of X scale", &status);
-                            fits_write_key(fptr, TSTRING, "CTYPE2", SCALE, "Transformation of Y scale", &status);
-                            fits_write_key(fptr, TSTRING, "CUNIT1", UNITS, "Units of transformed X scale", &status);
-                            fits_write_key(fptr, TSTRING, "CUNIT2", UNITS, "Units of transformed Y scale", &status);
+                            fits_write_key(fptr, TSTRING, "CTYPE1", (void*)SCALE, "Transformation of X scale", &status);
+                            fits_write_key(fptr, TSTRING, "CTYPE2", (void*)SCALE, "Transformation of Y scale", &status);
+                            fits_write_key(fptr, TSTRING, "CUNIT1", (void*)UNITS, "Units of transformed X scale", &status);
+                            fits_write_key(fptr, TSTRING, "CUNIT2", (void*)UNITS, "Units of transformed Y scale", &status);
 
                             fnumber = 1. - float(xoff + data[nccd][nwin].llx() - 1)/data[nccd][nwin].xbin();
                             fits_write_key(fptr, TFLOAT, "CRPIX1", &fnumber, "Pixel equivalent in X of reference point", &status);
@@ -587,7 +587,7 @@ int main(int argc, char* argv[]){
                     }
 
                     // Add headers as a table
-                    fits_create_tbl(fptr, BINARY_TBL, nrow, 3, ttype, tform, NULL, "ULTRACAM Headers", &status);
+                    fits_create_tbl(fptr, BINARY_TBL, nrow, 3, (char**)ttype, tform, NULL, "ULTRACAM Headers", &status);
 
                     // Write entries to table one by one
                     long int firstrow = 0;

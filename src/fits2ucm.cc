@@ -98,7 +98,7 @@ void Tokenize(const std::string& str, std::vector<std::string>& tokens,
     // Find first "non-delimiter".
     std::string::size_type pos     = str.find_first_of(delimiters, lastPos);
 
-    while (std::string::npos != pos || string::npos != lastPos){
+    while (std::string::npos != pos || std::string::npos != lastPos){
 
     // Found a token, add it to the vector.
     tokens.push_back(str.substr(lastPos, pos - lastPos));
