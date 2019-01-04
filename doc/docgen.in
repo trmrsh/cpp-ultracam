@@ -3,7 +3,7 @@
 # docgen.in is the template file from which 'docgen.pl' will be created by
 # the makefile. Only edit 'docgen.in'
 
-require "document.pl";
+require "./document.pl";
 
 $time = localtime;
 
