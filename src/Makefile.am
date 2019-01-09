@@ -130,17 +130,17 @@ $(progdir)/mdiv: $(progdir)/multiframe
 $(progdir)/cplot: $(progdir)/plot
 	cd $(progdir); ln -sf plot $@
 
-INCLUDES = -I../include -I../. @LIBCURL_CPPFLAGS@
+AM_CPPFLAGS = -I../include -I../. $(PCRE_CPPFLAGS) @LIBCURL_CPPFLAGS@
 
 # force re-build of reduce if configure.ac changes to allow for
 # version number changes
 reduce_DEPENDENCIES = ../configure.ac
 
-LDADD = libultracam.la @LIBCURL@
+LDADD = libultracam.la $(PCRECPP_LIBS) @LIBCURL@
 
 ## Library
 
-lib_LTLIBRARIES = libultracam.la 
+lib_LTLIBRARIES = libultracam.la
 
 libultracam_la_SOURCES = window.cc windata.cc ccd.cc frame.cc target.cc \
 mccd.cc skyline.cc defect.cc shift_and_add.cc WriteMemoryCallback.cc \

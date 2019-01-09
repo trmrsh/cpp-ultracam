@@ -39,7 +39,7 @@ dnl First headers
 
 AC_CHECK_HEADERS([stdlib.h float.h math.h sstream string fstream iostream], [], AC_MSG_ERROR([missing header; please fix]))
 
-AC_CHECK_HEADERS([pcrecpp.h slalib.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR([missing header; please fix]))
+AC_CHECK_HEADERS([slalib.h curl/curl.h xercesc/dom/DOM.hpp], [], AC_MSG_ERROR([missing header; please fix]))
 
 dnl cope with two possible locations for fitsio.h
 AC_CHECK_HEADERS([fitsio.h cfitsio/fitsio.h], [break])
@@ -50,7 +50,7 @@ then
 fi
 
 dnl Now libraries
-AC_CHECK_LIB([pcrecpp], [main], [], AC_MSG_ERROR([cannot find the pcre C++ library]))
+PKG_CHECK_MODULES([PCRECPP], [libpcrecpp], [], AC_MSG_ERROR(cannot locate the pcrecpp library and / or header files))
 
 AC_CHECK_LIB([xerces-c], [main], [], AC_MSG_ERROR([cannot find the xerces-c library]))
 
